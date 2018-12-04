@@ -93,7 +93,7 @@ public class Compiler {
 					"    }\n" +
 					"\n\n" +
 					"    fun curValue(startValue: Float, endValue : Float, progress : Float) : Float {\n" +
-					"        return startValue + (endValue - startValue) * progress / 1000f\n" +
+					"        return startValue + (endValue - startValue) * progress\n" +
 					"    }" +lineSeparator +
 
 					"    override fun draw(batch: SpriteBatch, x: Float, y: Float, timePassedSinceStart: Long) {" + lineSeparator +
@@ -169,6 +169,7 @@ public class Compiler {
 										}
 										else if(imageName.startsWith("cloak")){
 											imageName="cloak";
+											angle -= 90;
 										}
 										else if(imageName.startsWith("neck")){
 											imageName="neck";
@@ -207,17 +208,18 @@ public class Compiler {
 								for (int j = 0; j < layersKol; ++j) {
 									Element cur = frame.get(j);
 									Element next = arr.get(i+1).get(j);
-									out.write("batch.draw(textures[\"" + cur.name +"\"]!!.getTexture(timePassedSinceStart)," +
-											"x + curValue("+cur.x+"f, "+next.x+"f, timePassed) - DefaultSizes.defaultWidth[\""+cur.name+"\"]!!/2f," +
-											"y + curValue("+cur.y+"f, "+next.y+"f, timePassed) - DefaultSizes.defaultHeight[\""+cur.name+"\"]!!/2f," +
-											"DefaultSizes.defaultWidth[\""+cur.name+"\"]!!/2f," +
-											"DefaultSizes.defaultHeight[\""+cur.name+"\"]!!/2f," +
-											"DefaultSizes.defaultWidth[\""+cur.name+"\"]!! + 0f," +
-											"DefaultSizes.defaultHeight[\""+cur.name+"\"]!! + 0f," +
-											"curValue("+cur.width+"f, "+next.width+"f, timePassed) / (DefaultSizes.defaultWidth[\""+cur.name+"\"]!! + 0f), " +
-                                           "curValue("+cur.height+"f, "+next.height+"f, timePassed) / (DefaultSizes.defaultHeight[\""+cur.name+"\"]!!/2f + 0f)," +
-											"curValue("+cur.angle+"f, "+next.angle+"f, timePassed)," +
-											"0, 0," +
+									out.write("val progress = (timePassed - " + (interval * i) + ") / " + interval + "f" + lineSeparator);
+									out.write("batch.draw(textures[\"" + cur.name +"\"]!!.getTexture(timePassedSinceStart), " +
+											"x + curValue("+cur.x+"f, "+next.x+"f, progress) - DefaultSizes.defaultWidth[\""+cur.name+"\"]!!/2f, " +
+											"y + curValue("+cur.y+"f, "+next.y+"f, progress) - DefaultSizes.defaultHeight[\""+cur.name+"\"]!!/2f, " +
+											"DefaultSizes.defaultWidth[\""+cur.name+"\"]!!/2f, " +
+											"DefaultSizes.defaultHeight[\""+cur.name+"\"]!!/2f, " +
+											"DefaultSizes.defaultWidth[\""+cur.name+"\"]!! + 0f, " +
+											"DefaultSizes.defaultHeight[\""+cur.name+"\"]!! + 0f, " +
+											"curValue("+cur.width+"f, "+next.width+"f, progress) / (DefaultSizes.defaultWidth[\""+cur.name+"\"]!! + 0f), " +
+                                           "curValue("+cur.height+"f, "+next.height+"f, progress) / (DefaultSizes.defaultHeight[\""+cur.name+"\"]!! + 0f), " +
+											"curValue("+cur.angle+"f, "+next.angle+"f, progress), " +
+											"0, 0, " +
 											"DefaultSizes.defaultWidth[\""+cur.name+"\"]!!, " +
 											"DefaultSizes.defaultHeight[\""+cur.name+"\"]!!, false, false)");
 								}
