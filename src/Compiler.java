@@ -158,7 +158,7 @@ public class Compiler {
 									in.nextInt();//Пропускаем увеличение размера
 									float angle = (float)(Math.toDegrees(((double)in.nextInt())/1000000));
 
-									System.out.println(x + " " + y + " " + width + " " + height + " " + angle);
+									System.out.println("x = " + x + ", y = " + y + ", width = " + width + ", height = " + height + ", angle = " + angle);
 
 									if(isBodyPart(imageName)){
 										if(imageName.startsWith("head")){
