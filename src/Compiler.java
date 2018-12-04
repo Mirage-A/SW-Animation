@@ -208,13 +208,14 @@ public class Compiler {
 									Element cur = frame.get(j);
 									Element next = arr.get(i+1).get(j);
 									out.write("batch.draw(textures[\"" + cur.name +"\"]!!.getTexture(timePassedSinceStart)," +
-											"x + curValue("+cur.x+"f, "+next.x+"f, timePassed)," +
-											"y + curValue("+cur.y+"f, "+next.y+"f, timePassed)," +
-											"curValue("+cur.width+"f, "+next.width+"f, timePassed)/2," +
-											"curValue("+cur.height+"f, "+next.height+"f,timePassed)/2," +
-											"curValue("+cur.width+"f, "+next.width+"f, timePassed)," +
-											"curValue("+cur.height+"f, "+next.height+"f, timePassed)," +
-											"1f, 1f," +
+											"x + curValue("+cur.x+"f, "+next.x+"f, timePassed) - DefaultSizes.defaultWidth[\""+cur.name+"\"]!!/2f," +
+											"y + curValue("+cur.y+"f, "+next.y+"f, timePassed) - DefaultSizes.defaultHeight[\""+cur.name+"\"]!!/2f," +
+											"DefaultSizes.defaultWidth[\""+cur.name+"\"]!!/2f," +
+											"DefaultSizes.defaultHeight[\""+cur.name+"\"]!!/2f," +
+											"DefaultSizes.defaultWidth[\""+cur.name+"\"]!! + 0f," +
+											"DefaultSizes.defaultHeight[\""+cur.name+"\"]!! + 0f," +
+											"curValue("+cur.width+"f, "+next.width+"f, timePassed) / (DefaultSizes.defaultWidth[\""+cur.name+"\"]!! + 0f), " +
+                                           "curValue("+cur.height+"f, "+next.height+"f, timePassed) / (DefaultSizes.defaultHeight[\""+cur.name+"\"]!!/2f + 0f)," +
 											"curValue("+cur.angle+"f, "+next.angle+"f, timePassed)," +
 											"0, 0," +
 											"DefaultSizes.defaultWidth[\""+cur.name+"\"]!!, " +
