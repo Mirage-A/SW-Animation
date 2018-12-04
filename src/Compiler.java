@@ -169,7 +169,7 @@ public class Compiler {
 										}
 										else if(imageName.startsWith("cloak")){
 											imageName="cloak";
-											angle -= 90;
+											//angle -= 90;
 										}
 										else if(imageName.startsWith("neck")){
 											imageName="neck";
@@ -205,13 +205,13 @@ public class Compiler {
 								int layersKol = frame.size();
 								out.write((i == 0 ? "" : "else ") + "if (timePassed < " + (interval * (i+1)) + ")" +
 										lineSeparator + "{" + lineSeparator);
+								out.write("val progress = (timePassed - " + (interval * i) + ") / " + interval + "f" + lineSeparator);
 								for (int j = 0; j < layersKol; ++j) {
 									Element cur = frame.get(j);
 									Element next = arr.get(i+1).get(j);
-									out.write("val progress = (timePassed - " + (interval * i) + ") / " + interval + "f" + lineSeparator);
 									out.write("batch.draw(textures[\"" + cur.name +"\"]!!.getTexture(timePassedSinceStart), " +
 											"x + curValue("+cur.x+"f, "+next.x+"f, progress) - DefaultSizes.defaultWidth[\""+cur.name+"\"]!!/2f, " +
-											"y + curValue("+cur.y+"f, "+next.y+"f, progress) - DefaultSizes.defaultHeight[\""+cur.name+"\"]!!/2f, " +
+											"y - curValue("+cur.y+"f, "+next.y+"f, progress) - DefaultSizes.defaultHeight[\""+cur.name+"\"]!!/2f, " +
 											"DefaultSizes.defaultWidth[\""+cur.name+"\"]!!/2f, " +
 											"DefaultSizes.defaultHeight[\""+cur.name+"\"]!!/2f, " +
 											"DefaultSizes.defaultWidth[\""+cur.name+"\"]!! + 0f, " +
@@ -221,7 +221,8 @@ public class Compiler {
 											"curValue("+cur.angle+"f, "+next.angle+"f, progress), " +
 											"0, 0, " +
 											"DefaultSizes.defaultWidth[\""+cur.name+"\"]!!, " +
-											"DefaultSizes.defaultHeight[\""+cur.name+"\"]!!, false, false)");
+											"DefaultSizes.defaultHeight[\""+cur.name+"\"]!!, false, false)" +
+											lineSeparator);
 								}
 								out.write(lineSeparator + "}" + lineSeparator);
 							}
