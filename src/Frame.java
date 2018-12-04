@@ -814,7 +814,7 @@ public class Frame extends JFrame{
 		}
 		
 		
-		File nomoveAnimationsFolder = new File("./animationsbottomnomove");
+		/*File nomoveAnimationsFolder = new File("./animationsbottomnomove");
 		if(!nomoveAnimationsFolder.exists()){
 			nomoveAnimationsFolder.mkdir();
 			for(int moveDirection=0; moveDirection<8; moveDirection++){
@@ -850,7 +850,7 @@ public class Frame extends JFrame{
 					ex.printStackTrace();
 				}
 			}
-		}
+		}*/
 		
 		
 		
