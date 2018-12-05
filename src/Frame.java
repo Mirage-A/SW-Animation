@@ -644,8 +644,11 @@ public class Frame extends JFrame{
 	private void saveAll(){
 		//TODO Отражение анимаций
 		String weapon = framesFolder.getName();
-		String moveDirection = framesFolder.getParentFile().getParentFile().getName();
-		String folder = framesFolder.getParentFile().getParentFile().getParentFile().getAbsolutePath();
+		String moveDirection = framesFolder.getParentFile().getName();
+		String folder = framesFolder.getParentFile().getParentFile().getAbsolutePath();
+		System.out.println(weapon);
+		System.out.println(moveDirection);
+		System.out.println(folder);
 		File mirror = null;
 		boolean isDiag=false;
 		//mirror - Полный поворот
@@ -709,6 +712,7 @@ public class Frame extends JFrame{
 		//Перезаписываем mirror
 		for(int frame=0;frame<framesKol;frame++){
 			try{
+				System.out.println(mirror);
 				File file = new File(mirror.getAbsolutePath()+"/frame"+frame+".swanim");
 				if(!file.exists()){
 					file.createNewFile();
