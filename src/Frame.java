@@ -731,7 +731,7 @@ public class Frame extends JFrame{
 						}
 						imageName="head"+k+".png";
 					}
-					out.write(" "+imageName+" "+(-layer.x)+" "+layer.y+" "+layer.scaledWidth+" "+layer.scaledHeight+" "+layer.xsize+" "+(int)((Math.PI-layer.rotationAngle)*1000000));
+					out.write(" "+imageName+" "+(-layer.x)+" "+layer.y+" "+layer.scaledWidth+" "+layer.scaledHeight+" "+layer.xsize+" "+(int)((-layer.rotationAngle)*1000000));
 				}
 				out.flush();
 				out.close();
@@ -740,74 +740,6 @@ public class Frame extends JFrame{
 				ex.printStackTrace();
 			}
 		}
-		/*
-		if(isDiag){
-			//Перезаписываем mirror2
-			//Отражение горизонтально
-			for(int frame=0;frame<framesKol;frame++){
-				try{
-					File file = new File(mirror2.getAbsolutePath()+"/frame"+frame+".swanim");
-					if(!file.exists()){
-						file.createNewFile();
-					}
-					FileWriter out = new FileWriter(file);
-					ArrayList<Layer> layers = frames.get(frame);
-					out.write(layers.size()+"");
-					for(int i=0;i<layers.size();i++){
-						Layer layer = layers.get(layers.size()-i-1);
-						String imageName = layer.imageName;
-						//TODO Изменение названия изображения
-						if(imageName.startsWith("head")){
-							int k = Integer.parseInt(imageName.charAt(4)+"");
-							if(k==1)k=3;
-							else if(k==3)k=1;
-							else if(k==5)k=7;
-							else if(k==7)k=5;
-							imageName="head"+k+".png";
-						}
-						out.write(" "+imageName+" "+(-layer.x)+" "+layer.y+" "+layer.scaledWidth+" "+layer.scaledHeight+" "+layer.xsize+" "+(int)((Math.PI-layer.rotationAngle)*1000000));
-					}
-					out.flush();
-					out.close();
-				}
-				catch(Exception ex){
-					ex.printStackTrace();
-				}
-			}
-			//Перезаписываем mirror3
-			//Отражение спереди назад
-			for(int frame=0;frame<framesKol;frame++){
-				try{
-					File file = new File(mirror2.getAbsolutePath()+"/frame"+frame+".swanim");
-					if(!file.exists()){
-						file.createNewFile();
-					}
-					FileWriter out = new FileWriter(file);
-					ArrayList<Layer> layers = frames.get(frame);
-					out.write(layers.size()+"");
-					for(int i=0;i<layers.size();i++){
-						Layer layer = layers.get(layers.size()-i-1);
-						String imageName = layer.imageName;
-						//TODO Изменение названия изображения
-						if(imageName.startsWith("head")){
-							int k = Integer.parseInt(imageName.charAt(4)+"");
-							if(k==1)k=7;
-							else if(k==7)k=1;
-							else if(k==5)k=3;
-							else if(k==3)k=5;
-							imageName="head"+k+".png";
-						}
-						out.write(" "+imageName+" "+(-layer.x)+" "+layer.y+" "+layer.scaledWidth+" "+layer.scaledHeight+" "+layer.xsize+" "+(int)((Math.PI-layer.rotationAngle)*1000000));
-					}
-					out.flush();
-					out.close();
-				}
-				catch(Exception ex){
-					ex.printStackTrace();
-				}
-			}
-		}
-		*/
 	}
 	private void createNewAnimation(){
 		String animationName = JOptionPane.showInputDialog(this, "Enter the new animation's name (for example, Fireball)", "New animation", JOptionPane.PLAIN_MESSAGE).trim();
@@ -816,52 +748,7 @@ public class Frame extends JFrame{
 		if(!animationsFolder.exists()){
 			animationsFolder.mkdir();
 		}
-		
-		
-		/*File nomoveAnimationsFolder = new File("./animationsbottomnomove");
-		if(!nomoveAnimationsFolder.exists()){
-			nomoveAnimationsFolder.mkdir();
-			for(int moveDirection=0; moveDirection<8; moveDirection++){
-				File framesFolder = new File(nomoveAnimationsFolder.getAbsolutePath()+"/"+getMoveDirectionFolderName(moveDirection));
-				framesFolder.mkdir();
-				File frame = new File(framesFolder.getAbsolutePath()+"/"+"frame0.swanim");
-				try{
-					frame.createNewFile();
-					FileWriter out = new FileWriter(frame);
-					out.write("0");
-					out.close();
-				}
-				catch(Exception ex){
-					ex.printStackTrace();
-				}
-			}
-		}
 
-		File moveAnimationsFolder = new File("./animationsbottommove");
-		if(!moveAnimationsFolder.exists()){
-			moveAnimationsFolder.mkdir();
-			for(int moveDirection=0; moveDirection<8; moveDirection++){
-				File framesFolder = new File(moveAnimationsFolder.getAbsolutePath()+"/"+getMoveDirectionFolderName(moveDirection));
-				framesFolder.mkdir();
-				File frame = new File(framesFolder.getAbsolutePath()+"/"+"frame0.swanim");
-				try{
-					frame.createNewFile();
-					FileWriter out = new FileWriter(frame);
-					out.write("0");
-					out.close();
-				}
-				catch(Exception ex){
-					ex.printStackTrace();
-				}
-			}
-		}*/
-		
-		
-		
-		
-		
-		
-		
 		
 		File moveDirectionsFolder = new File("./animations/"+animationsFolder.list().length+" "+animationName);
 		moveDirectionsFolder.mkdir();
