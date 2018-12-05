@@ -35,8 +35,7 @@ public class Compiler {
 			FileWriter out = new FileWriter(file);
 			out.write("package com.mirage.view.scene.objects.humanoid\n" +
 					"\n" +
-					"import com.badlogic.gdx.Gdx\n" +
-					"import com.badlogic.gdx.graphics.Texture\n" +
+					"import com.mirage.view.TextureLoader\n" +
 					"import com.badlogic.gdx.graphics.g2d.SpriteBatch\n" +
 					"import com.mirage.view.scene.objects.AnimatedObjectDrawer\n" +
 					"import java.util.HashMap\n" +
@@ -68,18 +67,19 @@ public class Compiler {
 					"\n" +
 					"    constructor() {\n" +
 					"        textures = HashMap()\n" +
-					"        for (i in 0..0) { // TODO поменять 0 на 7\n" +
-					"            textures[\"head$i\"] = StaticTexture(Texture(Gdx.files.internal(\"android/assets/equipment/head/0000$i.png\")))\n" +
+					"        for (i in 0..7) {\n" +
+					"            textures[\"head$i\"] = StaticTexture(TextureLoader.load(\"equipment/head/0000$i.png\"))\n" +
 					"        }\n" +
-					"        textures[\"body\"] = StaticTexture(Texture(Gdx.files.internal(\"android/assets/equipment/body/0000.png\")))\n" +
-					"        textures[\"handtop\"] = StaticTexture(Texture(Gdx.files.internal(\"android/assets/equipment/handtop/0000.png\")))\n" +
-					"        textures[\"handbottom\"] = StaticTexture(Texture(Gdx.files.internal(\"android/assets/equipment/handbottom/0000.png\")))\n" +
-					"        textures[\"legtop\"] = StaticTexture(Texture(Gdx.files.internal(\"android/assets/equipment/legtop/0000.png\")))\n" +
-					"        textures[\"legbottom\"] = StaticTexture(Texture(Gdx.files.internal(\"android/assets/equipment/legbottom/0000.png\")))\n" +
-					"        textures[\"cloak\"] = StaticTexture(Texture(Gdx.files.internal(\"android/assets/equipment/cloak/0000.png\")))\n" +
-					"        textures[\"weapon1\"] = StaticTexture(Texture(Gdx.files.internal(\"android/assets/equipment/twohanded/0000.png\")))\n" +
-					"        textures[\"weapon2\"] = StaticTexture(Texture(Gdx.files.internal(\"android/assets/equipment/onehanded/0000.png\")))\n" +
-					"    }\n" +
+					"        textures[\"body\"] = StaticTexture(TextureLoader.load(\"equipment/body/0000.png\"))\n" +
+					"        textures[\"handtop\"] = StaticTexture(TextureLoader.load(\"equipment/handtop/0000.png\"))\n" +
+					"        textures[\"handbottom\"] = StaticTexture(TextureLoader.load(\"equipment/handbottom/0000.png\"))\n" +
+					"        textures[\"legtop\"] = StaticTexture(TextureLoader.load(\"equipment/legtop/0000.png\"))\n" +
+					"        textures[\"legbottom\"] = StaticTexture(TextureLoader.load(\"equipment/legbottom/0000.png\"))\n" +
+					"        textures[\"cloak\"] = StaticTexture(TextureLoader.load(\"equipment/cloak/0000.png\"))\n" +
+					"        textures[\"neck\"] = StaticTexture(TextureLoader.load(\"equipment/neck/0000.png\"))\n" +
+					"        textures[\"weapon1\"] = StaticTexture(TextureLoader.load(\"equipment/onehanded/0000.png\"))\n" +
+					"        textures[\"weapon2\"] = StaticTexture(TextureLoader.load(\"equipment/onehanded/0000.png\"))\n" +
+					"    }" +
 					"\n" +
 					"    constructor(textures: MutableMap<String, AnimatedTexture>) {\n" +
 					"        this.textures = textures\n" +
@@ -225,6 +225,28 @@ public class Compiler {
 											lineSeparator);
 								}
 								out.write(lineSeparator + "}" + lineSeparator);
+							}
+
+							if (framesKol == 1) {
+								ArrayList<Element> frame = arr.get(0);
+								int layersKol = frame.size();
+								for (int j = 0; j < layersKol; ++j) {
+									Element cur = frame.get(j);
+									out.write("batch.draw(textures[\"" + cur.name +"\"]!!.getTexture(timePassedSinceStart), " +
+											"x + "+cur.x+"f - DefaultSizes.defaultWidth[\""+cur.name+"\"]!!/2f, " +
+											"y - "+cur.y+"f - DefaultSizes.defaultHeight[\""+cur.name+"\"]!!/2f, " +
+											"DefaultSizes.defaultWidth[\""+cur.name+"\"]!!/2f, " +
+											"DefaultSizes.defaultHeight[\""+cur.name+"\"]!!/2f, " +
+											"DefaultSizes.defaultWidth[\""+cur.name+"\"]!! + 0f, " +
+											"DefaultSizes.defaultHeight[\""+cur.name+"\"]!! + 0f, " +
+											""+cur.width+"f / (DefaultSizes.defaultWidth[\""+cur.name+"\"]!! + 0f), " +
+											""+cur.height+"f / (DefaultSizes.defaultHeight[\""+cur.name+"\"]!! + 0f), " +
+											""+cur.angle+"f, " +
+											"0, 0, " +
+											"DefaultSizes.defaultWidth[\""+cur.name+"\"]!!, " +
+											"DefaultSizes.defaultHeight[\""+cur.name+"\"]!!, false, false)" +
+											lineSeparator);
+								}
 							}
 
 							// FRAME LOGIC END
