@@ -1,6 +1,9 @@
 package ui
 
+import logic.Animation
+import logic.BodyAnimation
 import logic.Layer
+import logic.LegsAnimation
 import java.awt.Cursor
 import java.awt.Image
 import java.awt.Toolkit
@@ -11,7 +14,9 @@ import java.awt.event.MouseMotionListener
 import java.awt.event.WindowEvent
 import java.awt.event.WindowListener
 import java.io.File
+import java.io.FileOutputStream
 import java.io.FileWriter
+import java.io.ObjectOutputStream
 import java.nio.file.Files
 import java.util.ArrayList
 import java.util.Scanner
@@ -28,29 +33,29 @@ import javax.swing.WindowConstants
 import javax.swing.filechooser.FileFilter
 
 class AnimationWindow : JFrame() {
-    internal var panel: Panel = Panel()
-    internal var layersFrame: LayersFrame = LayersFrame()
-    internal var framesFrame: FramesFrame = FramesFrame()
-    internal var slidersFrame: SlidersFrame = SlidersFrame()
-    internal var isPlayingAnimation = false
-    internal var framesFolder: File = File("")
-    internal var curFrame = -1
-    internal var isMoving = false
-    internal var x1: Int = 0
-    internal var y1: Int = 0
-    internal var animTimer: Timer
-    internal val animDelay = 1000
+    private var panel: Panel = Panel()
+    private var layersFrame: LayersFrame = LayersFrame()
+    private var framesFrame: FramesFrame = FramesFrame()
+    private var slidersFrame: SlidersFrame = SlidersFrame()
+    private var isPlayingAnimation = false
+    private var isMoving = false
+    private var x1: Int = 0
+    private var y1: Int = 0
+    private var animTimer: Timer
+    private val animDelay = 1000
+
+    private var animation : Animation = BodyAnimation()
 
     init {
         animTimer = Timer(animDelay, ActionListener {
-            loadFrame(curFrame)
-            framesFrame.btns[curFrame].font = layersFrame.basicFont
+            loadFrame(animation.curFrame)
+            framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
             panel.repaint()
-            curFrame++
-            if (curFrame >= framesFolder.list()!!.size) {
-                curFrame = 0
+            animation.curFrame++
+            if (animation.curFrame >= animation.frames!!.size) {
+                animation.curFrame = 0
             }
-            framesFrame.btns[curFrame].font = layersFrame.selectedFont
+            framesFrame.btns[animation.curFrame].font = layersFrame.selectedFont
         })
         title = "Animation editor"
         size = Toolkit.getDefaultToolkit().screenSize
@@ -82,7 +87,7 @@ class AnimationWindow : JFrame() {
         secanim.addActionListener {
             if (isPlayingAnimation) {
                 if (secanim.isSelected) {
-                    animTimer.delay = animDelay / framesFolder.list()!!.size
+                    animTimer.delay = animDelay / animation.frames.size
                 } else {
                     animTimer.delay = 40
                 }
@@ -98,8 +103,6 @@ class AnimationWindow : JFrame() {
             if (!isPlayingAnimation) {
                 panel.t.stop()
                 anim.text = "Stop animation"
-                saveFrame()
-                if (curFrame == -1) curFrame = 0
                 if (secanim.isSelected) {
                     animTimer.delay = animDelay / framesFolder.list()!!.size
                 } else {
@@ -126,7 +129,7 @@ class AnimationWindow : JFrame() {
         reverse.setBounds(anim.x, anim.y + anim.height + 4, anim.width, anim.height)
         reverse.addActionListener {
             if (JOptionPane.showConfirmDialog(this@AnimationWindow, "Do you want to create a mirrored animation?", "Mirroring animation", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION) {
-                saveAll()
+                mirrorAnimation()
             }
         }
         reverse.isVisible = true
@@ -157,13 +160,10 @@ class AnimationWindow : JFrame() {
         framesFrame = FramesFrame()
         slidersFrame = SlidersFrame()
         val ans = JOptionPane.showOptionDialog(contentPane, "Welcome to Shattered World animation editor!", "Welcome!", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, arrayOf("Create new animation", "Load animation", "Exit editor"), 0)
-        if (ans == JOptionPane.YES_OPTION) {
-            createNewAnimation()
-
-        } else if (ans == JOptionPane.NO_OPTION) {
-            loadAnimation()
-        } else if (ans == JOptionPane.CANCEL_OPTION) {
-            System.exit(0)
+        when (ans) {
+            JOptionPane.YES_OPTION -> createNewAnimation()
+            JOptionPane.NO_OPTION -> loadAnimation()
+            JOptionPane.CANCEL_OPTION -> System.exit(0)
         }
         val screen = Toolkit.getDefaultToolkit().screenSize
         layersFrame.setLocation(screen.width - layersFrame.width - 20, screen.height - layersFrame.height - 60)
@@ -181,10 +181,7 @@ class AnimationWindow : JFrame() {
                 }
 
                 override fun accept(f: File): Boolean {
-                    return if (f.name.endsWith(".png"))
-                        true
-                    else
-                        false
+                    return f.name.endsWith(".png")
                 }
             })
             fc.dialogTitle = "Choose an image for the new layer"
@@ -193,7 +190,9 @@ class AnimationWindow : JFrame() {
                 val image = fc.selectedFile
                 if (image.name.endsWith(".png")) {
                     val layer = Layer(image.name)
-                    panel.layers.add(layer)
+                    for (frame in animation.frames) {
+                        frame.layers.add(layer)
+                    }
                     val tmp = JButton(layer.layerName)
                     tmp.addActionListener { loadLayer(layersFrame.btns.indexOf(tmp)) }
                     layersFrame.btns.add(tmp)
@@ -319,7 +318,7 @@ class AnimationWindow : JFrame() {
             }
         }
         framesFrame.copyLastFrameButton.addActionListener {
-            if (framesFolder.list()!!.size > 0 && curFrame != -1) {
+            if (framesFolder.list().isNotEmpty() && curFrame != -1) {
                 println("copy frame $curFrame")
                 try {
                     saveFrame()
@@ -395,10 +394,7 @@ class AnimationWindow : JFrame() {
                 }
 
                 override fun accept(f: File): Boolean {
-                    return if (f.name.endsWith(".swanim"))
-                        true
-                    else
-                        false
+                    return f.name.endsWith(".swanim")
                 }
             })
             fc.dialogTitle = "Choose a frame to create a copy of it"
@@ -541,93 +537,20 @@ class AnimationWindow : JFrame() {
         })
     }
 
-    private fun saveAll() {
-        //TODO Отражение анимаций
-        val weapon = framesFolder.name
-        val moveDirection = framesFolder.parentFile.parentFile.name
-        val folder = framesFolder.parentFile.parentFile.parentFile.absolutePath
-        var mirror: File? = null
-        var isDiag = false
-        //mirror - Полный поворот
-        var mirror2: File? = null
-        var mirror3: File? = null
-        if (moveDirection == "0 Right") {
-            mirror = File("$folder/4 Left/$weapon")
-        } else if (moveDirection == "1 UpRight") {
-            isDiag = true
-            mirror = File("$folder/5 DownLeft/$weapon")
-            mirror2 = File("$folder/3 UpLeft/$weapon")
-            mirror3 = File("$folder/7 DownRight/$weapon")
-        } else if (moveDirection == "2 Up") {
-            mirror = File("$folder/6 Down/$weapon")
-        } else if (moveDirection == "3 UpLeft") {
-            isDiag = true
-            mirror = File("$folder/7 DownRight/$weapon")
-            mirror2 = File("$folder/1 UpRight/$weapon")
-            mirror3 = File("$folder/5 DownLeft/$weapon")
-        } else if (moveDirection == "4 Left") {
-            mirror = File("$folder/0 Right/$weapon")
-        } else if (moveDirection == "5 DownLeft") {
-            isDiag = true
-            mirror = File("$folder/1 UpRight/$weapon")
-            mirror2 = File("$folder/7 DownRight/$weapon")
-            mirror3 = File("$folder/3 UpLeft/$weapon")
-        } else if (moveDirection == "6 Down") {
-            mirror = File("$folder/2 Up/$weapon")
-        } else if (moveDirection == "7 DownRight") {
-            isDiag = true
-            mirror = File("$folder/3 UpLeft/$weapon")
-            mirror2 = File("$folder/5 DownLeft/$weapon")
-            mirror3 = File("$folder/1 UpRight/$weapon")
+    private fun serialize() {
+        //TODO Сериализация
+        var fos = FileOutputStream("")
+        if (animation is BodyAnimation) {
+            fos = FileOutputStream("bodyanimations/" + animation.name + ".swanim")
         }
-        val frames = ArrayList<ArrayList<Layer>>()
-        val framesKol = framesFolder.list()!!.size
-        for (i in 0 until framesKol) {
-            val frame = ArrayList<Layer>()
-            try {
-                val `in` = Scanner(File(framesFolder.absolutePath + "/frame" + i + ".swanim"))
-                val layersKol = `in`.nextInt()
-                for (j in 0 until layersKol) {
-                    val layer = Layer(`in`.next(), `in`.nextInt(), `in`.nextInt(), `in`.nextInt(), `in`.nextInt(), `in`.nextInt(), `in`.nextInt().toDouble() / 1000000)
-                    frame.add(layer)
-                }
-                `in`.close()
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-            }
-
-            frames.add(frame)
+        else if (animation is LegsAnimation) {
+            fos = FileOutputStream("legsanimations/" + animation.name + ".swanim")
         }
-        //Перезаписываем mirror
-        for (frame in 0 until framesKol) {
-            try {
-                val file = File(mirror!!.absolutePath + "/frame" + frame + ".swanim")
-                if (!file.exists()) {
-                    file.createNewFile()
-                }
-                val out = FileWriter(file)
-                val layers = frames[frame]
-                out.write(layers.size.toString() + "")
-                for (i in layers.indices) {
-                    val layer = layers[layers.size - i - 1]
-                    var imageName = layer.imageName
-                    //TODO Изменение названия изображения
-                    if (imageName.startsWith("head")) {
-                        var k = Integer.parseInt(imageName[4] + "") - 4
-                        if (k < 0) {
-                            k += 8
-                        }
-                        imageName = "head$k.png"
-                    }
-                    out.write(" " + imageName + " " + -layer.x + " " + layer.y + " " + layer.scaledWidth + " " + layer.scaledHeight + " " + layer.xsize + " " + ((Math.PI - layer.rotationAngle) * 1000000).toInt())
-                }
-                out.flush()
-                out.close()
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-            }
-
-        }
+        else throw Exception("Undefined type of animation")
+        val oos = ObjectOutputStream(fos)
+        oos.writeObject(animation)
+        oos.flush()
+        oos.close()
 
     }
 
@@ -765,24 +688,31 @@ class AnimationWindow : JFrame() {
         }
     }
 
+    /**
+     * Переключает активный слой
+     */
     private fun loadLayer(layerID: Int) {
-        if (panel.curLayer != -1) {
-            layersFrame.btns[panel.curLayer].font = layersFrame.basicFont
+        if (animation.frames[curFrame].curLayer != -1) {
+            layersFrame.btns[animation.frames[curFrame].curLayer].font = layersFrame.basicFont
         }
         layersFrame.btns[layerID].font = layersFrame.selectedFont
-        panel.curLayer = layerID
+        animation.frames[curFrame].curLayer = layerID
         layersFrame.deleteLayerButton.isEnabled = true
         layersFrame.renameLayerButton.isEnabled = true
         layersFrame.upLayerButton.isEnabled = true
         layersFrame.downLayerButton.isEnabled = true
 
-        val layer = panel.layers[layerID]
-        slidersFrame.sizeSlider.value = layer.xsize
-        slidersFrame.widthSlider.value = layer.xwidth
-        slidersFrame.heightSlider.value = layer.xheight
+        val layer = animation.frames[curFrame].layers[layerID]
+        //TODO Возможно, это случайно вызывает valueChanged(), но это не точно
+        slidersFrame.sizeSlider.value = Math.round(layer.scale * 100)
+        slidersFrame.widthSlider.value = Math.round(layer.scaleX * 100)
+        slidersFrame.heightSlider.value = Math.round(layer.scaleY * 100)
         slidersFrame.isVisible = true
     }
 
+    /**
+     * Переключает активный кадр
+     */
     private fun loadFrame(frameID: Int) {
         slidersFrame.isVisible = false
         curFrame = frameID
@@ -816,25 +746,12 @@ class AnimationWindow : JFrame() {
 
     }
 
-    private fun saveFrame() {
-        if (curFrame != -1) {
-            try {
-                val file = File(framesFolder.absolutePath + "/frame" + curFrame + ".swanim")
-                val out = FileWriter(file)
-                out.write(panel.layers.size.toString() + "")
-                for (i in panel.layers.indices) {
-                    val layer = panel.layers[i]
-                    out.write(" " + layer.imageName + " " + layer.x + " " + layer.y + " " + layer.scaledWidth + " " + layer.scaledHeight + " " + layer.xsize + " " + (layer.rotationAngle * 1000000).toInt())
-                }
-                out.flush()
-                out.close()
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-            }
-
-        }
+    /**
+     * Создает отраженную копию всех кадров для соотвествующего moveDirection-а
+     */
+    private fun mirrorAnimation() {
+        // TODO
     }
-
 
     private fun sqr(a: Double): Double {
         return a * a

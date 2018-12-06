@@ -1,5 +1,6 @@
 package logic
 
 class Frame {
-    var layers : List<Layer> = ArrayList()
+    var layers : ArrayList<Layer> = ArrayList()
+    var curLayer : Int = -1
 }

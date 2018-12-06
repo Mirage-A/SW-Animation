@@ -1,5 +1,6 @@
 package ui
 
+import logic.Frame
 import logic.Layer
 import java.awt.Color
 import java.awt.Graphics
@@ -21,9 +22,8 @@ class Panel : JPanel() {
     internal var verticalScroll: JScrollPane? = null
     internal var horizontalScroll: JScrollPane? = null
     internal var player: Image = BufferedImage(1,1, BufferedImage.TYPE_INT_ARGB)
-    internal var curLayer = -1
     internal var ram: BufferedImage = BufferedImage(1,1, BufferedImage.TYPE_INT_ARGB)
-    internal var layers: ArrayList<Layer>
+    var frame : Frame? = null
     internal var zoom = 600
     internal val centerY = 106 - 64
     internal val pointRadius = 4
@@ -31,7 +31,6 @@ class Panel : JPanel() {
 
     init {
         layout = null
-        layers = ArrayList()
         try {
             player = ImageIO.read(File("./icons/player.png"))
             player = player.getScaledInstance(player.getWidth(null) * zoom / 100, player.getHeight(null) * zoom / 100, Image.SCALE_SMOOTH)
@@ -46,25 +45,31 @@ class Panel : JPanel() {
 
     public override fun paintComponent(gr: Graphics) {
         super.paintComponent(gr)
+        if (frame == null) return
         val scrW = width
         val scrH = height
+        val layers = frame!!.layers
         for (i in layers.indices) {
             val layer = layers[i]
-            val at = AffineTransform.getTranslateInstance(((layer.x - layer.scaledWidth / 2) * zoom / 100 + scrW / 2).toDouble(), ((layer.y - layer.scaledHeight / 2 + centerY) * zoom / 100 + scrH / 2).toDouble())
-            at.rotate(-layer.rotationAngle, (layer.scaledWidth / 2 * zoom / 100).toDouble(), (layer.scaledHeight / 2 * zoom / 100).toDouble())
+            val scaledWidth = layer.basicWidth * layer.scale * layer.scaleX
+            val scaledHeight = layer.basicHeight * layer.scale * layer.scaleY
+            val at = AffineTransform.getTranslateInstance(((layer.x - scaledWidth / 2) * zoom / 100 + scrW / 2).toDouble(), ((layer.y - scaledHeight / 2 + centerY) * zoom / 100 + scrH / 2).toDouble())
+            at.rotate(-layer.angle.toDouble(), (scaledWidth / 2 * zoom / 100).toDouble(), (scaledHeight / 2 * zoom / 100).toDouble())
             val g2d = gr as Graphics2D
-            g2d.drawImage(layer.basicImage.getScaledInstance(layer.scaledWidth * zoom / 100, layer.scaledHeight * zoom / 100, Image.SCALE_SMOOTH), at, null)
+            g2d.drawImage(layer.basicImage.getScaledInstance(Math.round(scaledWidth * zoom / 100), Math.round(scaledHeight * zoom / 100), Image.SCALE_SMOOTH), at, null)
         }
         gr.color = Color.BLACK
         gr.drawLine(scrW / 2, 0, scrW / 2, scrH)
         gr.drawLine(0, scrH / 2 + centerY * zoom / 100, scrW, scrH / 2 + centerY * zoom / 100)
-        if (curLayer != -1) {
-            val layer = layers[curLayer]
+        if (frame!!.curLayer != -1) {
+            val layer = frame!!.layers[frame!!.curLayer]
+            val scaledWidth = layer.basicWidth * layer.scale * layer.scaleX
+            val scaledHeight = layer.basicHeight * layer.scale * layer.scaleY
             gr.color = Color.BLUE
             val g = gr as Graphics2D
-            val at = AffineTransform.getTranslateInstance(((layer.x - layer.scaledWidth / 2) * zoom / 100 + scrW / 2).toDouble(), ((layer.y - layer.scaledHeight / 2 + centerY) * zoom / 100 + scrH / 2).toDouble())
-            at.rotate(-layer.rotationAngle, (layer.scaledWidth / 2 * zoom / 100).toDouble(), (layer.scaledHeight / 2 * zoom / 100).toDouble())
-            gr.drawImage(ram.getScaledInstance(layer.scaledWidth * zoom / 100, layer.scaledHeight * zoom / 100, Image.SCALE_SMOOTH), at, null)
+            val at = AffineTransform.getTranslateInstance(((layer.x - scaledWidth / 2) * zoom / 100 + scrW / 2).toDouble(), ((layer.y - scaledHeight / 2 + centerY) * zoom / 100 + scrH / 2).toDouble())
+            at.rotate(-layer.angle.toDouble(), (scaledWidth / 2 * zoom / 100).toDouble(), (scaledHeight / 2 * zoom / 100).toDouble())
+            gr.drawImage(ram.getScaledInstance(Math.round(scaledWidth * zoom / 100), Math.round(scaledHeight * zoom / 100), Image.SCALE_SMOOTH), at, null)
         }
         if (drawPlayer) {
             gr.drawImage(player, scrW / 2 - player.getWidth(null) / 2, scrH / 2 - player.getHeight(null) / 2, null)
