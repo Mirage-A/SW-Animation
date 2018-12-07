@@ -23,6 +23,6 @@ class Layer (var imageName: String, var x : Float = 0f, var y : Float = 0f, var 
         }
 
     }
-
-    }
+    constructor(origin : Layer) : this(origin.imageName, origin.x, origin.y, origin.scale, origin.scaleX, origin.scaleY,
+            origin.angle)
 }

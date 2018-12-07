@@ -98,7 +98,7 @@ class AnimationWindow : JFrame() {
                 panel.t.stop()
                 anim.text = "Stop animation"
                 if (secanim.isSelected) {
-                    animTimer.delay = animDelay / framesFolder.list()!!.size
+                    animTimer.delay = animDelay / animation.frames.size
                 } else {
                     animTimer.delay = 40
                 }
@@ -106,12 +106,12 @@ class AnimationWindow : JFrame() {
             } else {
                 animTimer.stop()
                 anim.text = "Start animation"
-                if (curFrame != -1) {
-                    framesFrame.btns[curFrame].font = layersFrame.basicFont
+                if (animation.curFrame != -1) {
+                    framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
                 }
-                curFrame = 0
+                animation.curFrame = 0
                 framesFrame.btns[0].font = layersFrame.selectedFont
-                loadFrame(curFrame)
+                loadFrame(animation.curFrame)
                 panel.t.restart()
             }
             isPlayingAnimation = !isPlayingAnimation
@@ -137,10 +137,10 @@ class AnimationWindow : JFrame() {
             override fun windowClosing(e: WindowEvent) {
                 val ans = JOptionPane.showOptionDialog(contentPane, "What do you want to do?", "Exit", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, arrayOf("Open another animation", "Continue work", "Save and exit"), 0)
                 if (ans == JOptionPane.YES_OPTION) {
-                    saveFrame()
+                    serialize()
                     loadAnimation()
                 } else if (ans == JOptionPane.CANCEL_OPTION) {
-                    saveFrame()
+                    serialize()
                     System.exit(0)
                 }
 
@@ -197,101 +197,140 @@ class AnimationWindow : JFrame() {
             }
         }
         layersFrame.deleteLayerButton.addActionListener {
-            if (JOptionPane.showConfirmDialog(layersFrame, "Delete the layer " + panel.layers[panel.curLayer].layerName + "?", "Delete layer", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.YES_OPTION) {
-                layersFrame.scrollPanel.remove(layersFrame.btns[panel.curLayer])
-                layersFrame.btns.removeAt(panel.curLayer)
-                panel.layers.removeAt(panel.curLayer)
-                panel.curLayer = -1
-                layersFrame.deleteLayerButton.isEnabled = false
-                layersFrame.renameLayerButton.isEnabled = false
-                layersFrame.upLayerButton.isEnabled = false
-                layersFrame.downLayerButton.isEnabled = false
-                layersFrame.scrollPanel.repaint()
-                layersFrame.scrollPane.revalidate()
+            if (animation.curFrame != -1) {
+                val frame = animation.frames[animation.curFrame]
+                if (frame.curLayer != -1) {
+                    val layer = frame.layers[frame.curLayer]
+                    if (JOptionPane.showConfirmDialog(layersFrame, "Delete the layer " +layer.layerName + "?", "Delete layer", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.YES_OPTION) {
+                        layersFrame.scrollPanel.remove(layersFrame.btns[frame.curLayer])
+                        layersFrame.btns.removeAt(frame.curLayer)
+                        val layerID = frame.curLayer
+                        frame.curLayer = -1
+                        layersFrame.deleteLayerButton.isEnabled = false
+                        layersFrame.renameLayerButton.isEnabled = false
+                        layersFrame.upLayerButton.isEnabled = false
+                        layersFrame.downLayerButton.isEnabled = false
+                        layersFrame.scrollPanel.repaint()
+                        layersFrame.scrollPane.revalidate()
+                        for (fr in animation.frames) {
+                            fr.curLayer = -1
+                            fr.layers.removeAt(layerID)
+                        }
+                    }
+                }
             }
         }
         layersFrame.renameLayerButton.addActionListener {
-            val newName = JOptionPane.showInputDialog(layersFrame, "Create a new name for the layer " + panel.layers[panel.curLayer].layerName, "Rename the layer", JOptionPane.PLAIN_MESSAGE).trim { it <= ' ' }
-            panel.layers[panel.curLayer].layerName = newName
-            layersFrame.btns[panel.curLayer].text = newName
+            if (animation.curFrame != -1) {
+                val frame = animation.frames[animation.curFrame]
+                if (frame.curLayer != -1) {
+                    val layer = frame.layers[frame.curLayer]
+                    val newName = JOptionPane.showInputDialog(layersFrame, "Create a new name for the layer " + layer.layerName, "Rename the layer", JOptionPane.PLAIN_MESSAGE).trim { it <= ' ' }
+                    layer.layerName = newName
+                    layersFrame.btns[frame.curLayer].text = newName
+                }
+            }
         }
         layersFrame.upLayerButton.addActionListener {
-            if (panel.curLayer > 0) {
-                val layers = panel.layers
-                val btns = layersFrame.btns
-                panel.layers = ArrayList()
-                layersFrame.btns = ArrayList()
-                for (i in 0 until panel.curLayer - 1) {
-                    panel.layers.add(layers[i])
-                }
-                panel.layers.add(layers[panel.curLayer])
-                panel.layers.add(layers[panel.curLayer - 1])
-                for (i in panel.curLayer + 1 until layers.size) {
-                    panel.layers.add(layers[i])
-                }
+            if (animation.curFrame != -1) {
+                val frame = animation.frames[animation.curFrame]
+                if (frame.curLayer != -1) {
+                    if (frame.curLayer > 0) {
+                        val btns = layersFrame.btns
+                        layersFrame.btns = ArrayList()
 
-                for (i in 0 until panel.curLayer - 1) {
-                    layersFrame.btns.add(btns[i])
-                }
-                layersFrame.btns.add(btns[panel.curLayer])
-                layersFrame.btns.add(btns[panel.curLayer - 1])
-                for (i in panel.curLayer + 1 until btns.size) {
-                    layersFrame.btns.add(btns[i])
-                }
+                        for (i in 0 until frame.curLayer - 1) {
+                            layersFrame.btns.add(btns[i])
+                        }
+                        layersFrame.btns.add(btns[frame.curLayer])
+                        layersFrame.btns.add(btns[frame.curLayer - 1])
+                        for (i in frame.curLayer + 1 until btns.size) {
+                            layersFrame.btns.add(btns[i])
+                        }
 
 
-                layersFrame.scrollPanel.removeAll()
-                for (i in layersFrame.btns.indices) {
-                    layersFrame.scrollPanel.add(layersFrame.btns[i])
+                        layersFrame.scrollPanel.removeAll()
+                        for (i in layersFrame.btns.indices) {
+                            layersFrame.scrollPanel.add(layersFrame.btns[i])
+                        }
+                        layersFrame.scrollPanel.repaint()
+                        layersFrame.scrollPane.revalidate()
+
+                        val layerID = frame.curLayer
+                        for (fr in animation.frames) {
+                            fr.curLayer--
+                            val tmp = fr.layers[layerID]
+                            fr.layers[layerID] = fr.layers[layerID - 1]
+                            fr.layers[layerID - 1] = tmp
+                        }
+                    }
                 }
-                layersFrame.scrollPanel.repaint()
-                layersFrame.scrollPane.revalidate()
-                panel.curLayer--
             }
         }
         layersFrame.downLayerButton.addActionListener {
-            if (panel.curLayer < panel.layers.size - 1) {
-                val layers = panel.layers
-                val btns = layersFrame.btns
-                panel.layers = ArrayList()
-                layersFrame.btns = ArrayList()
-                for (i in 0 until panel.curLayer) {
-                    panel.layers.add(layers[i])
-                }
-                panel.layers.add(layers[panel.curLayer + 1])
-                panel.layers.add(layers[panel.curLayer])
-                for (i in panel.curLayer + 2 until layers.size) {
-                    panel.layers.add(layers[i])
-                }
+            if (animation.curFrame != -1) {
+                val frame = animation.frames[animation.curFrame]
+                if (frame.curLayer != -1) {
+                    if (frame.curLayer < frame.layers.size - 1) {
+                        val layers = frame.layers
+                        val btns = layersFrame.btns
+                        layersFrame.btns = ArrayList()
 
-                for (i in 0 until panel.curLayer) {
-                    layersFrame.btns.add(btns[i])
-                }
-                layersFrame.btns.add(btns[panel.curLayer + 1])
-                layersFrame.btns.add(btns[panel.curLayer])
-                for (i in panel.curLayer + 2 until btns.size) {
-                    layersFrame.btns.add(btns[i])
-                }
+                        for (i in 0 until frame.curLayer) {
+                            layersFrame.btns.add(btns[i])
+                        }
+                        layersFrame.btns.add(btns[frame.curLayer + 1])
+                        layersFrame.btns.add(btns[frame.curLayer])
+                        for (i in frame.curLayer + 2 until btns.size) {
+                            layersFrame.btns.add(btns[i])
+                        }
 
+                        layersFrame.scrollPanel.removeAll()
+                        for (i in layersFrame.btns.indices) {
+                            layersFrame.scrollPanel.add(layersFrame.btns[i])
+                        }
+                        layersFrame.scrollPanel.repaint()
+                        layersFrame.scrollPane.revalidate()
 
-                layersFrame.scrollPanel.removeAll()
-                for (i in layersFrame.btns.indices) {
-                    layersFrame.scrollPanel.add(layersFrame.btns[i])
+                        val layerID = frame.curLayer
+                        for (fr in animation.frames) {
+                            fr.curLayer++
+                            val tmp = fr.layers[layerID]
+                            fr.layers[layerID] = fr.layers[layerID + 1]
+                            fr.layers[layerID + 1] = tmp
+                        }
+                    }
                 }
-                layersFrame.scrollPanel.repaint()
-                layersFrame.scrollPane.revalidate()
-                panel.curLayer++
             }
         }
         framesFrame.newFrameButton.addActionListener {
-            print("new frame " + framesFolder.list()!!.size)
-            val frame = File(framesFolder.absolutePath + "/" + "frame" + framesFolder.list()!!.size + ".swanim")
-            try {
-                saveFrame()
-                frame.createNewFile()
-                val out = FileWriter(frame)
-                out.write("0")
-                out.close()
+            print("new frame " + animation.frames.size)
+            val newFrame = Frame()
+            var layersKol = 0
+            if (animation.frames.isNotEmpty()) {
+                layersKol = animation.frames[0].layers.size
+            }
+            for (i in 0 until layersKol) {
+                newFrame.layers.add(Layer(animation.frames[0].layers[i]))
+            }
+            val tmp = JButton("frame$layersKol")
+            tmp.addActionListener {
+                if (animation.curFrame != -1) {
+                    framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
+                }
+                animation.curFrame = Integer.parseInt(tmp.text.substring(5))
+                tmp.font = layersFrame.selectedFont
+                loadFrame(animation.curFrame)
+                framesFrame.deleteFrameButton.isEnabled = true
+            }
+            framesFrame.btns.add(tmp)
+            framesFrame.scrollPanel.add(tmp)
+            framesFrame.scrollPanel.repaint()
+            framesFrame.scrollPane.revalidate()
+        }
+        framesFrame.copyLastFrameButton.addActionListener {
+            if (animation.curFrame != -1) {
+                println("copy frame " + animation.curFrame)
                 val tmp = JButton("frame" + (framesFolder.list()!!.size - 1))
                 tmp.addActionListener {
                     saveFrame()
@@ -307,42 +346,12 @@ class AnimationWindow : JFrame() {
                 framesFrame.scrollPanel.add(tmp)
                 framesFrame.scrollPanel.repaint()
                 framesFrame.scrollPane.revalidate()
-            } catch (ex: Exception) {
-                ex.printStackTrace()
-            }
-        }
-        framesFrame.copyLastFrameButton.addActionListener {
-            if (framesFolder.list().isNotEmpty() && curFrame != -1) {
-                println("copy frame $curFrame")
-                try {
-                    saveFrame()
-                    val frame = File(framesFolder.absolutePath + "/" + "frame" + framesFolder.list()!!.size + ".swanim")
-                    frame.createNewFile()
-                    val tmp = JButton("frame" + (framesFolder.list()!!.size - 1))
-                    tmp.addActionListener {
-                        saveFrame()
-                        if (curFrame != -1) {
-                            framesFrame.btns[curFrame].font = layersFrame.basicFont
-                        }
-                        curFrame = Integer.parseInt(tmp.text.substring(5))
-                        tmp.font = layersFrame.selectedFont
-                        loadFrame(curFrame)
-                        framesFrame.deleteFrameButton.isEnabled = true
-                    }
-                    framesFrame.btns.add(tmp)
-                    framesFrame.scrollPanel.add(tmp)
-                    framesFrame.scrollPanel.repaint()
-                    framesFrame.scrollPane.revalidate()
-                    val frames = framesFolder.listFiles()
-                    for (i in frames!!.size - 1 downTo curFrame + 1) {
-                        val out = FileWriter(File(framesFolder.absolutePath + "/frame" + i + ".swanim"))
-                        out.write(String(Files.readAllBytes(File(framesFolder.absolutePath + "/frame" + (i - 1) + ".swanim").toPath())))
-                        out.close()
-                    }
-                } catch (ex: Exception) {
-                    ex.printStackTrace()
+                val frames = framesFolder.listFiles()
+                for (i in frames!!.size - 1 downTo curFrame + 1) {
+                    val out = FileWriter(File(framesFolder.absolutePath + "/frame" + i + ".swanim"))
+                    out.write(String(Files.readAllBytes(File(framesFolder.absolutePath + "/frame" + (i - 1) + ".swanim").toPath())))
+                    out.close()
                 }
-
             }
         }
         framesFrame.deleteFrameButton.addActionListener {
@@ -427,19 +436,31 @@ class AnimationWindow : JFrame() {
             }
         }
         slidersFrame.sizeSlider.addChangeListener {
-            val layer = panel.layers[panel.curLayer]
-            layer.xsize = slidersFrame.sizeSlider.value
-            layer.updateSize()
+            if (animation.curFrame != -1) {
+                val frame = animation.frames[animation.curFrame]
+                if (frame.curLayer != -1) {
+                    val layer = frame.layers[frame.curLayer]
+                    layer.scale = slidersFrame.sizeSlider.value / 100f
+                }
+            }
         }
         slidersFrame.widthSlider.addChangeListener {
-            val layer = panel.layers[panel.curLayer]
-            layer.xwidth = slidersFrame.widthSlider.value
-            layer.updateSize()
+            if (animation.curFrame != -1) {
+                val frame = animation.frames[animation.curFrame]
+                if (frame.curLayer != -1) {
+                    val layer = frame.layers[frame.curLayer]
+                    layer.scaleX = slidersFrame.widthSlider.value / 100f
+                }
+            }
         }
         slidersFrame.heightSlider.addChangeListener {
-            val layer = panel.layers[panel.curLayer]
-            layer.xheight = slidersFrame.heightSlider.value
-            layer.updateSize()
+            if (animation.curFrame != -1) {
+                val frame = animation.frames[animation.curFrame]
+                if (frame.curLayer != -1) {
+                    val layer = frame.layers[frame.curLayer]
+                    layer.scaleY = slidersFrame.heightSlider.value / 100f
+                }
+            }
         }
         addMouseListener(object : MouseListener {
             override fun mouseReleased(e: MouseEvent) {
@@ -447,17 +468,22 @@ class AnimationWindow : JFrame() {
             }
 
             override fun mousePressed(e: MouseEvent) {
-                if (panel.curLayer != -1) {
-                    val layer = panel.layers[panel.curLayer]
-                    val scrW = panel.width
-                    val scrH = panel.height
-                    val range = Math.sqrt(sqr((layer.x * panel.zoom / 100 + scrW / 2 - e.x).toDouble()) + sqr(((layer.y + panel.centerY) * panel.zoom / 100 + scrH / 2 - e.y).toDouble())).toInt()
-                    if (range < Math.min(layer.scaledWidth, layer.scaledHeight) * panel.zoom / 200) {
-                        isMoving = true
-                        x1 = (e.x - (layer.x * panel.zoom / 100 + scrW / 2)) * 100 / panel.zoom
-                        y1 = ((layer.y + panel.centerY) * panel.zoom / 100 + scrH / 2 - e.y) * 100 / panel.zoom
-                    } else {
-                        isMoving = false
+                if (animation.curFrame != -1) {
+                    val frame = animation.frames[animation.curFrame]
+                    if (frame.curLayer != -1) {
+                        val layer = frame.layers[frame.curLayer]
+                        val scrW = panel.width
+                        val scrH = panel.height
+                        val scaledWidth = layer.basicWidth * layer.scale * layer.scaleX
+                        val scaledHeight = layer.basicHeight * layer.scale * layer.scaleY
+                        val range = Math.sqrt(sqr((layer.x * panel.zoom / 100 + scrW / 2 - e.x).toDouble()) + sqr(((layer.y + panel.centerY) * panel.zoom / 100 + scrH / 2 - e.y).toDouble())).toInt()
+                        if (range < Math.min(scaledWidth, scaledHeight) * panel.zoom / 200) {
+                            isMoving = true
+                            x1 = Math.round((e.x - (layer.x * panel.zoom / 100f + scrW / 2f)) * 100f / panel.zoom)
+                            y1 = Math.round(((layer.y + panel.centerY) * panel.zoom / 100f + scrH / 2f - e.y) * 100f / panel.zoom)
+                        } else {
+                            isMoving = false
+                        }
                     }
                 }
             }
