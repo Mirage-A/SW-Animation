@@ -331,54 +331,36 @@ class AnimationWindow : JFrame() {
         framesFrame.copyLastFrameButton.addActionListener {
             if (animation.curFrame != -1) {
                 println("copy frame " + animation.curFrame)
-                val tmp = JButton("frame" + (framesFolder.list()!!.size - 1))
+                val tmp = JButton("frame" + (animation.frames.size - 1))
                 tmp.addActionListener {
-                    saveFrame()
-                    if (curFrame != -1) {
-                        framesFrame.btns[curFrame].font = layersFrame.basicFont
+                    if (animation.curFrame != -1) {
+                        framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
                     }
-                    curFrame = Integer.parseInt(tmp.text.substring(5))
+                    animation.curFrame = Integer.parseInt(tmp.text.substring(5))
                     tmp.font = layersFrame.selectedFont
-                    loadFrame(curFrame)
+                    loadFrame(animation.curFrame)
                     framesFrame.deleteFrameButton.isEnabled = true
                 }
                 framesFrame.btns.add(tmp)
                 framesFrame.scrollPanel.add(tmp)
                 framesFrame.scrollPanel.repaint()
                 framesFrame.scrollPane.revalidate()
-                val frames = framesFolder.listFiles()
-                for (i in frames!!.size - 1 downTo curFrame + 1) {
-                    val out = FileWriter(File(framesFolder.absolutePath + "/frame" + i + ".swanim"))
-                    out.write(String(Files.readAllBytes(File(framesFolder.absolutePath + "/frame" + (i - 1) + ".swanim").toPath())))
-                    out.close()
-                }
+                animation.frames.add(Frame(animation.frames[animation.curFrame]))
             }
         }
         framesFrame.deleteFrameButton.addActionListener {
-            if (JOptionPane.showConfirmDialog(framesFrame, "Delete the frame $curFrame?", "Delete frame", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.YES_OPTION) {
-                println("delete frame $curFrame")
-                if (curFrame != -1) {
-                    framesFrame.btns[curFrame].font = layersFrame.basicFont
+            if (JOptionPane.showConfirmDialog(framesFrame, "Delete the frame " + animation.curFrame + "?", "Delete frame", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.YES_OPTION) {
+                println("delete frame " + animation.curFrame)
+                if (animation.curFrame != -1) {
+                    framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
                 }
+                animation.frames.removeAt(animation.curFrame)
                 framesFrame.deleteFrameButton.isEnabled = false
-                val files = framesFolder.listFiles()
-                for (i in curFrame until files!!.size - 1) {
-                    try {
-                        val out = FileWriter(File(framesFolder.absolutePath + "/frame" + i + ".swanim"))
-                        out.write(String(Files.readAllBytes(File(framesFolder.absolutePath + "/frame" + (i + 1) + ".swanim").toPath())))
-                        out.close()
-                    } catch (ex: Exception) {
-                        ex.printStackTrace()
-                    }
-
-                }
-                File(framesFolder.absolutePath + "/frame" + (framesFolder.list()!!.size - 1) + ".swanim").delete()
                 framesFrame.scrollPanel.remove(framesFrame.btns[framesFrame.btns.size - 1])
                 framesFrame.btns.removeAt(framesFrame.btns.size - 1)
                 framesFrame.scrollPanel.repaint()
                 framesFrame.scrollPane.revalidate()
-                curFrame = -1
-                panel.layers.clear()
+                animation.curFrame = -1
                 layersFrame.btns.clear()
                 layersFrame.scrollPanel.removeAll()
                 layersFrame.scrollPane.revalidate()
@@ -403,7 +385,8 @@ class AnimationWindow : JFrame() {
             fc.dialogTitle = "Choose a frame to create a copy of it"
 
             if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-                val file = fc.selectedFile
+                JOptionPane.showMessageDialog(null, "Copying frames is unavailable in this version")
+                /*val file = fc.selectedFile
                 if (file.name.endsWith(".swanim")) {
                     println("copy frame " + file.name)
                     val frame = File(framesFolder.absolutePath + "/" + "frame" + framesFolder.list()!!.size + ".swanim")
@@ -432,7 +415,7 @@ class AnimationWindow : JFrame() {
                         ex.printStackTrace()
                     }
 
-                }
+                }*/
             }
         }
         slidersFrame.sizeSlider.addChangeListener {
