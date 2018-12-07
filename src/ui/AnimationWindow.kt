@@ -1,9 +1,6 @@
 package ui
 
-import logic.Animation
-import logic.BodyAnimation
-import logic.Layer
-import logic.LegsAnimation
+import logic.*
 import java.awt.Cursor
 import java.awt.Image
 import java.awt.Toolkit
@@ -13,10 +10,7 @@ import java.awt.event.MouseListener
 import java.awt.event.MouseMotionListener
 import java.awt.event.WindowEvent
 import java.awt.event.WindowListener
-import java.io.File
-import java.io.FileOutputStream
-import java.io.FileWriter
-import java.io.ObjectOutputStream
+import java.io.*
 import java.nio.file.Files
 import java.util.ArrayList
 import java.util.Scanner
@@ -555,6 +549,7 @@ class AnimationWindow : JFrame() {
     }
 
     private fun createNewAnimation() {
+        //TODO выбор типа анимации (body or legs)
         val animationName = JOptionPane.showInputDialog(this, "Enter the new animation's name (for example, Fireball)", "New animation", JOptionPane.PLAIN_MESSAGE).trim { it <= ' ' }
         val framesKol = Integer.parseInt(JOptionPane.showInputDialog(this, "Input the number of frames", animationName, JOptionPane.PLAIN_MESSAGE).trim { it <= ' ' })
         val animationsFolder = File("./animations")
@@ -562,45 +557,7 @@ class AnimationWindow : JFrame() {
             animationsFolder.mkdir()
         }
 
-
-        val nomoveAnimationsFolder = File("./animationsbottomnomove")
-        if (!nomoveAnimationsFolder.exists()) {
-            nomoveAnimationsFolder.mkdir()
-            for (moveDirection in 0..7) {
-                val framesFolder = File(nomoveAnimationsFolder.absolutePath + "/" + getMoveDirectionFolderName(moveDirection))
-                framesFolder.mkdir()
-                val frame = File(framesFolder.absolutePath + "/" + "frame0.swanim")
-                try {
-                    frame.createNewFile()
-                    val out = FileWriter(frame)
-                    out.write("0")
-                    out.close()
-                } catch (ex: Exception) {
-                    ex.printStackTrace()
-                }
-
-            }
-        }
-
-        val moveAnimationsFolder = File("./animationsbottommove")
-        if (!moveAnimationsFolder.exists()) {
-            moveAnimationsFolder.mkdir()
-            for (moveDirection in 0..7) {
-                val framesFolder = File(moveAnimationsFolder.absolutePath + "/" + getMoveDirectionFolderName(moveDirection))
-                framesFolder.mkdir()
-                val frame = File(framesFolder.absolutePath + "/" + "frame0.swanim")
-                try {
-                    frame.createNewFile()
-                    val out = FileWriter(frame)
-                    out.write("0")
-                    out.close()
-                } catch (ex: Exception) {
-                    ex.printStackTrace()
-                }
-
-            }
-        }
-
+        //TODO инициализация animation.data
 
         val moveDirectionsFolder = File("./animations/" + animationsFolder.list()!!.size + " " + animationName)
         moveDirectionsFolder.mkdir()
@@ -635,8 +592,11 @@ class AnimationWindow : JFrame() {
         }
     }
 
+    /**
+     * Открывает окно выбора анимации, десереализует и загружает выбранную анимацию
+     */
     private fun loadAnimation() {
-        val fc = JFileChooser("./animations")
+        val fc = JFileChooser("./")
         fc.addChoosableFileFilter(object : FileFilter() {
 
             override fun getDescription(): String {
@@ -644,10 +604,7 @@ class AnimationWindow : JFrame() {
             }
 
             override fun accept(f: File): Boolean {
-                return if (f.name.endsWith(".swanim"))
-                    true
-                else
-                    false
+                return f.name.endsWith(".swanim")
             }
         })
         fc.dialogTitle = "Open animation"
@@ -656,21 +613,24 @@ class AnimationWindow : JFrame() {
             try {
                 val file = fc.selectedFile
                 if (file.name.endsWith(".swanim")) {
-                    saveFrame()
-                    framesFolder = file.parentFile
-                    val frames = framesFolder.listFiles()
+                    serialize()
+                    val fis = FileInputStream(file)
+                    val oin = ObjectInputStream(fis)
+                    val obj = oin.readObject()
+                    animation = obj as Animation
+                    println(animation.javaClass.name)
+                    animation.frames = animation.data[MoveDirection.DOWN]!![WeaponType.ONE_HANDED]!!
                     framesFrame.btns.clear()
                     framesFrame.scrollPanel.removeAll()
-                    for (i in frames!!.indices) {
+                    for (i in animation.frames.indices) {
                         val tmp = JButton("frame$i")
                         tmp.addActionListener {
-                            saveFrame()
-                            if (curFrame != -1) {
-                                framesFrame.btns[curFrame].font = layersFrame.basicFont
+                            if (animation.curFrame != -1) {
+                                framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
                             }
-                            curFrame = Integer.parseInt(tmp.text.substring(5))
+                            animation.curFrame = Integer.parseInt(tmp.text.substring(5))
                             tmp.font = layersFrame.selectedFont
-                            loadFrame(curFrame)
+                            loadFrame(animation.curFrame)
                             framesFrame.deleteFrameButton.isEnabled = true
                         }
                         framesFrame.btns.add(tmp)
@@ -692,17 +652,17 @@ class AnimationWindow : JFrame() {
      * Переключает активный слой
      */
     private fun loadLayer(layerID: Int) {
-        if (animation.frames[curFrame].curLayer != -1) {
-            layersFrame.btns[animation.frames[curFrame].curLayer].font = layersFrame.basicFont
+        if (animation.frames[animation.curFrame].curLayer != -1) {
+            layersFrame.btns[animation.frames[animation.curFrame].curLayer].font = layersFrame.basicFont
         }
         layersFrame.btns[layerID].font = layersFrame.selectedFont
-        animation.frames[curFrame].curLayer = layerID
+        animation.frames[animation.curFrame].curLayer = layerID
         layersFrame.deleteLayerButton.isEnabled = true
         layersFrame.renameLayerButton.isEnabled = true
         layersFrame.upLayerButton.isEnabled = true
         layersFrame.downLayerButton.isEnabled = true
 
-        val layer = animation.frames[curFrame].layers[layerID]
+        val layer = animation.frames[animation.curFrame].layers[layerID]
         //TODO Возможно, это случайно вызывает valueChanged(), но это не точно
         slidersFrame.sizeSlider.value = Math.round(layer.scale * 100)
         slidersFrame.widthSlider.value = Math.round(layer.scaleX * 100)
@@ -715,34 +675,24 @@ class AnimationWindow : JFrame() {
      */
     private fun loadFrame(frameID: Int) {
         slidersFrame.isVisible = false
-        curFrame = frameID
-        val frame = File(framesFolder.absolutePath + "/frame" + frameID + ".swanim")
-        panel.curLayer = -1
-        panel.layers.clear()
+        animation.curFrame = frameID
+        val frame = animation.frames[frameID]
+        frame.curLayer = -1
         layersFrame.newLayerButton.isEnabled = true
         layersFrame.deleteLayerButton.isEnabled = false
         layersFrame.renameLayerButton.isEnabled = false
         layersFrame.upLayerButton.isEnabled = false
         layersFrame.downLayerButton.isEnabled = false
-        try {
-            val `in` = Scanner(frame)
-            val layersKol = `in`.nextInt()
-            layersFrame.scrollPanel.removeAll()
-            layersFrame.btns.clear()
-            for (i in 0 until layersKol) {
-                val layer = Layer(`in`.next(), `in`.nextInt(), `in`.nextInt(), `in`.nextInt(), `in`.nextInt(), `in`.nextInt(), `in`.nextInt().toDouble() / 1000000)
-                val tmp = JButton(layer.layerName)
-                tmp.addActionListener { loadLayer(layersFrame.btns.indexOf(tmp)) }
-                layersFrame.btns.add(tmp)
-                layersFrame.scrollPanel.add(tmp)
-                panel.layers.add(layer)
-            }
-            `in`.close()
-            layersFrame.scrollPanel.repaint()
-            layersFrame.scrollPane.revalidate()
-        } catch (ex: Exception) {
-            ex.printStackTrace()
+        layersFrame.scrollPanel.removeAll()
+        layersFrame.btns.clear()
+        for (layer in frame.layers) {
+            val tmp = JButton(layer.layerName)
+            tmp.addActionListener { loadLayer(layersFrame.btns.indexOf(tmp)) }
+            layersFrame.btns.add(tmp)
+            layersFrame.scrollPanel.add(tmp)
         }
+        layersFrame.scrollPanel.repaint()
+        layersFrame.scrollPane.revalidate()
 
     }
 
