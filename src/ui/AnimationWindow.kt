@@ -476,63 +476,75 @@ class AnimationWindow : JFrame() {
         })
         addMouseMotionListener(object : MouseMotionListener {
             override fun mouseMoved(e: MouseEvent) {
-                if (panel.curLayer != -1) {
-                    val layer = panel.layers[panel.curLayer]
-                    val scrW = panel.width
-                    val scrH = panel.height
-                    val range = Math.sqrt(sqr((layer.x * panel.zoom / 100 + scrW / 2 - e.x).toDouble()) + sqr(((layer.y + panel.centerY) * panel.zoom / 100 + scrH / 2 - e.y).toDouble())).toInt()
-                    if (range < Math.min(layer.scaledWidth, layer.scaledHeight) * panel.zoom / 200) {
-                        panel.cursor = Cursor(Cursor.MOVE_CURSOR)
+                if (animation.curFrame != -1) {
+                    val frame = animation.frames[animation.curFrame]
+                    if (frame.curLayer != -1) {
+                        val layer = frame.layers[frame.curLayer]
+                        val scrW = panel.width
+                        val scrH = panel.height
+                        val scaledWidth = layer.basicWidth * layer.scale * layer.scaleX
+                        val scaledHeight = layer.basicHeight * layer.scale * layer.scaleY
+                        val range = Math.sqrt(sqr((layer.x * panel.zoom / 100 + scrW / 2 - e.x).toDouble()) + sqr(((layer.y + panel.centerY) * panel.zoom / 100 + scrH / 2 - e.y).toDouble())).toInt()
+                        if (range < Math.min(scaledWidth, scaledHeight) * panel.zoom / 200) {
+                            panel.cursor = Cursor(Cursor.MOVE_CURSOR)
+                        } else {
+                            panel.cursor = Cursor(Cursor.N_RESIZE_CURSOR)
+                        }
                     } else {
-                        panel.cursor = Cursor(Cursor.N_RESIZE_CURSOR)
+                        panel.cursor = Cursor(Cursor.DEFAULT_CURSOR)
                     }
-                } else {
-                    panel.cursor = Cursor(Cursor.DEFAULT_CURSOR)
                 }
             }
 
             override fun mouseDragged(e: MouseEvent) {
-                if (panel.curLayer != -1) {
-                    val layer = panel.layers[panel.curLayer]
-                    val scrW = panel.width
-                    val scrH = panel.height
-                    if (isMoving) {
-                        layer.x = (e.x - scrW / 2) * 100 / panel.zoom - x1
-                        layer.y = (e.y - scrH / 2) * 100 / panel.zoom - panel.centerY + y1
-                    } else {
-                        val sy = ((layer.y + panel.centerY) * panel.zoom / 100 + scrH / 2 - e.y).toDouble()
-                        val sx = (e.x - layer.x * panel.zoom / 100 - scrW / 2).toDouble()
-                        if (Math.abs(sy) >= Math.abs(sx)) {
-                            if (sx > 0) {
-                                layer.rotationAngle = Math.atan(sy / sx)
-                            } else if (sx < 0) {
-                                layer.rotationAngle = Math.PI + Math.atan(sy / sx)
-                            } else if (sy > 0) {
-                                layer.rotationAngle = Math.PI / 2
-                            } else {
-                                layer.rotationAngle = -Math.PI / 2
-                            }
+                if (animation.curFrame != -1) {
+                    val frame = animation.frames[animation.curFrame]
+                    if (frame.curLayer != -1) {
+                        val layer = frame.layers[frame.curLayer]
+                        val scrW = panel.width
+                        val scrH = panel.height
+                        if (isMoving) {
+                            layer.x = (e.x - scrW / 2f) * 100f / panel.zoom - x1
+                            layer.y = (e.y - scrH / 2f) * 100f / panel.zoom - panel.centerY + y1
                         } else {
-                            if (sy != 0.0) {
-                                layer.rotationAngle = -Math.atan(sx / sy) - Math.PI / 2
-                                if (sy > 0) {
-                                    layer.rotationAngle += Math.PI
+                            val sy = ((layer.y + panel.centerY) * panel.zoom / 100 + scrH / 2 - e.y).toDouble()
+                            val sx = (e.x - layer.x * panel.zoom / 100 - scrW / 2).toDouble()
+                            if (Math.abs(sy) >= Math.abs(sx)) {
+                                if (sx > 0) {
+                                    layer.angle = Math.atan(sy / sx).toFloat()
+                                } else if (sx < 0) {
+                                    layer.angle = (Math.PI + Math.atan(sy / sx)).toFloat()
+                                } else if (sy > 0) {
+                                    layer.angle = (Math.PI / 2).toFloat()
+                                } else {
+                                    layer.angle = (- Math.PI / 2).toFloat()
                                 }
-                            } else if (sx > 0) {
-                                layer.rotationAngle = 0.0
                             } else {
-                                layer.rotationAngle = Math.PI
+                                if (sy != 0.0) {
+                                    layer.angle = (- Math.atan(sx / sy) - Math.PI / 2).toFloat()
+                                    if (sy > 0) {
+                                        layer.angle += Math.PI.toFloat()
+                                    }
+                                } else if (sx > 0) {
+                                    layer.angle = 0f
+                                } else {
+                                    layer.angle = Math.PI.toFloat()
+                                }
                             }
+                            val a = Math.toDegrees(layer.angle.toDouble())
                         }
-                        val a = Math.toDegrees(layer.rotationAngle)
                     }
                 }
             }
-        })
+        }
+        )
     }
 
+    /**
+     * —ериализует текущую анимацию и сохран€ет ее в файл
+     */
     private fun serialize() {
-        //TODO —ериализаци€
+        //—ериализаци€
         var fos = FileOutputStream("")
         if (animation is BodyAnimation) {
             fos = FileOutputStream("bodyanimations/" + animation.name + ".swanim")
@@ -548,47 +560,44 @@ class AnimationWindow : JFrame() {
 
     }
 
+    /**
+     * —оздает новую пустую анимацию через диалоговые окна и сохран€ет ее
+     */
     private fun createNewAnimation() {
-        //TODO выбор типа анимации (body or legs)
-        val animationName = JOptionPane.showInputDialog(this, "Enter the new animation's name (for example, Fireball)", "New animation", JOptionPane.PLAIN_MESSAGE).trim { it <= ' ' }
-        val framesKol = Integer.parseInt(JOptionPane.showInputDialog(this, "Input the number of frames", animationName, JOptionPane.PLAIN_MESSAGE).trim { it <= ' ' })
-        val animationsFolder = File("./animations")
-        if (!animationsFolder.exists()) {
-            animationsFolder.mkdir()
+        //выбор типа анимации (body or legs)
+        var newAnimation : Animation = BodyAnimation()
+        val typeChoice = JOptionPane.showOptionDialog(contentPane, "Choose animation's type", "New animation", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, arrayOf("Body animation", "Legs animation"), 0)
+        when (typeChoice) {
+            JOptionPane.YES_OPTION -> newAnimation = BodyAnimation()
+            JOptionPane.NO_OPTION -> newAnimation = LegsAnimation()
         }
 
-        //TODO инициализаци€ animation.data
+        newAnimation.name = JOptionPane.showInputDialog(this, "Enter the new animation's name (for example, Fireball)", "New animation", JOptionPane.PLAIN_MESSAGE).trim { it <= ' ' }
 
-        val moveDirectionsFolder = File("./animations/" + animationsFolder.list()!!.size + " " + animationName)
-        moveDirectionsFolder.mkdir()
-        for (moveDirection in 0..7) {
-            val weaponsFolder = File(moveDirectionsFolder.absolutePath + "/" + getMoveDirectionFolderName(moveDirection))
-            weaponsFolder.mkdir()
-            for (weaponID in 0..5) {
-                val framesFolder = File(weaponsFolder.absolutePath + "/" + getWeaponFolderName(weaponID))
-                framesFolder.mkdir()
-                for (frameID in 0 until framesKol) {
-                    val frame = File(framesFolder.absolutePath + "/" + "frame" + frameID + ".swanim")
-                    try {
-                        frame.createNewFile()
-                        val out = FileWriter(frame)
-                        out.write("0")
-                        out.close()
-                    } catch (ex: Exception) {
-                        ex.printStackTrace()
-                    }
-
+        //инициализаци€ animation.data
+        for (moveDirection in MoveDirection.values()) {
+            newAnimation.data[moveDirection] = HashMap()
+            if (newAnimation is LegsAnimation) {
+                // ≈сли LegsAnimation, то от оружи€ анимаци€ не зависит
+                val arr = ArrayList<Frame>()
+                for (weaponType in WeaponType.values()) {
+                    newAnimation.data[moveDirection]!![weaponType] = arr
+                }
+            }
+            else if (newAnimation is BodyAnimation){
+                // BodyAnimation разна€ дл€ разного оружи€
+                for (weaponType in WeaponType.values()) {
+                    newAnimation.data[moveDirection]!![weaponType] = ArrayList()
                 }
             }
         }
-        JOptionPane.showMessageDialog(this, "logic.Animation created!", "New animation", JOptionPane.PLAIN_MESSAGE)
+        serialize()
+        JOptionPane.showMessageDialog(this, "Animation created!", "New animation", JOptionPane.PLAIN_MESSAGE)
         val ans = JOptionPane.showOptionDialog(contentPane, "Welcome to Shattered World animation editor!", "Welcome!", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, arrayOf("Create new animation", "Load animation", "Exit editor"), 0)
-        if (ans == JOptionPane.YES_OPTION) {
-            createNewAnimation()
-        } else if (ans == JOptionPane.NO_OPTION) {
-            loadAnimation()
-        } else if (ans == JOptionPane.CANCEL_OPTION) {
-            System.exit(0)
+        when (ans) {
+            JOptionPane.YES_OPTION -> createNewAnimation()
+            JOptionPane.NO_OPTION -> loadAnimation()
+            JOptionPane.CANCEL_OPTION -> System.exit(0)
         }
     }
 
