@@ -1,8 +1,9 @@
 package logic
 
+import java.io.Serializable
 import java.lang.Exception
 
-enum class MoveDirection {
+enum class MoveDirection : Serializable{
     RIGHT,
     UP_RIGHT,
     UP,

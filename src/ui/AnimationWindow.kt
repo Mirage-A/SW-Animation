@@ -185,7 +185,7 @@ class AnimationWindow : JFrame() {
                 if (image.name.endsWith(".png")) {
                     val layer = Layer(image.name)
                     for (frame in animation.frames) {
-                        frame.layers.add(layer)
+                        frame.layers.add(Layer(layer))
                     }
                     val tmp = JButton(layer.layerName)
                     tmp.addActionListener { loadLayer(layersFrame.btns.indexOf(tmp)) }
@@ -313,7 +313,7 @@ class AnimationWindow : JFrame() {
             for (i in 0 until layersKol) {
                 newFrame.layers.add(Layer(animation.frames[0].layers[i]))
             }
-            val tmp = JButton("frame$layersKol")
+            val tmp = JButton("frame"+animation.frames.size)
             tmp.addActionListener {
                 if (animation.curFrame != -1) {
                     framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
@@ -323,6 +323,7 @@ class AnimationWindow : JFrame() {
                 loadFrame(animation.curFrame)
                 framesFrame.deleteFrameButton.isEnabled = true
             }
+            animation.frames.add(newFrame)
             framesFrame.btns.add(tmp)
             framesFrame.scrollPanel.add(tmp)
             framesFrame.scrollPanel.repaint()
@@ -554,14 +555,24 @@ class AnimationWindow : JFrame() {
      */
     private fun serialize() {
         //Сериализация
-        var fos = FileOutputStream("")
+        var path = ""
         if (animation is BodyAnimation) {
-            fos = FileOutputStream("bodyanimations/" + animation.name + ".swanim")
+            path = "bodyanimations/" + animation.name + ".swanim"
         }
         else if (animation is LegsAnimation) {
-            fos = FileOutputStream("legsanimations/" + animation.name + ".swanim")
+            path = "legsanimations/" + animation.name + ".swanim"
         }
         else throw Exception("Undefined type of animation")
+        val file = File(path)
+        if (!file.parentFile.exists()) {
+            println(file.parentFile.absolutePath)
+            file.parentFile.mkdir()
+        }
+        if (!file.exists()) {
+            println(file.absolutePath)
+            file.createNewFile()
+        }
+        var fos = FileOutputStream(path)
         val oos = ObjectOutputStream(fos)
         oos.writeObject(animation)
         oos.flush()
@@ -600,6 +611,7 @@ class AnimationWindow : JFrame() {
                 }
             }
         }
+        animation = newAnimation
         serialize()
         JOptionPane.showMessageDialog(this, "Animation created!", "New animation", JOptionPane.PLAIN_MESSAGE)
         val ans = JOptionPane.showOptionDialog(contentPane, "Welcome to Shattered World animation editor!", "Welcome!", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, arrayOf("Create new animation", "Load animation", "Exit editor"), 0)
@@ -655,10 +667,13 @@ class AnimationWindow : JFrame() {
                         framesFrame.scrollPanel.add(tmp)
                     }
                     framesFrame.scrollPane.revalidate()
-                    loadFrame(Integer.parseInt(file.name.substring(5, file.name.length - 7)))
-                    framesFrame.btns[Integer.parseInt(file.name.substring(5, file.name.length - 7))].font = layersFrame.selectedFont
+                    if (animation.curFrame != -1) {
+                        loadFrame(animation.curFrame)
+                        framesFrame.btns[animation.curFrame].font = layersFrame.selectedFont
+                    }
                 }
             } catch (ex: Exception) {
+                ex.printStackTrace()
                 JOptionPane.showMessageDialog(this, "Invalid file", "Error", JOptionPane.ERROR_MESSAGE)
                 loadAnimation()
             }
@@ -711,7 +726,7 @@ class AnimationWindow : JFrame() {
         }
         layersFrame.scrollPanel.repaint()
         layersFrame.scrollPane.revalidate()
-
+        panel.frame = frame
     }
 
     /**

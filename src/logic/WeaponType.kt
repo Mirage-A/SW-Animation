@@ -1,8 +1,9 @@
 package logic
 
+import java.io.Serializable
 import java.lang.Exception
 
-enum class WeaponType {
+enum class WeaponType : Serializable{
     ONE_HANDED,
     ONE_HANDED_AND_SHIELD,
     DUAL,

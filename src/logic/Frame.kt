@@ -1,6 +1,8 @@
 package logic
 
-class Frame() {
+import java.io.Serializable
+
+class Frame() : Serializable{
     var layers : ArrayList<Layer> = ArrayList()
     var curLayer : Int = -1
 

@@ -51,12 +51,15 @@ class Panel : JPanel() {
         val layers = frame!!.layers
         for (i in layers.indices) {
             val layer = layers[i]
+            if (layer.basicImage == null) {
+                layer.loadImage()
+            }
             val scaledWidth = layer.basicWidth * layer.scale * layer.scaleX
             val scaledHeight = layer.basicHeight * layer.scale * layer.scaleY
             val at = AffineTransform.getTranslateInstance(((layer.x - scaledWidth / 2) * zoom / 100 + scrW / 2).toDouble(), ((layer.y - scaledHeight / 2 + centerY) * zoom / 100 + scrH / 2).toDouble())
             at.rotate(-layer.angle.toDouble(), (scaledWidth / 2 * zoom / 100).toDouble(), (scaledHeight / 2 * zoom / 100).toDouble())
             val g2d = gr as Graphics2D
-            g2d.drawImage(layer.basicImage.getScaledInstance(Math.round(scaledWidth * zoom / 100), Math.round(scaledHeight * zoom / 100), Image.SCALE_SMOOTH), at, null)
+            g2d.drawImage(layer.basicImage!!.getScaledInstance(Math.round(scaledWidth * zoom / 100), Math.round(scaledHeight * zoom / 100), Image.SCALE_SMOOTH), at, null)
         }
         gr.color = Color.BLACK
         gr.drawLine(scrW / 2, 0, scrW / 2, scrH)
