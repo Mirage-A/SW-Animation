@@ -11,9 +11,7 @@ import java.awt.event.MouseMotionListener
 import java.awt.event.WindowEvent
 import java.awt.event.WindowListener
 import java.io.*
-import java.nio.file.Files
 import java.util.ArrayList
-import java.util.Scanner
 
 import javax.imageio.ImageIO
 import javax.swing.*
@@ -398,7 +396,6 @@ class AnimationWindow : JFrame() {
                 val frame = animation.frames[animation.curFrame]
                 if (frame.curLayer != -1) {
                     if (frame.curLayer < frame.layers.size - 1) {
-                        val layers = frame.layers
                         val btns = layersFrame.btns
                         layersFrame.btns = ArrayList()
 
@@ -643,14 +640,11 @@ class AnimationWindow : JFrame() {
                             val sy = ((layer.y + panel.centerY) * panel.zoom / 100 + scrH / 2 - e.y).toDouble()
                             val sx = (e.x - layer.x * panel.zoom / 100 - scrW / 2).toDouble()
                             if (Math.abs(sy) >= Math.abs(sx)) {
-                                if (sx > 0) {
-                                    layer.angle = Math.atan(sy / sx).toFloat()
-                                } else if (sx < 0) {
-                                    layer.angle = (Math.PI + Math.atan(sy / sx)).toFloat()
-                                } else if (sy > 0) {
-                                    layer.angle = (Math.PI / 2).toFloat()
-                                } else {
-                                    layer.angle = (- Math.PI / 2).toFloat()
+                                when (true) {
+                                    (sx > 0) -> layer.angle = Math.atan(sy / sx).toFloat()
+                                    (sx < 0) -> layer.angle = (Math.PI + Math.atan(sy / sx)).toFloat()
+                                    (sy > 0) -> layer.angle = (Math.PI / 2).toFloat()
+                                    else -> layer.angle = (- Math.PI / 2).toFloat()
                                 }
                             } else {
                                 if (sy != 0.0) {
@@ -664,7 +658,6 @@ class AnimationWindow : JFrame() {
                                     layer.angle = Math.PI.toFloat()
                                 }
                             }
-                            val a = Math.toDegrees(layer.angle.toDouble())
                         }
                     }
                 }
@@ -683,15 +676,12 @@ class AnimationWindow : JFrame() {
      * Сериализует текущую анимацию и сохраняет ее в файл
      */
     private fun serialize() {
-        //Сериализация
-        var path = ""
-        if (animation is BodyAnimation) {
-            path = "bodyanimations/" + animation.name + ".swanim"
+        val path = when (animation) {
+            is BodyAnimation -> "bodyanimations/" + animation.name + ".swanim"
+            is LegsAnimation -> "legsanimations/" + animation.name + ".swanim"
+            else -> throw Exception("Undefined type of animation")
         }
-        else if (animation is LegsAnimation) {
-            path = "legsanimations/" + animation.name + ".swanim"
-        }
-        else throw Exception("Undefined type of animation")
+
         val file = File(path)
         if (!file.parentFile.exists()) {
             file.parentFile.mkdir()
@@ -699,7 +689,7 @@ class AnimationWindow : JFrame() {
         if (!file.exists()) {
             file.createNewFile()
         }
-        var fos = FileOutputStream(path)
+        val fos = FileOutputStream(path)
         val oos = ObjectOutputStream(fos)
         oos.writeObject(animation)
         oos.flush()
@@ -828,7 +818,6 @@ class AnimationWindow : JFrame() {
         layersFrame.downLayerButton.isEnabled = true
 
         val layer = animation.frames[animation.curFrame].layers[layerID]
-        //TODO Возможно, это случайно вызывает valueChanged(), но это не точно
         slidersFrame.sizeSlider.value = Math.round(layer.scale * 100)
         slidersFrame.widthSlider.value = Math.round(layer.scaleX * 100)
         slidersFrame.heightSlider.value = Math.round(layer.scaleY * 100)
@@ -875,7 +864,7 @@ class AnimationWindow : JFrame() {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            val mainFrame = AnimationWindow()
+            AnimationWindow()
         }
     }
 }
