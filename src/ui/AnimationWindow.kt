@@ -673,7 +673,7 @@ class AnimationWindow : JFrame() {
     }
 
     /**
-     * Сериализует текущую анимацию и сохраняет ее в файл
+     * РЎРµСЂРёР°Р»РёР·СѓРµС‚ С‚РµРєСѓС‰СѓСЋ Р°РЅРёРјР°С†РёСЋ Рё СЃРѕС…СЂР°РЅСЏРµС‚ РµРµ РІ С„Р°Р№Р»
      */
     private fun serialize() {
         val path = when (animation) {
@@ -698,10 +698,10 @@ class AnimationWindow : JFrame() {
     }
 
     /**
-     * Создает новую пустую анимацию через диалоговые окна и сохраняет ее
+     * РЎРѕР·РґР°РµС‚ РЅРѕРІСѓСЋ РїСѓСЃС‚СѓСЋ Р°РЅРёРјР°С†РёСЋ С‡РµСЂРµР· РґРёР°Р»РѕРіРѕРІС‹Рµ РѕРєРЅР° Рё СЃРѕС…СЂР°РЅСЏРµС‚ РµРµ
      */
     private fun createNewAnimation() {
-        //выбор типа анимации (body or legs)
+        //РІС‹Р±РѕСЂ С‚РёРїР° Р°РЅРёРјР°С†РёРё (body or legs)
         var newAnimation : Animation = BodyAnimation()
         val typeChoice = JOptionPane.showOptionDialog(contentPane, "Choose animation's type", "New animation", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, arrayOf("Body animation", "Legs animation"), 0)
         when (typeChoice) {
@@ -711,18 +711,18 @@ class AnimationWindow : JFrame() {
 
         newAnimation.name = JOptionPane.showInputDialog(this, "Enter the new animation's name (for example, Fireball)", "New animation", JOptionPane.PLAIN_MESSAGE).trim { it <= ' ' }
 
-        //инициализация animation.data
+        //РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ animation.data
         for (moveDirection in MoveDirection.values()) {
             newAnimation.data[moveDirection] = HashMap()
             if (newAnimation is LegsAnimation) {
-                // Если LegsAnimation, то от оружия анимация не зависит
+                // Р•СЃР»Рё LegsAnimation, С‚Рѕ РѕС‚ РѕСЂСѓР¶РёСЏ Р°РЅРёРјР°С†РёСЏ РЅРµ Р·Р°РІРёСЃРёС‚
                 val arr = ArrayList<Frame>()
                 for (weaponType in WeaponType.values()) {
                     newAnimation.data[moveDirection]!![weaponType] = arr
                 }
             }
             else if (newAnimation is BodyAnimation){
-                // BodyAnimation разная для разного оружия
+                // BodyAnimation СЂР°Р·РЅР°СЏ РґР»СЏ СЂР°Р·РЅРѕРіРѕ РѕСЂСѓР¶РёСЏ
                 for (weaponType in WeaponType.values()) {
                     newAnimation.data[moveDirection]!![weaponType] = ArrayList()
                 }
@@ -740,7 +740,7 @@ class AnimationWindow : JFrame() {
     }
 
     /**
-     * Открывает окно выбора анимации, десереализует и загружает выбранную анимацию
+     * РћС‚РєСЂС‹РІР°РµС‚ РѕРєРЅРѕ РІС‹Р±РѕСЂР° Р°РЅРёРјР°С†РёРё, РґРµСЃРµСЂРµР°Р»РёР·СѓРµС‚ Рё Р·Р°РіСЂСѓР¶Р°РµС‚ РІС‹Р±СЂР°РЅРЅСѓСЋ Р°РЅРёРјР°С†РёСЋ
      */
     private fun loadAnimation() {
         val fc = JFileChooser("./")
@@ -804,7 +804,7 @@ class AnimationWindow : JFrame() {
     }
 
     /**
-     * Переключает активный слой
+     * РџРµСЂРµРєР»СЋС‡Р°РµС‚ Р°РєС‚РёРІРЅС‹Р№ СЃР»РѕР№
      */
     private fun loadLayer(layerID: Int) {
         if (animation.frames[animation.curFrame].curLayer != -1) {
@@ -825,7 +825,7 @@ class AnimationWindow : JFrame() {
     }
 
     /**
-     * Переключает активный кадр
+     * РџРµСЂРµРєР»СЋС‡Р°РµС‚ Р°РєС‚РёРІРЅС‹Р№ РєР°РґСЂ
      */
     private fun loadFrame(frameID: Int) {
         slidersFrame.isVisible = false
@@ -851,7 +851,7 @@ class AnimationWindow : JFrame() {
     }
 
     /**
-     * Создает отраженную копию всех кадров для соотвествующего moveDirection-а
+     * РЎРѕР·РґР°РµС‚ РѕС‚СЂР°Р¶РµРЅРЅСѓСЋ РєРѕРїРёСЋ РІСЃРµС… РєР°РґСЂРѕРІ РґР»СЏ СЃРѕРѕС‚РІРµСЃС‚РІСѓСЋС‰РµРіРѕ moveDirection-Р°
      */
     private fun mirrorAnimation() {
         val mirroredMD = animation.curMoveDirection.mirrored()
