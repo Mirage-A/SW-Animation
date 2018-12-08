@@ -26,24 +26,32 @@ class AnimationWindow : JFrame() {
     private var isMoving = false
     private var x1: Int = 0
     private var y1: Int = 0
-    private var animTimer: Timer
-    private val animDelay = 1000
+    private var animTimer: Timer = Timer(1, {})
     private var mdList = ArrayList<JCheckBox>()
     private var wtList = ArrayList<JCheckBox>()
+    private var repeat: JCheckBox = JCheckBox()
+    private var anim : JButton = JButton()
 
     private var animation : Animation = BodyAnimation()
 
     init {
-        animTimer = Timer(animDelay, ActionListener {
+        animTimer = Timer(1000, ActionListener {
             if (animation.frames.size != 0) {
-                animation.curFrame++
-                if (animation.curFrame >= animation.frames.size || animation.curFrame == -1) {
-                    animation.curFrame = 0
+                if (animation.curFrame >= animation.frames.size - 1 && !animation.isRepeatable) {
+                    setCurFrame(animation.frames.size - 1)
+                    panel.repaint()
+                    animTimer.stop()
+                    anim.text = "Start animation"
+                    isPlayingAnimation = false
                 }
-                loadFrame(animation.curFrame)
-                framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
-                panel.repaint()
-                framesFrame.btns[animation.curFrame].font = layersFrame.selectedFont
+                else {
+                    if (animation.curFrame >= animation.frames.size - 1) {
+                        setCurFrame(0)
+                    }
+                    else {
+                        setCurFrame(animation.curFrame + 1)
+                    }
+                }
             }
         })
         title = "Animation editor"
@@ -71,42 +79,20 @@ class AnimationWindow : JFrame() {
         zoomSlider.isVisible = true
         panel.add(zoomSlider)
 
-        val secanim = JCheckBox("Animation lasts 1 sec")
-        secanim.setBounds(zoomSlider.x, zoomSlider.y + zoomSlider.height + 2, zoomSlider.width, zoomSlider.height)
-        secanim.addActionListener {
-            if (isPlayingAnimation) {
-                if (secanim.isSelected) {
-                    animTimer.delay = animDelay / animation.frames.size
-                } else {
-                    animTimer.delay = 40
-                }
-            }
-        }
-        secanim.isVisible = true
-        panel.add(secanim)
 
-
-        val anim = JButton("Start animation")
-        anim.setBounds(secanim.x, secanim.y + secanim.height + 2, secanim.width, secanim.height)
+        anim = JButton("Start animation")
+        anim.setBounds(zoomSlider.x, zoomSlider.y + zoomSlider.height + 2, zoomSlider.width, zoomSlider.height)
         anim.addActionListener {
             if (!isPlayingAnimation) {
                 panel.t.stop()
                 anim.text = "Stop animation"
-                if (secanim.isSelected) {
-                    animTimer.delay = animDelay / animation.frames.size
-                } else {
-                    animTimer.delay = 40
-                }
+                setCurFrame(0)
+                animTimer.delay = animation.duration / animation.frames.size
                 animTimer.restart()
             } else {
                 animTimer.stop()
                 anim.text = "Start animation"
-                if (animation.curFrame != -1) {
-                    framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
-                }
-                animation.curFrame = 0
-                framesFrame.btns[0].font = layersFrame.selectedFont
-                loadFrame(animation.curFrame)
+                setCurFrame(0)
                 panel.t.restart()
             }
             isPlayingAnimation = !isPlayingAnimation
@@ -124,6 +110,34 @@ class AnimationWindow : JFrame() {
         reverse.isVisible = true
         panel.add(reverse)
 
+        val changeDuration = JButton("Animation duration")
+        changeDuration.setBounds(reverse.x, reverse.y + reverse.height + 4, reverse.width, reverse.height)
+        changeDuration.addActionListener {
+            val input = JOptionPane.showInputDialog(null, "Input new animation duration here to change it\nFor repeatable animations, duration means period\n(Input 1000 to set duration to 1 sec)\nCurrent value : " + animation.duration + " ms", animation.duration)
+            try {
+                val newDuration = Integer.parseInt(input)
+                if (newDuration > 0) {
+                    animation.duration = newDuration
+                }
+                else {
+                    JOptionPane.showMessageDialog(null, "Duration can't be less or equal 0")
+                }
+            }
+            catch(ex : Exception) {
+                JOptionPane.showMessageDialog(null, "Incorrect input")
+            }
+        }
+        changeDuration.isVisible = true
+        panel.add(changeDuration)
+
+        repeat = JCheckBox("Repeatable")
+        repeat.isSelected = false
+        repeat.setBounds(changeDuration.x, changeDuration.y + changeDuration.height + 4, changeDuration.width, changeDuration.height)
+        repeat.addChangeListener {
+            animation.isRepeatable = repeat.isSelected
+        }
+        repeat.isVisible = true
+        panel.add(repeat)
 
         val moveDirectionText = JTextField("Move direction:")
         moveDirectionText.run {
@@ -131,7 +145,7 @@ class AnimationWindow : JFrame() {
             horizontalAlignment = JTextField.CENTER
             font = layersFrame.selectedFont
             isEditable = false
-            setBounds(reverse.x, reverse.y + reverse.height + 4, reverse.width, reverse.height)
+            setBounds(repeat.x, repeat.y + repeat.height + 4, repeat.width, repeat.height)
             isVisible = true
         }
         panel.add(moveDirectionText)
@@ -154,7 +168,7 @@ class AnimationWindow : JFrame() {
                     framesFrame.scrollPanel.repaint()
                     framesFrame.scrollPane.revalidate()
                     slidersFrame.isVisible = false
-                    animation.curFrame = -1
+                    setCurFrame(-1)
                     layersFrame.newLayerButton.isEnabled = true
                     layersFrame.deleteLayerButton.isEnabled = false
                     layersFrame.renameLayerButton.isEnabled = false
@@ -168,19 +182,14 @@ class AnimationWindow : JFrame() {
                     for (i in animation.frames.indices) {
                         val tmp = JButton("frame$i")
                         tmp.addActionListener {
-                            if (animation.curFrame != -1) {
-                                framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
-                            }
-                            animation.curFrame = Integer.parseInt(tmp.text.substring(5))
-                            tmp.font = layersFrame.selectedFont
-                            loadFrame(animation.curFrame)
+                            setCurFrame(Integer.parseInt(tmp.text.substring(5)))
                             framesFrame.deleteFrameButton.isEnabled = true
                         }
                         framesFrame.btns.add(tmp)
                         framesFrame.scrollPanel.add(tmp)
                     }
                     framesFrame.scrollPane.revalidate()
-                    animation.curFrame = -1
+                    setCurFrame(-1)
                     panel.frame = null
                 }
                 else {
@@ -221,7 +230,7 @@ class AnimationWindow : JFrame() {
                     framesFrame.scrollPanel.repaint()
                     framesFrame.scrollPane.revalidate()
                     slidersFrame.isVisible = false
-                    animation.curFrame = -1
+                    setCurFrame(-1)
                     layersFrame.newLayerButton.isEnabled = true
                     layersFrame.deleteLayerButton.isEnabled = false
                     layersFrame.renameLayerButton.isEnabled = false
@@ -235,19 +244,14 @@ class AnimationWindow : JFrame() {
                     for (i in animation.frames.indices) {
                         val tmp = JButton("frame$i")
                         tmp.addActionListener {
-                            if (animation.curFrame != -1) {
-                                framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
-                            }
-                            animation.curFrame = Integer.parseInt(tmp.text.substring(5))
-                            tmp.font = layersFrame.selectedFont
-                            loadFrame(animation.curFrame)
+                            setCurFrame(Integer.parseInt(tmp.text.substring(5)))
                             framesFrame.deleteFrameButton.isEnabled = true
                         }
                         framesFrame.btns.add(tmp)
                         framesFrame.scrollPanel.add(tmp)
                     }
                     framesFrame.scrollPane.revalidate()
-                    animation.curFrame = -1
+                    setCurFrame(-1)
                     panel.frame = null
                 }
                 else {
@@ -437,12 +441,7 @@ class AnimationWindow : JFrame() {
             }
             val tmp = JButton("frame"+animation.frames.size)
             tmp.addActionListener {
-                if (animation.curFrame != -1) {
-                    framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
-                }
-                animation.curFrame = Integer.parseInt(tmp.text.substring(5))
-                tmp.font = layersFrame.selectedFont
-                loadFrame(animation.curFrame)
+                setCurFrame(Integer.parseInt(tmp.text.substring(5)))
                 framesFrame.deleteFrameButton.isEnabled = true
             }
             animation.frames.add(newFrame)
@@ -455,12 +454,7 @@ class AnimationWindow : JFrame() {
             if (animation.curFrame != -1) {
                 val tmp = JButton("frame" + (animation.frames.size))
                 tmp.addActionListener {
-                    if (animation.curFrame != -1) {
-                        framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
-                    }
-                    animation.curFrame = Integer.parseInt(tmp.text.substring(5))
-                    tmp.font = layersFrame.selectedFont
-                    loadFrame(animation.curFrame)
+                    setCurFrame(Integer.parseInt(tmp.text.substring(5)))
                     framesFrame.deleteFrameButton.isEnabled = true
                 }
                 framesFrame.btns.add(tmp)
@@ -481,7 +475,7 @@ class AnimationWindow : JFrame() {
                 framesFrame.btns.removeAt(framesFrame.btns.size - 1)
                 framesFrame.scrollPanel.repaint()
                 framesFrame.scrollPane.revalidate()
-                animation.curFrame = -1
+                setCurFrame(-1)
                 layersFrame.btns.clear()
                 layersFrame.scrollPanel.removeAll()
                 layersFrame.scrollPane.revalidate()
@@ -507,36 +501,7 @@ class AnimationWindow : JFrame() {
 
             if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                 JOptionPane.showMessageDialog(null, "Copying frames is unavailable in this version")
-                //TODO
-                /*val file = fc.selectedFile
-                if (file.name.endsWith(".swanim")) {
-                    val frame = File(framesFolder.absolutePath + "/" + "frame" + framesFolder.list()!!.size + ".swanim")
-                    try {
-                        saveFrame()
-                        frame.createNewFile()
-                        val out = FileWriter(frame)
-                        out.write(String(Files.readAllBytes(file.toPath())))
-                        out.close()
-                        val tmp = JButton("frame" + (framesFolder.list()!!.size - 1))
-                        tmp.addActionListener {
-                            saveFrame()
-                            if (curFrame != -1) {
-                                framesFrame.btns[curFrame].font = layersFrame.basicFont
-                            }
-                            curFrame = Integer.parseInt(tmp.text.substring(5))
-                            tmp.font = layersFrame.selectedFont
-                            loadFrame(curFrame)
-                            framesFrame.deleteFrameButton.isEnabled = true
-                        }
-                        framesFrame.btns.add(tmp)
-                        framesFrame.scrollPanel.add(tmp)
-                        framesFrame.scrollPanel.repaint()
-                        framesFrame.scrollPane.revalidate()
-                    } catch (ex: Exception) {
-                        ex.printStackTrace()
-                    }
-
-                }*/
+                //TODO копирование кадров
             }
         }
         slidersFrame.sizeSlider.addChangeListener {
@@ -771,12 +736,7 @@ class AnimationWindow : JFrame() {
                     for (i in animation.frames.indices) {
                         val tmp = JButton("frame$i")
                         tmp.addActionListener {
-                            if (animation.curFrame != -1) {
-                                framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
-                            }
-                            animation.curFrame = Integer.parseInt(tmp.text.substring(5))
-                            tmp.font = layersFrame.selectedFont
-                            loadFrame(animation.curFrame)
+                            setCurFrame(Integer.parseInt(tmp.text.substring(5)))
                             framesFrame.deleteFrameButton.isEnabled = true
                         }
                         framesFrame.btns.add(tmp)
@@ -790,9 +750,9 @@ class AnimationWindow : JFrame() {
                         cb.isSelected = (cb.text.equals(animation.curWeaponType.toString()))
                     }
                     if (animation.curFrame != -1) {
-                        loadFrame(animation.curFrame)
-                        framesFrame.btns[animation.curFrame].font = layersFrame.selectedFont
+                        setCurFrame(animation.curFrame)
                     }
+                    repeat.isSelected = animation.isRepeatable
                 }
             } catch (ex: Exception) {
                 ex.printStackTrace()
@@ -829,7 +789,6 @@ class AnimationWindow : JFrame() {
      */
     private fun loadFrame(frameID: Int) {
         slidersFrame.isVisible = false
-        animation.curFrame = frameID
         val frame = animation.frames[frameID]
         frame.curLayer = -1
         layersFrame.newLayerButton.isEnabled = true
@@ -848,6 +807,7 @@ class AnimationWindow : JFrame() {
         layersFrame.scrollPanel.repaint()
         layersFrame.scrollPane.revalidate()
         panel.frame = frame
+        panel.repaint()
     }
 
     /**
@@ -873,6 +833,20 @@ class AnimationWindow : JFrame() {
             }
 
         }
+    }
+
+    /**
+     * Переключает кадр, обновляет кнопочки и перерисовывает экран
+     */
+    private fun setCurFrame(frameID : Int) {
+        if (animation.curFrame != -1) {
+            framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
+        }
+        animation.curFrame = frameID
+        if (animation.curFrame != -1) {
+            framesFrame.btns[animation.curFrame].font = layersFrame.selectedFont
+        }
+        loadFrame(frameID)
     }
 
     private fun sqr(a: Double): Double {
