@@ -854,7 +854,25 @@ class AnimationWindow : JFrame() {
      * Создает отраженную копию всех кадров для соотвествующего moveDirection-а
      */
     private fun mirrorAnimation() {
-        // TODO
+        val mirroredMD = animation.curMoveDirection.mirrored()
+        if (mirroredMD == animation.curMoveDirection) {
+            JOptionPane.showMessageDialog(null, "This move direction can't be mirrored")
+        }
+        else {
+            var mirroredFrames = animation.data[mirroredMD]!![animation.curWeaponType]!!
+            mirroredFrames.clear()
+            var curFrames = animation.data[animation.curMoveDirection]!![animation.curWeaponType]!!
+            for (frame in curFrames) {
+                mirroredFrames.add(Frame(frame))
+            }
+            for (mFrame in mirroredFrames) {
+                for (mLayer in mFrame.layers) {
+                    mLayer.x *= -1
+                    mLayer.angle *= -1
+                }
+            }
+
+        }
     }
 
     private fun sqr(a: Double): Double {

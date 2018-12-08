@@ -25,6 +25,20 @@ enum class MoveDirection : Serializable{
             DOWN_RIGHT -> "DOWN_RIGHT"
         }
     }
+
+    fun mirrored() : MoveDirection {
+        return when (this) {
+            RIGHT -> LEFT
+            UP_RIGHT -> UP_LEFT
+            UP -> UP
+            UP_LEFT -> UP_RIGHT
+            LEFT -> RIGHT
+            DOWN_LEFT -> DOWN_RIGHT
+            DOWN -> DOWN
+            DOWN_RIGHT -> DOWN_LEFT
+        }
+    }
+
     companion object {
         fun fromString(str: String) : MoveDirection {
             return when (str) {
