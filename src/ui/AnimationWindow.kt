@@ -31,19 +31,22 @@ class AnimationWindow : JFrame() {
     private var animTimer: Timer
     private val animDelay = 1000
     private var mdList = ArrayList<JCheckBox>()
+    private var wtList = ArrayList<JCheckBox>()
 
     private var animation : Animation = BodyAnimation()
 
     init {
         animTimer = Timer(animDelay, ActionListener {
-            loadFrame(animation.curFrame)
-            framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
-            panel.repaint()
-            animation.curFrame++
-            if (animation.curFrame >= animation.frames!!.size) {
-                animation.curFrame = 0
+            if (animation.frames.size != 0) {
+                animation.curFrame++
+                if (animation.curFrame >= animation.frames.size || animation.curFrame == -1) {
+                    animation.curFrame = 0
+                }
+                loadFrame(animation.curFrame)
+                framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
+                panel.repaint()
+                framesFrame.btns[animation.curFrame].font = layersFrame.selectedFont
             }
-            framesFrame.btns[animation.curFrame].font = layersFrame.selectedFont
         })
         title = "Animation editor"
         size = Toolkit.getDefaultToolkit().screenSize
@@ -187,6 +190,73 @@ class AnimationWindow : JFrame() {
                 }
             }
             mdList.add(cb)
+            cb.isVisible = true
+            panel.add(cb)
+        }
+
+        val weaponTypeText = JTextField("Weapon type:")
+        weaponTypeText.run {
+            isOpaque = false
+            horizontalAlignment = JTextField.CENTER
+            font = layersFrame.selectedFont
+            isEditable = false
+            setBounds(mdList[mdList.size-1].x, mdList[mdList.size-1].y + mdList[mdList.size-1].height + 4, mdList[mdList.size-1].width, mdList[mdList.size-1].height)
+            isVisible = true
+        }
+        panel.add(weaponTypeText)
+
+
+        for (wt in WeaponType.values()) {
+            val cb = JCheckBox(wt.toString())
+            cb.setBounds(anim.x, weaponTypeText.y + (anim.height + 4) * (wtList.size + 1) + 4, anim.width, anim.height)
+            cb.addActionListener {
+                if (cb.isSelected) {
+                    for (checkbox in wtList) {
+                        if (checkbox != cb) {
+                            checkbox.isSelected = false
+                        }
+                    }
+                    animation.curWeaponType = WeaponType.fromString(cb.text)
+                    animation.frames = animation.data[animation.curMoveDirection]!![animation.curWeaponType]!!
+                    framesFrame.btns.clear()
+                    framesFrame.scrollPanel.removeAll()
+                    framesFrame.scrollPanel.repaint()
+                    framesFrame.scrollPane.revalidate()
+                    slidersFrame.isVisible = false
+                    animation.curFrame = -1
+                    layersFrame.newLayerButton.isEnabled = true
+                    layersFrame.deleteLayerButton.isEnabled = false
+                    layersFrame.renameLayerButton.isEnabled = false
+                    layersFrame.upLayerButton.isEnabled = false
+                    layersFrame.downLayerButton.isEnabled = false
+                    layersFrame.scrollPanel.removeAll()
+                    layersFrame.btns.clear()
+                    layersFrame.scrollPanel.repaint()
+                    layersFrame.scrollPane.revalidate()
+                    panel.frame = null
+                    for (i in animation.frames.indices) {
+                        val tmp = JButton("frame$i")
+                        tmp.addActionListener {
+                            if (animation.curFrame != -1) {
+                                framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
+                            }
+                            animation.curFrame = Integer.parseInt(tmp.text.substring(5))
+                            tmp.font = layersFrame.selectedFont
+                            loadFrame(animation.curFrame)
+                            framesFrame.deleteFrameButton.isEnabled = true
+                        }
+                        framesFrame.btns.add(tmp)
+                        framesFrame.scrollPanel.add(tmp)
+                    }
+                    framesFrame.scrollPane.revalidate()
+                    animation.curFrame = -1
+                    panel.frame = null
+                }
+                else {
+                    cb.isSelected = true
+                }
+            }
+            wtList.add(cb)
             cb.isVisible = true
             panel.add(cb)
         }
@@ -360,7 +430,6 @@ class AnimationWindow : JFrame() {
             }
         }
         framesFrame.newFrameButton.addActionListener {
-            print("new frame " + animation.frames.size)
             val newFrame = Frame()
             var layersKol = 0
             if (animation.frames.isNotEmpty()) {
@@ -387,8 +456,7 @@ class AnimationWindow : JFrame() {
         }
         framesFrame.copyLastFrameButton.addActionListener {
             if (animation.curFrame != -1) {
-                println("copy frame " + animation.curFrame)
-                val tmp = JButton("frame" + (animation.frames.size - 1))
+                val tmp = JButton("frame" + (animation.frames.size))
                 tmp.addActionListener {
                     if (animation.curFrame != -1) {
                         framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
@@ -407,7 +475,6 @@ class AnimationWindow : JFrame() {
         }
         framesFrame.deleteFrameButton.addActionListener {
             if (JOptionPane.showConfirmDialog(framesFrame, "Delete the frame " + animation.curFrame + "?", "Delete frame", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.YES_OPTION) {
-                println("delete frame " + animation.curFrame)
                 if (animation.curFrame != -1) {
                     framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
                 }
@@ -443,9 +510,9 @@ class AnimationWindow : JFrame() {
 
             if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                 JOptionPane.showMessageDialog(null, "Copying frames is unavailable in this version")
+                //TODO
                 /*val file = fc.selectedFile
                 if (file.name.endsWith(".swanim")) {
-                    println("copy frame " + file.name)
                     val frame = File(framesFolder.absolutePath + "/" + "frame" + framesFolder.list()!!.size + ".swanim")
                     try {
                         saveFrame()
@@ -627,11 +694,9 @@ class AnimationWindow : JFrame() {
         else throw Exception("Undefined type of animation")
         val file = File(path)
         if (!file.parentFile.exists()) {
-            println(file.parentFile.absolutePath)
             file.parentFile.mkdir()
         }
         if (!file.exists()) {
-            println(file.absolutePath)
             file.createNewFile()
         }
         var fos = FileOutputStream(path)
@@ -710,7 +775,6 @@ class AnimationWindow : JFrame() {
                     val oin = ObjectInputStream(fis)
                     val obj = oin.readObject()
                     animation = obj as Animation
-                    println(animation.javaClass.name)
                     animation.frames = animation.data[animation.curMoveDirection]!![animation.curWeaponType]!!
                     framesFrame.btns.clear()
                     framesFrame.scrollPanel.removeAll()
@@ -730,10 +794,11 @@ class AnimationWindow : JFrame() {
                     }
                     framesFrame.scrollPane.revalidate()
                     for (cb in mdList) {
-                        println(cb.text)
                         cb.isSelected = (cb.text.equals(animation.curMoveDirection.toString()))
                     }
-
+                    for (cb in wtList) {
+                        cb.isSelected = (cb.text.equals(animation.curWeaponType.toString()))
+                    }
                     if (animation.curFrame != -1) {
                         loadFrame(animation.curFrame)
                         framesFrame.btns[animation.curFrame].font = layersFrame.selectedFont
