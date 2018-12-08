@@ -11,19 +11,10 @@ import java.awt.event.MouseMotionListener
 import java.awt.event.WindowEvent
 import java.awt.event.WindowListener
 import java.io.*
-import java.nio.file.Files
 import java.util.ArrayList
-import java.util.Scanner
 
 import javax.imageio.ImageIO
-import javax.swing.JButton
-import javax.swing.JCheckBox
-import javax.swing.JFileChooser
-import javax.swing.JFrame
-import javax.swing.JOptionPane
-import javax.swing.JSlider
-import javax.swing.Timer
-import javax.swing.WindowConstants
+import javax.swing.*
 import javax.swing.filechooser.FileFilter
 
 class AnimationWindow : JFrame() {
@@ -37,19 +28,23 @@ class AnimationWindow : JFrame() {
     private var y1: Int = 0
     private var animTimer: Timer
     private val animDelay = 1000
+    private var mdList = ArrayList<JCheckBox>()
+    private var wtList = ArrayList<JCheckBox>()
 
     private var animation : Animation = BodyAnimation()
 
     init {
         animTimer = Timer(animDelay, ActionListener {
-            loadFrame(animation.curFrame)
-            framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
-            panel.repaint()
-            animation.curFrame++
-            if (animation.curFrame >= animation.frames!!.size) {
-                animation.curFrame = 0
+            if (animation.frames.size != 0) {
+                animation.curFrame++
+                if (animation.curFrame >= animation.frames.size || animation.curFrame == -1) {
+                    animation.curFrame = 0
+                }
+                loadFrame(animation.curFrame)
+                framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
+                panel.repaint()
+                framesFrame.btns[animation.curFrame].font = layersFrame.selectedFont
             }
-            framesFrame.btns[animation.curFrame].font = layersFrame.selectedFont
         })
         title = "Animation editor"
         size = Toolkit.getDefaultToolkit().screenSize
@@ -129,6 +124,141 @@ class AnimationWindow : JFrame() {
         reverse.isVisible = true
         panel.add(reverse)
 
+
+        val moveDirectionText = JTextField("Move direction:")
+        moveDirectionText.run {
+            isOpaque = false
+            horizontalAlignment = JTextField.CENTER
+            font = layersFrame.selectedFont
+            isEditable = false
+            setBounds(reverse.x, reverse.y + reverse.height + 4, reverse.width, reverse.height)
+            isVisible = true
+        }
+        panel.add(moveDirectionText)
+
+
+        for (md in MoveDirection.values()) {
+            val cb = JCheckBox(md.toString())
+            cb.setBounds(anim.x, moveDirectionText.y + (anim.height + 4) * (mdList.size + 1) + 4, anim.width, anim.height)
+            cb.addActionListener {
+                if (cb.isSelected) {
+                    for (checkbox in mdList) {
+                        if (checkbox != cb) {
+                            checkbox.isSelected = false
+                        }
+                    }
+                    animation.curMoveDirection = MoveDirection.fromString(cb.text)
+                    animation.frames = animation.data[animation.curMoveDirection]!![animation.curWeaponType]!!
+                    framesFrame.btns.clear()
+                    framesFrame.scrollPanel.removeAll()
+                    framesFrame.scrollPanel.repaint()
+                    framesFrame.scrollPane.revalidate()
+                    slidersFrame.isVisible = false
+                    animation.curFrame = -1
+                    layersFrame.newLayerButton.isEnabled = true
+                    layersFrame.deleteLayerButton.isEnabled = false
+                    layersFrame.renameLayerButton.isEnabled = false
+                    layersFrame.upLayerButton.isEnabled = false
+                    layersFrame.downLayerButton.isEnabled = false
+                    layersFrame.scrollPanel.removeAll()
+                    layersFrame.btns.clear()
+                    layersFrame.scrollPanel.repaint()
+                    layersFrame.scrollPane.revalidate()
+                    panel.frame = null
+                    for (i in animation.frames.indices) {
+                        val tmp = JButton("frame$i")
+                        tmp.addActionListener {
+                            if (animation.curFrame != -1) {
+                                framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
+                            }
+                            animation.curFrame = Integer.parseInt(tmp.text.substring(5))
+                            tmp.font = layersFrame.selectedFont
+                            loadFrame(animation.curFrame)
+                            framesFrame.deleteFrameButton.isEnabled = true
+                        }
+                        framesFrame.btns.add(tmp)
+                        framesFrame.scrollPanel.add(tmp)
+                    }
+                    framesFrame.scrollPane.revalidate()
+                    animation.curFrame = -1
+                    panel.frame = null
+                }
+                else {
+                    cb.isSelected = true
+                }
+            }
+            mdList.add(cb)
+            cb.isVisible = true
+            panel.add(cb)
+        }
+
+        val weaponTypeText = JTextField("Weapon type:")
+        weaponTypeText.run {
+            isOpaque = false
+            horizontalAlignment = JTextField.CENTER
+            font = layersFrame.selectedFont
+            isEditable = false
+            setBounds(mdList[mdList.size-1].x, mdList[mdList.size-1].y + mdList[mdList.size-1].height + 4, mdList[mdList.size-1].width, mdList[mdList.size-1].height)
+            isVisible = true
+        }
+        panel.add(weaponTypeText)
+
+
+        for (wt in WeaponType.values()) {
+            val cb = JCheckBox(wt.toString())
+            cb.setBounds(anim.x, weaponTypeText.y + (anim.height + 4) * (wtList.size + 1) + 4, anim.width, anim.height)
+            cb.addActionListener {
+                if (cb.isSelected) {
+                    for (checkbox in wtList) {
+                        if (checkbox != cb) {
+                            checkbox.isSelected = false
+                        }
+                    }
+                    animation.curWeaponType = WeaponType.fromString(cb.text)
+                    animation.frames = animation.data[animation.curMoveDirection]!![animation.curWeaponType]!!
+                    framesFrame.btns.clear()
+                    framesFrame.scrollPanel.removeAll()
+                    framesFrame.scrollPanel.repaint()
+                    framesFrame.scrollPane.revalidate()
+                    slidersFrame.isVisible = false
+                    animation.curFrame = -1
+                    layersFrame.newLayerButton.isEnabled = true
+                    layersFrame.deleteLayerButton.isEnabled = false
+                    layersFrame.renameLayerButton.isEnabled = false
+                    layersFrame.upLayerButton.isEnabled = false
+                    layersFrame.downLayerButton.isEnabled = false
+                    layersFrame.scrollPanel.removeAll()
+                    layersFrame.btns.clear()
+                    layersFrame.scrollPanel.repaint()
+                    layersFrame.scrollPane.revalidate()
+                    panel.frame = null
+                    for (i in animation.frames.indices) {
+                        val tmp = JButton("frame$i")
+                        tmp.addActionListener {
+                            if (animation.curFrame != -1) {
+                                framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
+                            }
+                            animation.curFrame = Integer.parseInt(tmp.text.substring(5))
+                            tmp.font = layersFrame.selectedFont
+                            loadFrame(animation.curFrame)
+                            framesFrame.deleteFrameButton.isEnabled = true
+                        }
+                        framesFrame.btns.add(tmp)
+                        framesFrame.scrollPanel.add(tmp)
+                    }
+                    framesFrame.scrollPane.revalidate()
+                    animation.curFrame = -1
+                    panel.frame = null
+                }
+                else {
+                    cb.isSelected = true
+                }
+            }
+            wtList.add(cb)
+            cb.isVisible = true
+            panel.add(cb)
+        }
+
         addWindowListener(object : WindowListener {
             override fun windowOpened(e: WindowEvent) {}
             override fun windowIconified(e: WindowEvent) {}
@@ -153,12 +283,6 @@ class AnimationWindow : JFrame() {
         layersFrame = LayersFrame()
         framesFrame = FramesFrame()
         slidersFrame = SlidersFrame()
-        val ans = JOptionPane.showOptionDialog(contentPane, "Welcome to Shattered World animation editor!", "Welcome!", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, arrayOf("Create new animation", "Load animation", "Exit editor"), 0)
-        when (ans) {
-            JOptionPane.YES_OPTION -> createNewAnimation()
-            JOptionPane.NO_OPTION -> loadAnimation()
-            JOptionPane.CANCEL_OPTION -> System.exit(0)
-        }
         val screen = Toolkit.getDefaultToolkit().screenSize
         layersFrame.setLocation(screen.width - layersFrame.width - 20, screen.height - layersFrame.height - 60)
         layersFrame.isVisible = true
@@ -272,7 +396,6 @@ class AnimationWindow : JFrame() {
                 val frame = animation.frames[animation.curFrame]
                 if (frame.curLayer != -1) {
                     if (frame.curLayer < frame.layers.size - 1) {
-                        val layers = frame.layers
                         val btns = layersFrame.btns
                         layersFrame.btns = ArrayList()
 
@@ -304,7 +427,6 @@ class AnimationWindow : JFrame() {
             }
         }
         framesFrame.newFrameButton.addActionListener {
-            print("new frame " + animation.frames.size)
             val newFrame = Frame()
             var layersKol = 0
             if (animation.frames.isNotEmpty()) {
@@ -331,8 +453,7 @@ class AnimationWindow : JFrame() {
         }
         framesFrame.copyLastFrameButton.addActionListener {
             if (animation.curFrame != -1) {
-                println("copy frame " + animation.curFrame)
-                val tmp = JButton("frame" + (animation.frames.size - 1))
+                val tmp = JButton("frame" + (animation.frames.size))
                 tmp.addActionListener {
                     if (animation.curFrame != -1) {
                         framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
@@ -351,7 +472,6 @@ class AnimationWindow : JFrame() {
         }
         framesFrame.deleteFrameButton.addActionListener {
             if (JOptionPane.showConfirmDialog(framesFrame, "Delete the frame " + animation.curFrame + "?", "Delete frame", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.YES_OPTION) {
-                println("delete frame " + animation.curFrame)
                 if (animation.curFrame != -1) {
                     framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
                 }
@@ -387,9 +507,9 @@ class AnimationWindow : JFrame() {
 
             if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                 JOptionPane.showMessageDialog(null, "Copying frames is unavailable in this version")
+                //TODO
                 /*val file = fc.selectedFile
                 if (file.name.endsWith(".swanim")) {
-                    println("copy frame " + file.name)
                     val frame = File(framesFolder.absolutePath + "/" + "frame" + framesFolder.list()!!.size + ".swanim")
                     try {
                         saveFrame()
@@ -520,14 +640,11 @@ class AnimationWindow : JFrame() {
                             val sy = ((layer.y + panel.centerY) * panel.zoom / 100 + scrH / 2 - e.y).toDouble()
                             val sx = (e.x - layer.x * panel.zoom / 100 - scrW / 2).toDouble()
                             if (Math.abs(sy) >= Math.abs(sx)) {
-                                if (sx > 0) {
-                                    layer.angle = Math.atan(sy / sx).toFloat()
-                                } else if (sx < 0) {
-                                    layer.angle = (Math.PI + Math.atan(sy / sx)).toFloat()
-                                } else if (sy > 0) {
-                                    layer.angle = (Math.PI / 2).toFloat()
-                                } else {
-                                    layer.angle = (- Math.PI / 2).toFloat()
+                                when (true) {
+                                    (sx > 0) -> layer.angle = Math.atan(sy / sx).toFloat()
+                                    (sx < 0) -> layer.angle = (Math.PI + Math.atan(sy / sx)).toFloat()
+                                    (sy > 0) -> layer.angle = (Math.PI / 2).toFloat()
+                                    else -> layer.angle = (- Math.PI / 2).toFloat()
                                 }
                             } else {
                                 if (sy != 0.0) {
@@ -541,38 +658,38 @@ class AnimationWindow : JFrame() {
                                     layer.angle = Math.PI.toFloat()
                                 }
                             }
-                            val a = Math.toDegrees(layer.angle.toDouble())
                         }
                     }
                 }
             }
         }
         )
+        val ans = JOptionPane.showOptionDialog(contentPane, "Welcome to Shattered World animation editor!", "Welcome!", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, arrayOf("Create new animation", "Load animation", "Exit editor"), 0)
+        when (ans) {
+            JOptionPane.YES_OPTION -> createNewAnimation()
+            JOptionPane.NO_OPTION -> loadAnimation()
+            JOptionPane.CANCEL_OPTION -> System.exit(0)
+        }
     }
 
     /**
      * Сериализует текущую анимацию и сохраняет ее в файл
      */
     private fun serialize() {
-        //Сериализация
-        var path = ""
-        if (animation is BodyAnimation) {
-            path = "bodyanimations/" + animation.name + ".swanim"
+        val path = when (animation) {
+            is BodyAnimation -> "bodyanimations/" + animation.name + ".swanim"
+            is LegsAnimation -> "legsanimations/" + animation.name + ".swanim"
+            else -> throw Exception("Undefined type of animation")
         }
-        else if (animation is LegsAnimation) {
-            path = "legsanimations/" + animation.name + ".swanim"
-        }
-        else throw Exception("Undefined type of animation")
+
         val file = File(path)
         if (!file.parentFile.exists()) {
-            println(file.parentFile.absolutePath)
             file.parentFile.mkdir()
         }
         if (!file.exists()) {
-            println(file.absolutePath)
             file.createNewFile()
         }
-        var fos = FileOutputStream(path)
+        val fos = FileOutputStream(path)
         val oos = ObjectOutputStream(fos)
         oos.writeObject(animation)
         oos.flush()
@@ -648,8 +765,7 @@ class AnimationWindow : JFrame() {
                     val oin = ObjectInputStream(fis)
                     val obj = oin.readObject()
                     animation = obj as Animation
-                    println(animation.javaClass.name)
-                    animation.frames = animation.data[MoveDirection.DOWN]!![WeaponType.ONE_HANDED]!!
+                    animation.frames = animation.data[animation.curMoveDirection]!![animation.curWeaponType]!!
                     framesFrame.btns.clear()
                     framesFrame.scrollPanel.removeAll()
                     for (i in animation.frames.indices) {
@@ -667,6 +783,12 @@ class AnimationWindow : JFrame() {
                         framesFrame.scrollPanel.add(tmp)
                     }
                     framesFrame.scrollPane.revalidate()
+                    for (cb in mdList) {
+                        cb.isSelected = (cb.text.equals(animation.curMoveDirection.toString()))
+                    }
+                    for (cb in wtList) {
+                        cb.isSelected = (cb.text.equals(animation.curWeaponType.toString()))
+                    }
                     if (animation.curFrame != -1) {
                         loadFrame(animation.curFrame)
                         framesFrame.btns[animation.curFrame].font = layersFrame.selectedFont
@@ -696,7 +818,6 @@ class AnimationWindow : JFrame() {
         layersFrame.downLayerButton.isEnabled = true
 
         val layer = animation.frames[animation.curFrame].layers[layerID]
-        //TODO Возможно, это случайно вызывает valueChanged(), но это не точно
         slidersFrame.sizeSlider.value = Math.round(layer.scale * 100)
         slidersFrame.widthSlider.value = Math.round(layer.scaleX * 100)
         slidersFrame.heightSlider.value = Math.round(layer.scaleY * 100)
@@ -733,7 +854,25 @@ class AnimationWindow : JFrame() {
      * Создает отраженную копию всех кадров для соотвествующего moveDirection-а
      */
     private fun mirrorAnimation() {
-        // TODO
+        val mirroredMD = animation.curMoveDirection.mirrored()
+        if (mirroredMD == animation.curMoveDirection) {
+            JOptionPane.showMessageDialog(null, "This move direction can't be mirrored")
+        }
+        else {
+            var mirroredFrames = animation.data[mirroredMD]!![animation.curWeaponType]!!
+            mirroredFrames.clear()
+            var curFrames = animation.data[animation.curMoveDirection]!![animation.curWeaponType]!!
+            for (frame in curFrames) {
+                mirroredFrames.add(Frame(frame))
+            }
+            for (mFrame in mirroredFrames) {
+                for (mLayer in mFrame.layers) {
+                    mLayer.x *= -1
+                    mLayer.angle *= -1
+                }
+            }
+
+        }
     }
 
     private fun sqr(a: Double): Double {
@@ -743,7 +882,7 @@ class AnimationWindow : JFrame() {
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            val mainFrame = AnimationWindow()
+            AnimationWindow()
         }
     }
 }

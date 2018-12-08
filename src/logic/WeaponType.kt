@@ -21,16 +21,17 @@ enum class WeaponType : Serializable{
             STAFF -> "STAFF"
         }
     }
-
-    fun fromString(str: String) : WeaponType {
-        return when (str) {
-            "ONE_HANDED" -> ONE_HANDED
-            "ONE_HANDED_AND_SHIELD" -> ONE_HANDED_AND_SHIELD
-            "DUAL" -> DUAL
-            "TWO_HANDED" -> TWO_HANDED
-            "BOW" -> BOW
-            "STAFF" -> STAFF
-            else -> throw Exception("Incorrect weapon type: $str")
+    companion object {
+        fun fromString(str: String) : WeaponType {
+            return when (str) {
+                "ONE_HANDED" -> ONE_HANDED
+                "ONE_HANDED_AND_SHIELD" -> ONE_HANDED_AND_SHIELD
+                "DUAL" -> DUAL
+                "TWO_HANDED" -> TWO_HANDED
+                "BOW" -> BOW
+                "STAFF" -> STAFF
+                else -> throw Exception("Incorrect weapon type: $str")
+            }
         }
     }
 }
