@@ -25,18 +25,19 @@ enum class MoveDirection : Serializable{
             DOWN_RIGHT -> "DOWN_RIGHT"
         }
     }
-
-    fun fromString(str: String) : MoveDirection {
-        return when (str) {
-            "RIGHT" -> RIGHT
-            "UP_RIGHT" -> UP_RIGHT
-            "UP" -> UP
-            "UP_LEFT" -> UP_LEFT
-            "LEFT" -> LEFT
-            "DOWN_LEFT" -> DOWN_LEFT
-            "DOWN" -> DOWN
-            "DOWN_RIGHT" -> DOWN_RIGHT
-            else -> throw Exception("Incorrect move direction: $str")
+    companion object {
+        fun fromString(str: String) : MoveDirection {
+            return when (str) {
+                "RIGHT" -> RIGHT
+                "UP_RIGHT" -> UP_RIGHT
+                "UP" -> UP
+                "UP_LEFT" -> UP_LEFT
+                "LEFT" -> LEFT
+                "DOWN_LEFT" -> DOWN_LEFT
+                "DOWN" -> DOWN
+                "DOWN_RIGHT" -> DOWN_RIGHT
+                else -> throw Exception("Incorrect move direction: $str")
+            }
         }
     }
 }

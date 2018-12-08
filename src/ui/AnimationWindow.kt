@@ -16,14 +16,7 @@ import java.util.ArrayList
 import java.util.Scanner
 
 import javax.imageio.ImageIO
-import javax.swing.JButton
-import javax.swing.JCheckBox
-import javax.swing.JFileChooser
-import javax.swing.JFrame
-import javax.swing.JOptionPane
-import javax.swing.JSlider
-import javax.swing.Timer
-import javax.swing.WindowConstants
+import javax.swing.*
 import javax.swing.filechooser.FileFilter
 
 class AnimationWindow : JFrame() {
@@ -37,6 +30,7 @@ class AnimationWindow : JFrame() {
     private var y1: Int = 0
     private var animTimer: Timer
     private val animDelay = 1000
+    private var mdList = ArrayList<JCheckBox>()
 
     private var animation : Animation = BodyAnimation()
 
@@ -129,6 +123,74 @@ class AnimationWindow : JFrame() {
         reverse.isVisible = true
         panel.add(reverse)
 
+
+        val moveDirectionText = JTextField("Move direction:")
+        moveDirectionText.run {
+            isOpaque = false
+            horizontalAlignment = JTextField.CENTER
+            font = layersFrame.selectedFont
+            isEditable = false
+            setBounds(reverse.x, reverse.y + reverse.height + 4, reverse.width, reverse.height)
+            isVisible = true
+        }
+        panel.add(moveDirectionText)
+
+
+        for (md in MoveDirection.values()) {
+            val cb = JCheckBox(md.toString())
+            cb.setBounds(anim.x, moveDirectionText.y + (anim.height + 4) * (mdList.size + 1) + 4, anim.width, anim.height)
+            cb.addActionListener {
+                if (cb.isSelected) {
+                    for (checkbox in mdList) {
+                        if (checkbox != cb) {
+                            checkbox.isSelected = false
+                        }
+                    }
+                    animation.curMoveDirection = MoveDirection.fromString(cb.text)
+                    animation.frames = animation.data[animation.curMoveDirection]!![animation.curWeaponType]!!
+                    framesFrame.btns.clear()
+                    framesFrame.scrollPanel.removeAll()
+                    framesFrame.scrollPanel.repaint()
+                    framesFrame.scrollPane.revalidate()
+                    slidersFrame.isVisible = false
+                    animation.curFrame = -1
+                    layersFrame.newLayerButton.isEnabled = true
+                    layersFrame.deleteLayerButton.isEnabled = false
+                    layersFrame.renameLayerButton.isEnabled = false
+                    layersFrame.upLayerButton.isEnabled = false
+                    layersFrame.downLayerButton.isEnabled = false
+                    layersFrame.scrollPanel.removeAll()
+                    layersFrame.btns.clear()
+                    layersFrame.scrollPanel.repaint()
+                    layersFrame.scrollPane.revalidate()
+                    panel.frame = null
+                    for (i in animation.frames.indices) {
+                        val tmp = JButton("frame$i")
+                        tmp.addActionListener {
+                            if (animation.curFrame != -1) {
+                                framesFrame.btns[animation.curFrame].font = layersFrame.basicFont
+                            }
+                            animation.curFrame = Integer.parseInt(tmp.text.substring(5))
+                            tmp.font = layersFrame.selectedFont
+                            loadFrame(animation.curFrame)
+                            framesFrame.deleteFrameButton.isEnabled = true
+                        }
+                        framesFrame.btns.add(tmp)
+                        framesFrame.scrollPanel.add(tmp)
+                    }
+                    framesFrame.scrollPane.revalidate()
+                    animation.curFrame = -1
+                    panel.frame = null
+                }
+                else {
+                    cb.isSelected = true
+                }
+            }
+            mdList.add(cb)
+            cb.isVisible = true
+            panel.add(cb)
+        }
+
         addWindowListener(object : WindowListener {
             override fun windowOpened(e: WindowEvent) {}
             override fun windowIconified(e: WindowEvent) {}
@@ -153,12 +215,6 @@ class AnimationWindow : JFrame() {
         layersFrame = LayersFrame()
         framesFrame = FramesFrame()
         slidersFrame = SlidersFrame()
-        val ans = JOptionPane.showOptionDialog(contentPane, "Welcome to Shattered World animation editor!", "Welcome!", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, arrayOf("Create new animation", "Load animation", "Exit editor"), 0)
-        when (ans) {
-            JOptionPane.YES_OPTION -> createNewAnimation()
-            JOptionPane.NO_OPTION -> loadAnimation()
-            JOptionPane.CANCEL_OPTION -> System.exit(0)
-        }
         val screen = Toolkit.getDefaultToolkit().screenSize
         layersFrame.setLocation(screen.width - layersFrame.width - 20, screen.height - layersFrame.height - 60)
         layersFrame.isVisible = true
@@ -548,6 +604,12 @@ class AnimationWindow : JFrame() {
             }
         }
         )
+        val ans = JOptionPane.showOptionDialog(contentPane, "Welcome to Shattered World animation editor!", "Welcome!", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, arrayOf("Create new animation", "Load animation", "Exit editor"), 0)
+        when (ans) {
+            JOptionPane.YES_OPTION -> createNewAnimation()
+            JOptionPane.NO_OPTION -> loadAnimation()
+            JOptionPane.CANCEL_OPTION -> System.exit(0)
+        }
     }
 
     /**
@@ -649,7 +711,7 @@ class AnimationWindow : JFrame() {
                     val obj = oin.readObject()
                     animation = obj as Animation
                     println(animation.javaClass.name)
-                    animation.frames = animation.data[MoveDirection.DOWN]!![WeaponType.ONE_HANDED]!!
+                    animation.frames = animation.data[animation.curMoveDirection]!![animation.curWeaponType]!!
                     framesFrame.btns.clear()
                     framesFrame.scrollPanel.removeAll()
                     for (i in animation.frames.indices) {
@@ -667,6 +729,11 @@ class AnimationWindow : JFrame() {
                         framesFrame.scrollPanel.add(tmp)
                     }
                     framesFrame.scrollPane.revalidate()
+                    for (cb in mdList) {
+                        println(cb.text)
+                        cb.isSelected = (cb.text.equals(animation.curMoveDirection.toString()))
+                    }
+
                     if (animation.curFrame != -1) {
                         loadFrame(animation.curFrame)
                         framesFrame.btns[animation.curFrame].font = layersFrame.selectedFont
