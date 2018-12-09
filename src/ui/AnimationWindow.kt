@@ -31,6 +31,11 @@ class AnimationWindow : JFrame() {
     private var wtList = ArrayList<JCheckBox>()
     private var repeat: JCheckBox = JCheckBox()
     private var anim : JButton = JButton()
+    private var exitBtn : JButton = JButton()
+    private var openAnotherAnimationBtn : JButton = JButton()
+    private var newAnimationBtn : JButton = JButton()
+    private var saveBtn : JButton = JButton()
+    private var animationNameText : JTextField = JTextField()
 
     private var animation : Animation = BodyAnimation()
 
@@ -52,11 +57,80 @@ class AnimationWindow : JFrame() {
                 }
             }
         })
+        extendedState = JFrame.MAXIMIZED_BOTH
+        isUndecorated = true
         title = "Animation editor"
         size = Toolkit.getDefaultToolkit().screenSize
         panel = Panel()
         contentPane.add(panel)
         defaultCloseOperation = WindowConstants.DO_NOTHING_ON_CLOSE
+
+        // Кнопка выхода из редактора
+        exitBtn = JButton("Save and exit")
+        exitBtn.setBounds(width - 160 - 10, 10, 160, 24)
+        exitBtn.addActionListener {
+            checkExit()
+        }
+        exitBtn.isVisible = true
+        panel.add(exitBtn)
+
+        //Кнопка генерации кода
+        val generateCodeBtn = JButton("Generate code")
+        generateCodeBtn.setBounds(exitBtn.x, exitBtn.y + exitBtn.height + 4, exitBtn.width, exitBtn.height)
+        generateCodeBtn.addActionListener {
+            if (JOptionPane.showConfirmDialog(null, "Do you want to generate source code file for Shattered World game?\nIf such file already exists, it will be overwritten.", "Code generation", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.YES_OPTION) {
+                CodeGenerator.generate()
+            }
+        }
+        generateCodeBtn.isVisible = true
+        panel.add(generateCodeBtn)
+
+        // Кнопка загрузки другой анимации
+        openAnotherAnimationBtn = JButton("Open animation")
+        openAnotherAnimationBtn.run {
+            setBounds(generateCodeBtn.x, generateCodeBtn.y + generateCodeBtn.height + 4, generateCodeBtn.width, generateCodeBtn.height)
+            addActionListener {
+                loadAnimation()
+            }
+            isVisible = true
+        }
+        panel.add(openAnotherAnimationBtn)
+
+        // Кнопка создания новой анимации
+        newAnimationBtn = JButton("New animation")
+        newAnimationBtn.run {
+            setBounds(exitBtn.x, openAnotherAnimationBtn.y + openAnotherAnimationBtn.height + 4, openAnotherAnimationBtn.width, openAnotherAnimationBtn.height)
+            addActionListener {
+                createNewAnimation()
+            }
+            isVisible = true
+        }
+        panel.add(newAnimationBtn)
+
+        // Кнопка сохранения
+        saveBtn = JButton("Save animation")
+        saveBtn.run {
+            setBounds(newAnimationBtn.x, newAnimationBtn.y + newAnimationBtn.height + 4, newAnimationBtn.width, newAnimationBtn.height)
+            addActionListener {
+                serialize()
+            }
+            isVisible = true
+        }
+        panel.add(saveBtn)
+
+        // Текст с названием и типом анимации
+        animationNameText = JTextField("No animation loaded")
+        animationNameText.run {
+            setBounds(saveBtn.x, saveBtn.y + saveBtn.height + 4, saveBtn.width, saveBtn.height)
+            isOpaque = false
+            horizontalAlignment = JTextField.CENTER
+            font = layersFrame.selectedFont
+            isEditable = false
+            isVisible = true
+        }
+        panel.add(animationNameText)
+
+
 
         // Чекбокс, который переключает отображение изображения игрока на фоне
         val player = JCheckBox("Show shape")
@@ -273,15 +347,7 @@ class AnimationWindow : JFrame() {
             override fun windowDeiconified(e: WindowEvent) {}
             override fun windowDeactivated(e: WindowEvent) {}
             override fun windowClosing(e: WindowEvent) {
-                val ans = JOptionPane.showOptionDialog(contentPane, "What do you want to do?", "Exit", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, arrayOf("Open another animation", "Continue work", "Save and exit"), 0)
-                if (ans == JOptionPane.YES_OPTION) {
-                    serialize()
-                    loadAnimation()
-                } else if (ans == JOptionPane.CANCEL_OPTION) {
-                    serialize()
-                    System.exit(0)
-                }
-
+                checkExit()
             }
 
             override fun windowClosed(e: WindowEvent) {}
@@ -703,23 +769,35 @@ class AnimationWindow : JFrame() {
                 JOptionPane.showMessageDialog(null, "Incorrect input")
             } else {
                 newAnimation.name = inputName.trim { it <= ' ' }
-
-                for (moveDirection in MoveDirection.values()) {
-                    newAnimation.data[moveDirection] = HashMap()
-                    if (newAnimation is LegsAnimation) {
-                        val arr = ArrayList<Frame>()
-                        for (weaponType in WeaponType.values()) {
-                            newAnimation.data[moveDirection]!![weaponType] = arr
-                        }
-                    } else if (newAnimation is BodyAnimation) {
-                        for (weaponType in WeaponType.values()) {
-                            newAnimation.data[moveDirection]!![weaponType] = ArrayList()
+                var path = "./"
+                if (newAnimation is BodyAnimation) {
+                    path += "bodyanimations/"
+                }
+                if (newAnimation is LegsAnimation) {
+                    path += "legsanimations/"
+                }
+                path += newAnimation.name + ".swanim"
+                if (File(path).exists()) {
+                    JOptionPane.showMessageDialog(null, "Animation with this name already exists")
+                }
+                else {
+                    for (moveDirection in MoveDirection.values()) {
+                        newAnimation.data[moveDirection] = HashMap()
+                        if (newAnimation is LegsAnimation) {
+                            val arr = ArrayList<Frame>()
+                            for (weaponType in WeaponType.values()) {
+                                newAnimation.data[moveDirection]!![weaponType] = arr
+                            }
+                        } else if (newAnimation is BodyAnimation) {
+                            for (weaponType in WeaponType.values()) {
+                                newAnimation.data[moveDirection]!![weaponType] = ArrayList()
+                            }
                         }
                     }
+                    animation = newAnimation
+                    serialize()
+                    JOptionPane.showMessageDialog(this, "Animation created!", "New animation", JOptionPane.PLAIN_MESSAGE)
                 }
-                animation = newAnimation
-                serialize()
-                JOptionPane.showMessageDialog(this, "Animation created!", "New animation", JOptionPane.PLAIN_MESSAGE)
             }
         }
     }
@@ -774,6 +852,15 @@ class AnimationWindow : JFrame() {
                         setCurFrame(animation.curFrame)
                     }
                     repeat.isSelected = animation.isRepeatable
+                    if (animation is LegsAnimation) {
+                        animationNameText.text = "Legs: " + animation.name
+                    }
+                    else if (animation is BodyAnimation) {
+                        animationNameText.text = "Body: " + animation.name
+                    }
+                    else {
+                        animationNameText.text = "Unidentified type"
+                    }
                     return true
                 }
                 else {
@@ -899,7 +986,7 @@ class AnimationWindow : JFrame() {
      * Показывает стартовое окно с возможностью создать новую анимацию, загрузить существующую или выйти из редактора
      */
     private fun showStartMessage() {
-        val ans = JOptionPane.showOptionDialog(contentPane, "Welcome to Shattered World animation editor!", "Welcome!", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, arrayOf("Create new animation", "Load animation", "Exit editor"), 0)
+        val ans = JOptionPane.showOptionDialog(contentPane, "Welcome to Shattered World Animation Editor!", "Welcome!", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, arrayOf("Create new animation", "Load animation", "Exit editor"), 0)
         when (ans) {
             JOptionPane.YES_OPTION -> {
                 createNewAnimation()
@@ -917,6 +1004,14 @@ class AnimationWindow : JFrame() {
 
     private fun sqr(a: Double): Double {
         return a * a
+    }
+
+    private fun checkExit() {
+        val ans = JOptionPane.showOptionDialog(contentPane, "Do you want to exit editor?\nAll you work will be saved.", "Exit", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, arrayOf("Save and exit", "Cancel"), 0)
+        if (ans == JOptionPane.YES_OPTION) {
+            serialize()
+            System.exit(0)
+        }
     }
 
     companion object {

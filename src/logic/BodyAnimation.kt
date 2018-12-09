@@ -1,4 +1,3 @@
 package logic
 
-class BodyAnimation : Animation() {
-}
+class BodyAnimation : Animation()
