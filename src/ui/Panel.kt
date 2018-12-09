@@ -28,6 +28,7 @@ class Panel : JPanel() {
     internal val centerY = 106 - 64
     internal val pointRadius = 4
     internal var t: Timer
+    internal var isPlayingAnimation = false
 
     init {
         layout = null
@@ -39,7 +40,7 @@ class Panel : JPanel() {
             ex.printStackTrace()
         }
 
-        t = Timer(50, ActionListener { repaint() })
+        t = Timer(1000 / 60, ActionListener { repaint() })
         t.start()
     }
 

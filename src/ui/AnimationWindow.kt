@@ -22,7 +22,6 @@ class AnimationWindow : JFrame() {
     private var layersFrame: LayersFrame = LayersFrame()
     private var framesFrame: FramesFrame = FramesFrame()
     private var slidersFrame: SlidersFrame = SlidersFrame()
-    private var isPlayingAnimation = false
     private var isMoving = false
     private var x1: Int = 0
     private var y1: Int = 0
@@ -40,23 +39,6 @@ class AnimationWindow : JFrame() {
     private var animation : Animation = BodyAnimation()
 
     init {
-        // Таймер перерисовки анимации
-        animTimer = Timer(1000, ActionListener {
-            if (animation.frames.size != 0) {
-                if (animation.curFrame >= animation.frames.size - 1 && !animation.isRepeatable) {
-                    setCurFrame(animation.frames.size - 1)
-                    stopAnimation()
-                }
-                else {
-                    if (animation.curFrame >= animation.frames.size - 1) {
-                        setCurFrame(0)
-                    }
-                    else {
-                        setCurFrame(animation.curFrame + 1)
-                    }
-                }
-            }
-        })
         extendedState = JFrame.MAXIMIZED_BOTH
         isUndecorated = true
         title = "Animation editor"
@@ -74,9 +56,31 @@ class AnimationWindow : JFrame() {
         exitBtn.isVisible = true
         panel.add(exitBtn)
 
+        //Кнопка изменения скорости перерисовки
+        val fpsBtn = JButton("FPS: 60")
+        fpsBtn.setBounds(exitBtn.x, exitBtn.y + exitBtn.height + 4, exitBtn.width, exitBtn.height)
+        fpsBtn.addActionListener {
+            val input = JOptionPane.showInputDialog(null, "Input maximum FPS for editor\nHigher values may lower performance\nThis setting only affects animation player in this editor\nDefault value : 60 FPS", 60)
+            try {
+                val newFPS = Integer.parseInt(input)
+                if (newFPS > 0) {
+                    fpsBtn.text = "FPS: $newFPS"
+                    panel.t.delay = 1000 / newFPS
+                }
+                else {
+                    JOptionPane.showMessageDialog(null, "FPS can't be less or equal 0")
+                }
+            }
+            catch(ex : Exception) {
+                JOptionPane.showMessageDialog(null, "Incorrect input")
+            }
+        }
+        fpsBtn.isVisible = true
+        panel.add(fpsBtn)
+
         //Кнопка генерации кода
         val generateCodeBtn = JButton("Generate code")
-        generateCodeBtn.setBounds(exitBtn.x, exitBtn.y + exitBtn.height + 4, exitBtn.width, exitBtn.height)
+        generateCodeBtn.setBounds(fpsBtn.x, fpsBtn.y + fpsBtn.height + 4, fpsBtn.width, fpsBtn.height)
         generateCodeBtn.addActionListener {
             if (JOptionPane.showConfirmDialog(null, "Do you want to generate source code file for Shattered World game?\nIf such file already exists, it will be overwritten.", "Code generation", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.YES_OPTION) {
                 CodeGenerator.generate()
@@ -159,7 +163,7 @@ class AnimationWindow : JFrame() {
         anim = JButton("Start animation")
         anim.setBounds(zoomSlider.x, zoomSlider.y + zoomSlider.height + 2, zoomSlider.width, zoomSlider.height)
         anim.addActionListener {
-            if (!isPlayingAnimation) {
+            if (!panel.isPlayingAnimation) {
                 startAnimation()
             } else {
                 stopAnimation()
@@ -968,7 +972,7 @@ class AnimationWindow : JFrame() {
         anim.text = "Stop animation"
         setCurFrame(0)
         animTimer.delay = animation.duration / animation.frames.size
-        isPlayingAnimation = true
+        panel.isPlayingAnimation = true
         animTimer.restart()
     }
 
@@ -978,7 +982,7 @@ class AnimationWindow : JFrame() {
     private fun stopAnimation() {
         animTimer.stop()
         anim.text = "Start animation"
-        isPlayingAnimation = false
+        panel.isPlayingAnimation = false
         panel.t.restart()
     }
 
