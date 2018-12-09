@@ -39,10 +39,7 @@ class AnimationWindow : JFrame() {
             if (animation.frames.size != 0) {
                 if (animation.curFrame >= animation.frames.size - 1 && !animation.isRepeatable) {
                     setCurFrame(animation.frames.size - 1)
-                    panel.repaint()
-                    animTimer.stop()
-                    anim.text = "Start animation"
-                    isPlayingAnimation = false
+                    stopAnimation()
                 }
                 else {
                     if (animation.curFrame >= animation.frames.size - 1) {
@@ -84,18 +81,10 @@ class AnimationWindow : JFrame() {
         anim.setBounds(zoomSlider.x, zoomSlider.y + zoomSlider.height + 2, zoomSlider.width, zoomSlider.height)
         anim.addActionListener {
             if (!isPlayingAnimation) {
-                panel.t.stop()
-                anim.text = "Stop animation"
-                setCurFrame(0)
-                animTimer.delay = animation.duration / animation.frames.size
-                animTimer.restart()
+                startAnimation()
             } else {
-                animTimer.stop()
-                anim.text = "Start animation"
-                setCurFrame(0)
-                panel.t.restart()
+                stopAnimation()
             }
-            isPlayingAnimation = !isPlayingAnimation
         }
         anim.isVisible = true
         panel.add(anim)
@@ -156,6 +145,7 @@ class AnimationWindow : JFrame() {
             cb.setBounds(anim.x, moveDirectionText.y + (anim.height + 4) * (mdList.size + 1) + 4, anim.width, anim.height)
             cb.addActionListener {
                 if (cb.isSelected) {
+                    stopAnimation()
                     for (checkbox in mdList) {
                         if (checkbox != cb) {
                             checkbox.isSelected = false
@@ -218,6 +208,7 @@ class AnimationWindow : JFrame() {
             cb.setBounds(anim.x, weaponTypeText.y + (anim.height + 4) * (wtList.size + 1) + 4, anim.width, anim.height)
             cb.addActionListener {
                 if (cb.isSelected) {
+                    stopAnimation()
                     for (checkbox in wtList) {
                         if (checkbox != cb) {
                             checkbox.isSelected = false
@@ -629,12 +620,7 @@ class AnimationWindow : JFrame() {
             }
         }
         )
-        val ans = JOptionPane.showOptionDialog(contentPane, "Welcome to Shattered World animation editor!", "Welcome!", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, arrayOf("Create new animation", "Load animation", "Exit editor"), 0)
-        when (ans) {
-            JOptionPane.YES_OPTION -> createNewAnimation()
-            JOptionPane.NO_OPTION -> loadAnimation()
-            JOptionPane.CANCEL_OPTION -> System.exit(0)
-        }
+        showStartMessage()
     }
 
     /**
@@ -666,48 +652,45 @@ class AnimationWindow : JFrame() {
      * Создает новую пустую анимацию через диалоговые окна и сохраняет ее
      */
     private fun createNewAnimation() {
-        //выбор типа анимации (body or legs)
-        var newAnimation : Animation = BodyAnimation()
+        var newAnimation : Animation? = null
         val typeChoice = JOptionPane.showOptionDialog(contentPane, "Choose animation's type", "New animation", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, arrayOf("Body animation", "Legs animation"), 0)
         when (typeChoice) {
             JOptionPane.YES_OPTION -> newAnimation = BodyAnimation()
             JOptionPane.NO_OPTION -> newAnimation = LegsAnimation()
         }
+        if (newAnimation != null) {
+            val inputName: String? = JOptionPane.showInputDialog(this, "Enter the new animation's name (for example, FIREBALL)", "New animation", JOptionPane.PLAIN_MESSAGE)
 
-        newAnimation.name = JOptionPane.showInputDialog(this, "Enter the new animation's name (for example, Fireball)", "New animation", JOptionPane.PLAIN_MESSAGE).trim { it <= ' ' }
+            if (inputName.isNullOrBlank()) {
+                JOptionPane.showMessageDialog(null, "Incorrect input")
+            } else {
+                newAnimation.name = inputName.trim { it <= ' ' }
 
-        //инициализация animation.data
-        for (moveDirection in MoveDirection.values()) {
-            newAnimation.data[moveDirection] = HashMap()
-            if (newAnimation is LegsAnimation) {
-                // Если LegsAnimation, то от оружия анимация не зависит
-                val arr = ArrayList<Frame>()
-                for (weaponType in WeaponType.values()) {
-                    newAnimation.data[moveDirection]!![weaponType] = arr
+                for (moveDirection in MoveDirection.values()) {
+                    newAnimation.data[moveDirection] = HashMap()
+                    if (newAnimation is LegsAnimation) {
+                        val arr = ArrayList<Frame>()
+                        for (weaponType in WeaponType.values()) {
+                            newAnimation.data[moveDirection]!![weaponType] = arr
+                        }
+                    } else if (newAnimation is BodyAnimation) {
+                        for (weaponType in WeaponType.values()) {
+                            newAnimation.data[moveDirection]!![weaponType] = ArrayList()
+                        }
+                    }
                 }
+                animation = newAnimation
+                serialize()
+                JOptionPane.showMessageDialog(this, "Animation created!", "New animation", JOptionPane.PLAIN_MESSAGE)
             }
-            else if (newAnimation is BodyAnimation){
-                // BodyAnimation разная для разного оружия
-                for (weaponType in WeaponType.values()) {
-                    newAnimation.data[moveDirection]!![weaponType] = ArrayList()
-                }
-            }
-        }
-        animation = newAnimation
-        serialize()
-        JOptionPane.showMessageDialog(this, "Animation created!", "New animation", JOptionPane.PLAIN_MESSAGE)
-        val ans = JOptionPane.showOptionDialog(contentPane, "Welcome to Shattered World animation editor!", "Welcome!", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, arrayOf("Create new animation", "Load animation", "Exit editor"), 0)
-        when (ans) {
-            JOptionPane.YES_OPTION -> createNewAnimation()
-            JOptionPane.NO_OPTION -> loadAnimation()
-            JOptionPane.CANCEL_OPTION -> System.exit(0)
         }
     }
 
     /**
      * Открывает окно выбора анимации, десереализует и загружает выбранную анимацию
+     * Возвращает true, если анимация успешно загружена, и false иначе
      */
-    private fun loadAnimation() {
+    private fun loadAnimation() : Boolean {
         val fc = JFileChooser("./")
         fc.addChoosableFileFilter(object : FileFilter() {
 
@@ -753,14 +736,17 @@ class AnimationWindow : JFrame() {
                         setCurFrame(animation.curFrame)
                     }
                     repeat.isSelected = animation.isRepeatable
+                    return true
+                }
+                else {
+                    JOptionPane.showMessageDialog(this, "Invalid file", "Error", JOptionPane.ERROR_MESSAGE)
                 }
             } catch (ex: Exception) {
                 ex.printStackTrace()
                 JOptionPane.showMessageDialog(this, "Invalid file", "Error", JOptionPane.ERROR_MESSAGE)
-                loadAnimation()
             }
-
         }
+        return false
     }
 
     /**
@@ -847,6 +833,39 @@ class AnimationWindow : JFrame() {
             framesFrame.btns[animation.curFrame].font = layersFrame.selectedFont
         }
         loadFrame(frameID)
+    }
+
+    private fun startAnimation() {
+        panel.t.stop()
+        anim.text = "Stop animation"
+        setCurFrame(0)
+        animTimer.delay = animation.duration / animation.frames.size
+        isPlayingAnimation = true
+        animTimer.restart()
+    }
+
+    private fun stopAnimation() {
+        animTimer.stop()
+        anim.text = "Start animation"
+        isPlayingAnimation = false
+        panel.t.restart()
+    }
+
+    private fun showStartMessage() {
+        val ans = JOptionPane.showOptionDialog(contentPane, "Welcome to Shattered World animation editor!", "Welcome!", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, arrayOf("Create new animation", "Load animation", "Exit editor"), 0)
+        when (ans) {
+            JOptionPane.YES_OPTION -> {
+                createNewAnimation()
+                showStartMessage()
+            }
+            JOptionPane.NO_OPTION -> {
+                if (!loadAnimation()) {
+                    showStartMessage()
+                }
+            }
+            JOptionPane.CANCEL_OPTION -> System.exit(0)
+            else -> showStartMessage()
+        }
     }
 
     private fun sqr(a: Double): Double {
