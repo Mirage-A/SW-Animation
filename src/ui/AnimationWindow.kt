@@ -35,6 +35,7 @@ class AnimationWindow : JFrame() {
     private var animation : Animation = BodyAnimation()
 
     init {
+        // Таймер перерисовки анимации
         animTimer = Timer(1000, ActionListener {
             if (animation.frames.size != 0) {
                 if (animation.curFrame >= animation.frames.size - 1 && !animation.isRepeatable) {
@@ -56,12 +57,16 @@ class AnimationWindow : JFrame() {
         panel = Panel()
         contentPane.add(panel)
         defaultCloseOperation = WindowConstants.DO_NOTHING_ON_CLOSE
+
+        // Чекбокс, который переключает отображение изображения игрока на фоне
         val player = JCheckBox("Show shape")
         player.isSelected = true
         player.setBounds(8, 10, 160, 24)
         player.addChangeListener { panel.drawPlayer = player.isSelected }
         player.isVisible = true
         panel.add(player)
+
+        //Слайдер, позволяющий приближать и отдалять картинку
         val zoomSlider = JSlider(100, 800, panel.zoom)
         zoomSlider.setBounds(player.x, player.y + player.height + 2, player.width, player.height)
         zoomSlider.addChangeListener {
@@ -76,7 +81,7 @@ class AnimationWindow : JFrame() {
         zoomSlider.isVisible = true
         panel.add(zoomSlider)
 
-
+        //Кнопка старта/остановки анимации
         anim = JButton("Start animation")
         anim.setBounds(zoomSlider.x, zoomSlider.y + zoomSlider.height + 2, zoomSlider.width, zoomSlider.height)
         anim.addActionListener {
@@ -89,6 +94,7 @@ class AnimationWindow : JFrame() {
         anim.isVisible = true
         panel.add(anim)
 
+        //Кнопка создания отраженной анимации
         val reverse = JButton("Mirror animation")
         reverse.setBounds(anim.x, anim.y + anim.height + 4, anim.width, anim.height)
         reverse.addActionListener {
@@ -99,6 +105,7 @@ class AnimationWindow : JFrame() {
         reverse.isVisible = true
         panel.add(reverse)
 
+        //Кнопка изменения продолжительности анимации
         val changeDuration = JButton("Animation duration")
         changeDuration.setBounds(reverse.x, reverse.y + reverse.height + 4, reverse.width, reverse.height)
         changeDuration.addActionListener {
@@ -119,6 +126,8 @@ class AnimationWindow : JFrame() {
         changeDuration.isVisible = true
         panel.add(changeDuration)
 
+        //Чекбокс, позволяющий выбрать, нужно ли воспроизводить анимацию по кругу или
+        //остановить воспроизведение на последнем кадре
         repeat = JCheckBox("Repeatable")
         repeat.isSelected = false
         repeat.setBounds(changeDuration.x, changeDuration.y + changeDuration.height + 4, changeDuration.width, changeDuration.height)
@@ -128,6 +137,7 @@ class AnimationWindow : JFrame() {
         repeat.isVisible = true
         panel.add(repeat)
 
+        //Текст "Move direction:"
         val moveDirectionText = JTextField("Move direction:")
         moveDirectionText.run {
             isOpaque = false
@@ -140,6 +150,7 @@ class AnimationWindow : JFrame() {
         panel.add(moveDirectionText)
 
 
+        //Чекбоксы выбора moveDirection-а
         for (md in MoveDirection.values()) {
             val cb = JCheckBox(md.toString())
             cb.setBounds(anim.x, moveDirectionText.y + (anim.height + 4) * (mdList.size + 1) + 4, anim.width, anim.height)
@@ -191,6 +202,7 @@ class AnimationWindow : JFrame() {
             panel.add(cb)
         }
 
+        //Текст "Weapon type:"
         val weaponTypeText = JTextField("Weapon type:")
         weaponTypeText.run {
             isOpaque = false
@@ -202,7 +214,7 @@ class AnimationWindow : JFrame() {
         }
         panel.add(weaponTypeText)
 
-
+        //Чекбоксы выбора weaponType-а
         for (wt in WeaponType.values()) {
             val cb = JCheckBox(wt.toString())
             cb.setBounds(anim.x, weaponTypeText.y + (anim.height + 4) * (wtList.size + 1) + 4, anim.width, anim.height)
@@ -254,6 +266,7 @@ class AnimationWindow : JFrame() {
             panel.add(cb)
         }
 
+        //Добавляем подтверждение выхода при нажатии на кнопку закрытия окна
         addWindowListener(object : WindowListener {
             override fun windowOpened(e: WindowEvent) {}
             override fun windowIconified(e: WindowEvent) {}
@@ -286,6 +299,8 @@ class AnimationWindow : JFrame() {
         slidersFrame.setLocation(layersFrame.x - 20 - slidersFrame.width, screen.height - 60 - slidersFrame.height)
         slidersFrame.isVisible = false
 
+        //Кнопочки мини-окна со слоями
+        //Кнопочка создания нового слоя
         layersFrame.newLayerButton.addActionListener {
             val fc = JFileChooser("./drawable")
             fc.addChoosableFileFilter(object : FileFilter() {
@@ -315,6 +330,7 @@ class AnimationWindow : JFrame() {
                 }
             }
         }
+        //Кнопочка удаления слоя
         layersFrame.deleteLayerButton.addActionListener {
             if (animation.curFrame != -1) {
                 val frame = animation.frames[animation.curFrame]
@@ -339,6 +355,7 @@ class AnimationWindow : JFrame() {
                 }
             }
         }
+        //Кнопочка переименования слоя
         layersFrame.renameLayerButton.addActionListener {
             if (animation.curFrame != -1) {
                 val frame = animation.frames[animation.curFrame]
@@ -350,6 +367,7 @@ class AnimationWindow : JFrame() {
                 }
             }
         }
+        //Кнопочка поднятия слоя наверх
         layersFrame.upLayerButton.addActionListener {
             if (animation.curFrame != -1) {
                 val frame = animation.frames[animation.curFrame]
@@ -386,6 +404,8 @@ class AnimationWindow : JFrame() {
                 }
             }
         }
+
+        //Кнопочка опускания слоя вниз
         layersFrame.downLayerButton.addActionListener {
             if (animation.curFrame != -1) {
                 val frame = animation.frames[animation.curFrame]
@@ -421,6 +441,9 @@ class AnimationWindow : JFrame() {
                 }
             }
         }
+
+        //Кнопочки мини-окна с кадрами
+        //Кнопочка создания нового кадра
         framesFrame.newFrameButton.addActionListener {
             val newFrame = Frame()
             var layersKol = 0
@@ -441,6 +464,8 @@ class AnimationWindow : JFrame() {
             framesFrame.scrollPanel.repaint()
             framesFrame.scrollPane.revalidate()
         }
+
+        //Кнопочка копирования текущего кадра
         framesFrame.copyLastFrameButton.addActionListener {
             if (animation.curFrame != -1) {
                 val tmp = JButton("frame" + (animation.frames.size))
@@ -455,6 +480,8 @@ class AnimationWindow : JFrame() {
                 animation.frames.add(Frame(animation.frames[animation.curFrame]))
             }
         }
+
+        //Кнопочка удаления кадра
         framesFrame.deleteFrameButton.addActionListener {
             if (JOptionPane.showConfirmDialog(framesFrame, "Delete the frame " + animation.curFrame + "?", "Delete frame", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.YES_OPTION) {
                 if (animation.curFrame != -1) {
@@ -476,8 +503,11 @@ class AnimationWindow : JFrame() {
                 layersFrame.downLayerButton.isEnabled = false
             }
         }
+
+        //Кнопочка загрузки кадра
         framesFrame.loadFrameButton.addActionListener {
-            val fc = JFileChooser("./animations")
+            JOptionPane.showMessageDialog(null, "Copying frames is unavailable in this version")
+            /*val fc = JFileChooser("./animations")
             fc.addChoosableFileFilter(object : FileFilter() {
 
                 override fun getDescription(): String {
@@ -491,10 +521,12 @@ class AnimationWindow : JFrame() {
             fc.dialogTitle = "Choose a frame to create a copy of it"
 
             if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-                JOptionPane.showMessageDialog(null, "Copying frames is unavailable in this version")
                 //TODO копирование кадров
-            }
+            }*/
         }
+
+        //Слайдеры мини-окна со слайдерами изменения размера
+        //Слайдер изменения размера слоя
         slidersFrame.sizeSlider.addChangeListener {
             if (animation.curFrame != -1) {
                 val frame = animation.frames[animation.curFrame]
@@ -504,6 +536,8 @@ class AnimationWindow : JFrame() {
                 }
             }
         }
+
+        //Слайдер изменения ширины слоя
         slidersFrame.widthSlider.addChangeListener {
             if (animation.curFrame != -1) {
                 val frame = animation.frames[animation.curFrame]
@@ -513,6 +547,8 @@ class AnimationWindow : JFrame() {
                 }
             }
         }
+
+        //Слайдер изменения высоты слоя
         slidersFrame.heightSlider.addChangeListener {
             if (animation.curFrame != -1) {
                 val frame = animation.frames[animation.curFrame]
@@ -522,6 +558,8 @@ class AnimationWindow : JFrame() {
                 }
             }
         }
+
+        //Добавляем возможность перемещать и поворачивать слои мышкой
         addMouseListener(object : MouseListener {
             override fun mouseReleased(e: MouseEvent) {
                 isMoving = false
@@ -835,6 +873,9 @@ class AnimationWindow : JFrame() {
         loadFrame(frameID)
     }
 
+    /**
+     * Начинает воспроизведение анимации
+     */
     private fun startAnimation() {
         panel.t.stop()
         anim.text = "Stop animation"
@@ -844,6 +885,9 @@ class AnimationWindow : JFrame() {
         animTimer.restart()
     }
 
+    /**
+     * Останавливает воспроизведение анимации
+     */
     private fun stopAnimation() {
         animTimer.stop()
         anim.text = "Start animation"
@@ -851,6 +895,9 @@ class AnimationWindow : JFrame() {
         panel.t.restart()
     }
 
+    /**
+     * Показывает стартовое окно с возможностью создать новую анимацию, загрузить существующую или выйти из редактора
+     */
     private fun showStartMessage() {
         val ans = JOptionPane.showOptionDialog(contentPane, "Welcome to Shattered World animation editor!", "Welcome!", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, arrayOf("Create new animation", "Load animation", "Exit editor"), 0)
         when (ans) {
