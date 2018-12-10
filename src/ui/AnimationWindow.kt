@@ -729,6 +729,7 @@ class AnimationWindow : JFrame() {
         }
         )
         showStartMessage()
+        panel.t.start()
     }
 
     /**
@@ -968,22 +969,21 @@ class AnimationWindow : JFrame() {
      * Начинает воспроизведение анимации
      */
     private fun startAnimation() {
-        panel.t.stop()
         anim.text = "Stop animation"
-        setCurFrame(0)
-        animTimer.delay = animation.duration / animation.frames.size
+        panel.frames = animation.frames
+        panel.isRepeatable = animation.isRepeatable
+        panel.duration = animation.duration + 0L
+        panel.startTime = System.currentTimeMillis()
         panel.isPlayingAnimation = true
-        animTimer.restart()
     }
 
     /**
      * Останавливает воспроизведение анимации
      */
     private fun stopAnimation() {
-        animTimer.stop()
         anim.text = "Start animation"
         panel.isPlayingAnimation = false
-        panel.t.restart()
+        setCurFrame(0)
     }
 
     /**
