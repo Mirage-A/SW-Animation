@@ -19,7 +19,7 @@ class FramesFrame : JFrame() {
     internal var newFrameButton: JButton
     internal var copyLastFrameButton: JButton
     internal var deleteFrameButton: JButton
-    internal var loadFrameButton: JButton
+    //internal var loadFrameButton: JButton
     internal var btns: ArrayList<JButton>
 
     init {
@@ -63,12 +63,12 @@ class FramesFrame : JFrame() {
         deleteFrameButton.isEnabled = false
         panel.add(deleteFrameButton)
 
-        loadFrameButton = JButton(ImageIcon("./icons/copy.png"))
+        /*loadFrameButton = JButton(ImageIcon("./icons/copy.png"))
         loadFrameButton.setBounds(buttonSize * 3, height - 47 - buttonSize, buttonSize, buttonSize)
         loadFrameButton.setSize(buttonSize, buttonSize)
         loadFrameButton.isVisible = true
         loadFrameButton.toolTipText = "Create a copy of another frame"
-        panel.add(loadFrameButton)
+        panel.add(loadFrameButton)*/
 
         addComponentListener(object : ComponentAdapter() {
             override fun componentResized(evt: ComponentEvent?) {
@@ -76,10 +76,22 @@ class FramesFrame : JFrame() {
                 newFrameButton.setBounds(0, height - 47 - buttonSize, buttonSize, buttonSize)
                 copyLastFrameButton.setBounds(buttonSize, height - 47 - buttonSize, buttonSize, buttonSize)
                 deleteFrameButton.setBounds(buttonSize * 2, height - 47 - buttonSize, buttonSize, buttonSize)
-                loadFrameButton.setBounds(buttonSize * 3, height - 47 - buttonSize, buttonSize, buttonSize)
+                //loadFrameButton.setBounds(buttonSize * 3, height - 47 - buttonSize, buttonSize, buttonSize)
             }
         })
         scrollPane.revalidate()
         isVisible = false
+    }
+
+    override fun setEnabled(b: Boolean) {
+        scrollPanel.isEnabled = b
+        scrollPane.isEnabled = b
+        newFrameButton.isEnabled = b
+        copyLastFrameButton.isEnabled = b
+        deleteFrameButton.isEnabled = b
+        //loadFrameButton.isEnabled = b
+        for (btn in btns) {
+            btn.isEnabled = b
+        }
     }
 }

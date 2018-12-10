@@ -64,4 +64,10 @@ class SlidersFrame : JFrame() {
         }
 
     }
+
+    override fun setEnabled(b: Boolean) {
+        sizeSlider.isEnabled = b
+        widthSlider.isEnabled = b
+        heightSlider.isEnabled = b
+    }
 }

@@ -98,4 +98,17 @@ class LayersFrame : JFrame() {
         scrollPane.revalidate()
         isVisible = false
     }
+
+    override fun setEnabled(b: Boolean) {
+        scrollPanel.isEnabled = b
+        scrollPane.isEnabled = b
+        newLayerButton.isEnabled = b
+        deleteLayerButton.isEnabled = b
+        renameLayerButton.isEnabled = b
+        upLayerButton.isEnabled = b
+        downLayerButton.isEnabled = b
+        for (btn in btns) {
+            btn.isEnabled = b
+        }
+    }
 }

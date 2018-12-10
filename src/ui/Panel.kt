@@ -87,7 +87,6 @@ class Panel : JPanel() {
                 val fr1 = frames[Math.min((timePassed / interval).toInt(), frames.size - 2)]
                 val fr2 = frames[Math.min((timePassed / interval + 1).toInt(), frames.size - 1)]
                 val progress = (timePassed.toFloat() % interval) / interval
-                println("$timePassed $interval " + (timePassed / interval).toInt() + " $progress")
                 val layers1 = fr1.layers
                 val layers2 = fr2.layers
                 for (i in layers1.indices) {
