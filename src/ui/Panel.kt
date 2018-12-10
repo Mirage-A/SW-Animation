@@ -102,8 +102,18 @@ class Panel : JPanel() {
                     val scaledHeight1 = layer1.basicHeight * layer1.scale * layer1.scaleY
                     val scaledWidth2 = layer2.basicWidth * layer2.scale * layer2.scaleX
                     val scaledHeight2 = layer2.basicHeight * layer2.scale * layer2.scaleY
-                    val angle1 = layer1.angle
-                    val angle2 = layer2.angle
+                    val angle1 = (layer1.angle % (2 * Math.PI)).toFloat()
+                    var angle2 = (layer2.angle % (2 * Math.PI)).toFloat()
+                    if (angle2 > angle1) {
+                        if (angle1  - angle2  + 2 * Math.PI < angle2 - angle1) {
+                            angle2 -= 2 * Math.PI.toFloat()
+                        }
+                    }
+                    if (angle2 < angle1) {
+                        if (angle2  - angle1  + 2 * Math.PI < angle1 - angle2) {
+                            angle2 += 2 * Math.PI.toFloat()
+                        }
+                    }
                     val x = curValue(layer1.x, layer2.x, progress)
                     val y = curValue(layer1.y, layer2.y, progress)
                     val w = curValue(scaledWidth1, scaledWidth2, progress)

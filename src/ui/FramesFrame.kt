@@ -17,8 +17,15 @@ class FramesFrame : JFrame() {
     internal var scrollPanel: JPanel
     internal var scrollPane: JScrollPane
     internal var newFrameButton: JButton
+    var newEnabled = true
     internal var copyLastFrameButton: JButton
+    var copyEnabled = true
     internal var deleteFrameButton: JButton
+    var deleteEnabled = true
+    internal var upFrameButton: JButton
+    var upEnabled = true
+    internal var downFrameButton: JButton
+    var downEnabled = true
     //internal var loadFrameButton: JButton
     internal var btns: ArrayList<JButton>
 
@@ -70,12 +77,30 @@ class FramesFrame : JFrame() {
         loadFrameButton.toolTipText = "Create a copy of another frame"
         panel.add(loadFrameButton)*/
 
+        upFrameButton = JButton(ImageIcon("./icons/up.png"))
+        upFrameButton.setBounds(buttonSize * 3, height - 47 - buttonSize, buttonSize, buttonSize)
+        upFrameButton.setSize(buttonSize, buttonSize)
+        upFrameButton.isVisible = true
+        upFrameButton.toolTipText = "Move selected frame up"
+        upFrameButton.isEnabled = false
+        panel.add(upFrameButton)
+
+        downFrameButton = JButton(ImageIcon("./icons/down.png"))
+        downFrameButton.setBounds(buttonSize * 4, height - 47 - buttonSize, buttonSize, buttonSize)
+        downFrameButton.setSize(buttonSize, buttonSize)
+        downFrameButton.isVisible = true
+        downFrameButton.toolTipText = "Move selected frame down"
+        downFrameButton.isEnabled = false
+        panel.add(downFrameButton)
+
         addComponentListener(object : ComponentAdapter() {
             override fun componentResized(evt: ComponentEvent?) {
                 scrollPane.setBounds(0, 0, width - 14, height - 46 - buttonSize)
                 newFrameButton.setBounds(0, height - 47 - buttonSize, buttonSize, buttonSize)
                 copyLastFrameButton.setBounds(buttonSize, height - 47 - buttonSize, buttonSize, buttonSize)
                 deleteFrameButton.setBounds(buttonSize * 2, height - 47 - buttonSize, buttonSize, buttonSize)
+                upFrameButton.setBounds(buttonSize * 3, height - 47 - buttonSize, buttonSize, buttonSize)
+                downFrameButton.setBounds(buttonSize * 4, height - 47 - buttonSize, buttonSize, buttonSize)
                 //loadFrameButton.setBounds(buttonSize * 3, height - 47 - buttonSize, buttonSize, buttonSize)
             }
         })
@@ -86,9 +111,11 @@ class FramesFrame : JFrame() {
     override fun setEnabled(b: Boolean) {
         scrollPanel.isEnabled = b
         scrollPane.isEnabled = b
-        newFrameButton.isEnabled = b
-        copyLastFrameButton.isEnabled = b
-        deleteFrameButton.isEnabled = b
+        newFrameButton.isEnabled = b && newEnabled
+        copyLastFrameButton.isEnabled = b && copyEnabled
+        deleteFrameButton.isEnabled = b && deleteEnabled
+        upFrameButton.isEnabled = b && upEnabled
+        downFrameButton.isEnabled = b && downEnabled
         //loadFrameButton.isEnabled = b
         for (btn in btns) {
             btn.isEnabled = b

@@ -252,10 +252,15 @@ class AnimationWindow : JFrame() {
                     slidersFrame.isVisible = false
                     setCurFrame(-1)
                     layersFrame.newLayerButton.isEnabled = true
+                    layersFrame.newEnabled = true
                     layersFrame.deleteLayerButton.isEnabled = false
+                    layersFrame.deleteEnabled = false
                     layersFrame.renameLayerButton.isEnabled = false
+                    layersFrame.renameEnabled = false
                     layersFrame.upLayerButton.isEnabled = false
+                    layersFrame.upEnabled = false
                     layersFrame.downLayerButton.isEnabled = false
+                    layersFrame.downEnabled = false
                     layersFrame.scrollPanel.removeAll()
                     layersFrame.btns.clear()
                     layersFrame.scrollPanel.repaint()
@@ -266,6 +271,7 @@ class AnimationWindow : JFrame() {
                         tmp.addActionListener {
                             setCurFrame(Integer.parseInt(tmp.text.substring(5)))
                             framesFrame.deleteFrameButton.isEnabled = true
+                            framesFrame.deleteEnabled = true
                         }
                         framesFrame.btns.add(tmp)
                         framesFrame.scrollPanel.add(tmp)
@@ -316,10 +322,15 @@ class AnimationWindow : JFrame() {
                     slidersFrame.isVisible = false
                     setCurFrame(-1)
                     layersFrame.newLayerButton.isEnabled = true
+                    layersFrame.newEnabled = true
                     layersFrame.deleteLayerButton.isEnabled = false
+                    layersFrame.deleteEnabled = false
                     layersFrame.renameLayerButton.isEnabled = false
+                    layersFrame.renameEnabled = false
                     layersFrame.upLayerButton.isEnabled = false
+                    layersFrame.upEnabled = false
                     layersFrame.downLayerButton.isEnabled = false
+                    layersFrame.downEnabled = false
                     layersFrame.scrollPanel.removeAll()
                     layersFrame.btns.clear()
                     layersFrame.scrollPanel.repaint()
@@ -330,6 +341,7 @@ class AnimationWindow : JFrame() {
                         tmp.addActionListener {
                             setCurFrame(Integer.parseInt(tmp.text.substring(5)))
                             framesFrame.deleteFrameButton.isEnabled = true
+                            framesFrame.deleteEnabled = true
                         }
                         framesFrame.btns.add(tmp)
                         framesFrame.scrollPanel.add(tmp)
@@ -415,9 +427,13 @@ class AnimationWindow : JFrame() {
                         val layerID = frame.curLayer
                         frame.curLayer = -1
                         layersFrame.deleteLayerButton.isEnabled = false
+                        layersFrame.deleteEnabled = false
                         layersFrame.renameLayerButton.isEnabled = false
+                        layersFrame.renameEnabled = false
                         layersFrame.upLayerButton.isEnabled = false
+                        layersFrame.upEnabled = false
                         layersFrame.downLayerButton.isEnabled = false
+                        layersFrame.downEnabled = false
                         layersFrame.scrollPanel.repaint()
                         layersFrame.scrollPane.revalidate()
                         for (fr in animation.frames) {
@@ -530,6 +546,7 @@ class AnimationWindow : JFrame() {
             tmp.addActionListener {
                 setCurFrame(Integer.parseInt(tmp.text.substring(5)))
                 framesFrame.deleteFrameButton.isEnabled = true
+                framesFrame.deleteEnabled = true
             }
             animation.frames.add(newFrame)
             framesFrame.btns.add(tmp)
@@ -545,6 +562,7 @@ class AnimationWindow : JFrame() {
                 tmp.addActionListener {
                     setCurFrame(Integer.parseInt(tmp.text.substring(5)))
                     framesFrame.deleteFrameButton.isEnabled = true
+                    framesFrame.deleteEnabled = true
                 }
                 framesFrame.btns.add(tmp)
                 framesFrame.scrollPanel.add(tmp)
@@ -562,6 +580,7 @@ class AnimationWindow : JFrame() {
                     setCurFrame(-1)
                     animation.frames.removeAt(lastCurFrame)
                     framesFrame.deleteFrameButton.isEnabled = false
+                    framesFrame.deleteEnabled = false
                     framesFrame.scrollPanel.remove(framesFrame.btns[framesFrame.btns.size - 1])
                     framesFrame.btns.removeAt(framesFrame.btns.size - 1)
                     framesFrame.scrollPanel.repaint()
@@ -569,10 +588,16 @@ class AnimationWindow : JFrame() {
                     layersFrame.btns.clear()
                     layersFrame.scrollPanel.removeAll()
                     layersFrame.scrollPane.revalidate()
+                    layersFrame.newLayerButton.isEnabled = false
+                    layersFrame.newEnabled = false
                     layersFrame.deleteLayerButton.isEnabled = false
+                    layersFrame.deleteEnabled = false
                     layersFrame.renameLayerButton.isEnabled = false
+                    layersFrame.renameEnabled = false
                     layersFrame.upLayerButton.isEnabled = false
+                    layersFrame.upEnabled = false
                     layersFrame.downLayerButton.isEnabled = false
+                    layersFrame.downEnabled = false
                 }
                 else {
                     JOptionPane.showMessageDialog(null, "No frames selected")
@@ -848,6 +873,7 @@ class AnimationWindow : JFrame() {
                         tmp.addActionListener {
                             setCurFrame(Integer.parseInt(tmp.text.substring(5)))
                             framesFrame.deleteFrameButton.isEnabled = true
+                            framesFrame.deleteEnabled = true
                         }
                         framesFrame.btns.add(tmp)
                         framesFrame.scrollPanel.add(tmp)
@@ -894,9 +920,13 @@ class AnimationWindow : JFrame() {
         layersFrame.btns[layerID].font = layersFrame.selectedFont
         animation.frames[animation.curFrame].curLayer = layerID
         layersFrame.deleteLayerButton.isEnabled = true
+        layersFrame.deleteEnabled = true
         layersFrame.renameLayerButton.isEnabled = true
+        layersFrame.renameEnabled = true
         layersFrame.upLayerButton.isEnabled = true
+        layersFrame.upEnabled = true
         layersFrame.downLayerButton.isEnabled = true
+        layersFrame.downEnabled = true
 
         val layer = animation.frames[animation.curFrame].layers[layerID]
         slidersFrame.sizeSlider.value = Math.round(layer.scale * 100)
@@ -910,14 +940,19 @@ class AnimationWindow : JFrame() {
      */
     private fun loadFrame(frameID: Int) {
         slidersFrame.isVisible = false
-        layersFrame.newLayerButton.isEnabled = true
         layersFrame.deleteLayerButton.isEnabled = false
+        layersFrame.deleteEnabled = false
         layersFrame.renameLayerButton.isEnabled = false
+        layersFrame.renameEnabled = false
         layersFrame.upLayerButton.isEnabled = false
+        layersFrame.upEnabled = false
         layersFrame.downLayerButton.isEnabled = false
+        layersFrame.downEnabled = false
         layersFrame.scrollPanel.removeAll()
         layersFrame.btns.clear()
         if (frameID != -1) {
+            layersFrame.newLayerButton.isEnabled = true
+            layersFrame.newEnabled = true
             val frame = animation.frames[frameID]
             frame.curLayer = -1
             for (layer in frame.layers) {
@@ -930,6 +965,8 @@ class AnimationWindow : JFrame() {
         }
         else {
             panel.frame = null
+            layersFrame.newLayerButton.isEnabled = false
+            layersFrame.newEnabled = false
         }
         layersFrame.scrollPanel.repaint()
         layersFrame.scrollPane.revalidate()

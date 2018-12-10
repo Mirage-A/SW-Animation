@@ -18,10 +18,15 @@ class LayersFrame : JFrame() {
     internal var scrollPanel: JPanel
     internal var scrollPane: JScrollPane
     internal var newLayerButton: JButton
+    var newEnabled = true
     internal var deleteLayerButton: JButton
+    var deleteEnabled = true
     internal var renameLayerButton: JButton
+    var renameEnabled = true
     internal var upLayerButton: JButton
+    var upEnabled = true
     internal var downLayerButton: JButton
+    var downEnabled = true
     internal var btns: ArrayList<JButton>
     internal val basicFont = JButton().font
     internal val selectedFont = Font(basicFont.fontName, Font.BOLD, basicFont.size + 4)
@@ -102,11 +107,11 @@ class LayersFrame : JFrame() {
     override fun setEnabled(b: Boolean) {
         scrollPanel.isEnabled = b
         scrollPane.isEnabled = b
-        newLayerButton.isEnabled = b
-        deleteLayerButton.isEnabled = b
-        renameLayerButton.isEnabled = b
-        upLayerButton.isEnabled = b
-        downLayerButton.isEnabled = b
+        newLayerButton.isEnabled = b && newEnabled
+        deleteLayerButton.isEnabled = b && deleteEnabled
+        renameLayerButton.isEnabled = b && renameEnabled
+        upLayerButton.isEnabled = b && upEnabled
+        downLayerButton.isEnabled = b && downEnabled
         for (btn in btns) {
             btn.isEnabled = b
         }
