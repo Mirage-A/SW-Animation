@@ -6,17 +6,16 @@ import java.awt.Color
 import java.awt.Cursor
 import java.awt.Image
 import java.awt.Toolkit
-import java.awt.event.MouseEvent
-import java.awt.event.MouseListener
-import java.awt.event.MouseMotionListener
-import java.awt.event.WindowEvent
-import java.awt.event.WindowListener
+import java.awt.event.*
 import java.io.*
 import java.util.ArrayList
-
 import javax.imageio.ImageIO
 import javax.swing.*
 import javax.swing.filechooser.FileFilter
+import kotlin.collections.HashMap
+import kotlin.collections.indices
+import kotlin.collections.isNotEmpty
+import kotlin.collections.set
 
 /**
  * Основной класс контроллера
@@ -837,12 +836,15 @@ class MainWindow : JFrame() {
      */
     private fun serialize() {
         val path = when (animation) {
-            is BodyAnimation -> "bodyanimations/" + animation.name + ".swanim"
-            is LegsAnimation -> "legsanimations/" + animation.name + ".swanim"
+            is BodyAnimation -> "animations/body/" + animation.name + ".swa"
+            is LegsAnimation -> "animations/legs/" + animation.name + ".swa"
             else -> throw Exception("Undefined type of animation")
         }
 
         val file = File(path)
+        if (!file.parentFile.parentFile.exists()) {
+            file.parentFile.parentFile.mkdir()
+        }
         if (!file.parentFile.exists()) {
             file.parentFile.mkdir()
         }
@@ -874,14 +876,14 @@ class MainWindow : JFrame() {
                 JOptionPane.showMessageDialog(null, "Incorrect input")
             } else {
                 newAnimation.name = inputName.trim { it <= ' ' }
-                var path = "./"
+                var path = "./animations/"
                 if (newAnimation is BodyAnimation) {
-                    path += "bodyanimations/"
+                    path += "body/"
                 }
                 if (newAnimation is LegsAnimation) {
-                    path += "legsanimations/"
+                    path += "legs/"
                 }
-                path += newAnimation.name + ".swanim"
+                path += newAnimation.name + ".swa"
                 if (File(path).exists()) {
                     JOptionPane.showMessageDialog(null, "Animation with this name already exists")
                 }
@@ -918,11 +920,11 @@ class MainWindow : JFrame() {
         fc.addChoosableFileFilter(object : FileFilter() {
 
             override fun getDescription(): String {
-                return "Shattered World animations (.SWANIM)"
+                return "Shattered World animations (.SWA)"
             }
 
             override fun accept(f: File): Boolean {
-                return f.name.endsWith(".swanim")
+                return f.name.endsWith(".swa")
             }
         })
         fc.dialogTitle = "Open animation"
@@ -930,7 +932,7 @@ class MainWindow : JFrame() {
         if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
             try {
                 val file = fc.selectedFile
-                if (file.name.endsWith(".swanim")) {
+                if (file.name.endsWith(".swa")) {
                     if (animation !is NullAnimation) {
                         serialize()
                     }

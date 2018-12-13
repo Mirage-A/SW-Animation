@@ -8,6 +8,10 @@ import java.io.Serializable
  */
 abstract class Animation : Serializable {
     /**
+     * Тип анимации
+     */
+    var type : AnimationType = AnimationType.NULL
+    /**
      * Список кадров анимации
      */
     var frames : ArrayList<Frame> = ArrayList()

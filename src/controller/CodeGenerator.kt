@@ -1,9 +1,13 @@
 package controller
 
+import model.Animation
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileWriter
+import java.io.ObjectInputStream
+import java.lang.StringBuilder
 import java.nio.file.Files
 
 import javax.swing.JOptionPane
@@ -15,8 +19,11 @@ import javax.swing.JOptionPane
 class CodeGenerator {
     companion object {
         fun generate() {
-            val bodyAnimationsFolder = File("./bodyanimations")
-            val legsAnimationsFolder = File("./legsanimations")
+            val warnings = ArrayList<String>()
+            val bodyAnimationsFolder = File("./animations/body")
+            val legsAnimationsFolder = File("./animations/legs")
+            val bodyList = loadAllAnimations(bodyAnimationsFolder)
+            val legsList = loadAllAnimations(legsAnimationsFolder)
             val file = File("./HumanoidDrawerTmp.kt")
             if (!file.exists()) {
                 file.createNewFile()
@@ -91,9 +98,18 @@ class CodeGenerator {
             out.write("}\n")
             out.close()
 
+            if (warnings.isNotEmpty()) {
+                val warningText = StringBuilder().append("WARNINGS: " + warnings.size)
+                for (warning in warnings) {
+                    warningText.append("\n")
+                    warningText.append(warning)
+                }
+                JOptionPane.showMessageDialog(null, warningText)
+            }
+
             val ss = StringSelection(String(Files.readAllBytes(file.toPath())))
             Toolkit.getDefaultToolkit().systemClipboard.setContents(ss, null)
-            JOptionPane.showMessageDialog(null, "Compilation completed!\nThe code has been copied to clipboard.", "Shattered World model.Animation controller.CodeGenerator", JOptionPane.INFORMATION_MESSAGE)
+            JOptionPane.showMessageDialog(null, "Compilation completed!\nThe code has been copied to clipboard.", "Shattered World Animation Code Generator", JOptionPane.INFORMATION_MESSAGE)
 
 
         }
@@ -102,6 +118,23 @@ class CodeGenerator {
             return (layerName == "neck") or (layerName == "handtop") or (layerName == "handbottom") or (layerName == "cloak") or
                     layerName.startsWith("onehanded") or (layerName == "twohanded") or (layerName == "shield") or (layerName == "bow") or (layerName == "staff") or
                     layerName.startsWith("head") or layerName.startsWith("body")
+        }
+
+        /**
+         * Загружает и десериализует все анимации из заданной директории и возвращает их список
+         */
+        private fun loadAllAnimations(folder : File) : ArrayList<Animation> {
+            val animationsList = ArrayList<Animation>()
+            if (folder.exists()) {
+                val filesList = folder.listFiles()
+                for (file in filesList) {
+                    val fis = FileInputStream(file)
+                    val oin = ObjectInputStream(fis)
+                    val obj = oin.readObject()
+                    animationsList.add(obj as Animation)
+                }
+            }
+            return animationsList
         }
     }
 }
