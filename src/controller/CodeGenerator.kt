@@ -1,6 +1,7 @@
 package controller
 
 import model.Animation
+import model.AnimationType
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 import java.io.File
@@ -9,6 +10,7 @@ import java.io.FileWriter
 import java.io.ObjectInputStream
 import java.lang.StringBuilder
 import java.nio.file.Files
+import java.util.*
 
 import javax.swing.JOptionPane
 
@@ -20,11 +22,13 @@ class CodeGenerator {
     companion object {
         fun generate() {
             val warnings = ArrayList<String>()
-            val bodyAnimationsFolder = File("./animations/body")
-            val legsAnimationsFolder = File("./animations/legs")
-            val bodyList = loadAllAnimations(bodyAnimationsFolder)
-            val legsList = loadAllAnimations(legsAnimationsFolder)
-            val file = File("./HumanoidDrawerTmp.kt")
+            val bodyAnimationsFolder = File("./animations/BODY")
+            val legsAnimationsFolder = File("./animations/LEGS")
+            val bodyList = loadAllAnimations(bodyAnimationsFolder, warnings)
+            val legsList = loadAllAnimations(legsAnimationsFolder, warnings)
+            checkBodyAnimations(bodyList, warnings)
+            checkLegsAnimations(legsList, warnings)
+            val file = File("./HumanoidDrawerTmp.kt") // TODO убрать Tmp
             if (!file.exists()) {
                 file.createNewFile()
             }
@@ -109,7 +113,7 @@ class CodeGenerator {
 
             val ss = StringSelection(String(Files.readAllBytes(file.toPath())))
             Toolkit.getDefaultToolkit().systemClipboard.setContents(ss, null)
-            JOptionPane.showMessageDialog(null, "Compilation completed!\nThe code has been copied to clipboard.", "Shattered World Animation Code Generator", JOptionPane.INFORMATION_MESSAGE)
+            JOptionPane.showMessageDialog(null, "Code generation completed!\nThe code has been copied to clipboard.", "Shattered World Animation Code Generator", JOptionPane.INFORMATION_MESSAGE)
 
 
         }
@@ -122,19 +126,74 @@ class CodeGenerator {
 
         /**
          * Загружает и десериализует все анимации из заданной директории и возвращает их список
+         * Если какой-то файл не является корректной анимацией, добавляется warning
          */
-        private fun loadAllAnimations(folder : File) : ArrayList<Animation> {
-            val animationsList = ArrayList<Animation>()
+        private fun loadAllAnimations(folder : File, warnings : ArrayList<String>) : LinkedList<Animation> {
+            val animationsList = LinkedList<Animation>()
             if (folder.exists()) {
                 val filesList = folder.listFiles()
                 for (file in filesList) {
-                    val fis = FileInputStream(file)
-                    val oin = ObjectInputStream(fis)
-                    val obj = oin.readObject()
-                    animationsList.add(obj as Animation)
+                    try {
+                        val fis = FileInputStream(file)
+                        val oin = ObjectInputStream(fis)
+                        val obj = oin.readObject()
+                        animationsList.add(obj as Animation)
+                    }
+                    catch(ex : Exception) {
+                        warnings.add("File " + file.absolutePath + " is not correct animation. Delete it. Animation is ignored.")
+                    }
                 }
             }
             return animationsList
+        }
+
+        /**
+         * Проверяет все анимации из списка
+         * Если анимация не является корректной анимацией body, то она удаляется и добавляется warning
+         */
+        private fun checkBodyAnimations(animationsList : LinkedList<Animation>, warnings : ArrayList<String>) {
+            for (anim in animationsList) {
+                if (anim.type != AnimationType.BODY) {
+                    warnings.add("Body animation " + anim.name + " is not correct body animation. Delete it or move it to the folder " + anim.type.toString() + ". Animation is ignored.")
+                    animationsList.remove(anim)
+                }
+                else {
+                    val frames = anim.frames
+                    if (frames.isEmpty()) {
+                        warnings.add("Body animation " + anim.name + " is empty.")
+                    }
+                    else {
+                        val layers = frames[0].layers
+                        var leftLegFound = false
+                        var rightLegFound = false
+                        for (layer in layers) {
+                            if (layer.imageName == "leftleg.png") {
+                                leftLegFound = true
+                            }
+                            else if (layer.imageName == "rightleg.png") {
+                                rightLegFound = true
+                            }
+                        }
+                        if (!leftLegFound) {
+                            warnings.add("Body animation " + anim.name + " does not contain leftleg.png layer. Animation is ignored.")
+                        }
+                        if (!rightLegFound) {
+                            warnings.add("Body animation " + anim.name + " does not contain rightleg.png layer. Animation is ignored.")
+                        }
+                        if (!leftLegFound || !rightLegFound) {
+                            animationsList.remove(anim)
+                        }
+                    }
+                }
+            }
+        }
+
+        /**
+         * Проверяет все анимации из списка
+         * Если анимация не является корректной анимацией legs, то она удаляется и добавляется warning
+         */
+        private fun checkLegsAnimations(animationsList : LinkedList<Animation>, warnings : ArrayList<String>) {
+
         }
     }
 }
