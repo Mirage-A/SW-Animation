@@ -6,11 +6,7 @@ import java.io.Serializable
  * Основной класс модели
  * Абстрактная сериализуемая модель, хранящая все данные об анимации
  */
-abstract class Animation : Serializable {
-    /**
-     * Тип анимации
-     */
-    var type : AnimationType = AnimationType.NULL
+class Animation(val type : AnimationType = AnimationType.NULL) : Serializable {
     /**
      * Список кадров анимации
      */

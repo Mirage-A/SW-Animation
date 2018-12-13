@@ -123,7 +123,7 @@ class MainWindow : JFrame() {
     /**
      * Сама анимация (модель)
      */
-    private var animation : Animation = NullAnimation()
+    private var animation : Animation = Animation()
 
     /**
      * Инициализация всего интерфейса
@@ -835,12 +835,7 @@ class MainWindow : JFrame() {
      * Сериализует текущую анимацию и сохраняет ее в файл
      */
     private fun serialize() {
-        val path = when (animation) {
-            is BodyAnimation -> "animations/body/" + animation.name + ".swa"
-            is LegsAnimation -> "animations/legs/" + animation.name + ".swa"
-            else -> throw Exception("Undefined type of animation")
-        }
-
+        val path = "animations/" + animation.type.toString() + "/" + animation.name + ".swa"
         val file = File(path)
         if (!file.parentFile.parentFile.exists()) {
             file.parentFile.parentFile.mkdir()
@@ -866,8 +861,8 @@ class MainWindow : JFrame() {
         var newAnimation : Animation? = null
         val typeChoice = JOptionPane.showOptionDialog(contentPane, "Choose animation's type", "New animation", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, arrayOf("Body animation", "Legs animation"), 0)
         when (typeChoice) {
-            JOptionPane.YES_OPTION -> newAnimation = BodyAnimation()
-            JOptionPane.NO_OPTION -> newAnimation = LegsAnimation()
+            JOptionPane.YES_OPTION -> newAnimation = Animation(AnimationType.BODY)
+            JOptionPane.NO_OPTION -> newAnimation = Animation(AnimationType.LEGS)
         }
         if (newAnimation != null) {
             val inputName: String? = JOptionPane.showInputDialog(this, "Enter the new animation's name (for example, FIREBALL)", "New animation", JOptionPane.PLAIN_MESSAGE)
@@ -875,27 +870,20 @@ class MainWindow : JFrame() {
             if (inputName.isNullOrBlank()) {
                 JOptionPane.showMessageDialog(null, "Incorrect input")
             } else {
-                newAnimation.name = inputName.trim { it <= ' ' }
-                var path = "./animations/"
-                if (newAnimation is BodyAnimation) {
-                    path += "body/"
-                }
-                if (newAnimation is LegsAnimation) {
-                    path += "legs/"
-                }
-                path += newAnimation.name + ".swa"
+                newAnimation.name = inputName.trim()
+                val path = "./animations/" + animation.type + "/" + newAnimation.name + ".swa"
                 if (File(path).exists()) {
                     JOptionPane.showMessageDialog(null, "Animation with this name already exists")
                 }
                 else {
                     for (moveDirection in MoveDirection.values()) {
                         newAnimation.data[moveDirection] = HashMap()
-                        if (newAnimation is LegsAnimation) {
+                        if (newAnimation.type == AnimationType.LEGS) {
                             val arr = ArrayList<Frame>()
                             for (weaponType in WeaponType.values()) {
                                 newAnimation.data[moveDirection]!![weaponType] = arr
                             }
-                        } else if (newAnimation is BodyAnimation) {
+                        } else if (newAnimation.type == AnimationType.BODY) {
                             for (weaponType in WeaponType.values()) {
                                 newAnimation.data[moveDirection]!![weaponType] = ArrayList()
                             }
@@ -933,7 +921,7 @@ class MainWindow : JFrame() {
             try {
                 val file = fc.selectedFile
                 if (file.name.endsWith(".swa")) {
-                    if (animation !is NullAnimation) {
+                    if (animation.type != AnimationType.NULL) {
                         serialize()
                     }
                     val fis = FileInputStream(file)
@@ -963,11 +951,7 @@ class MainWindow : JFrame() {
                     }
                     setCurFrame(animation.curFrame)
                     isAnimationRepeatableCheckbox.isSelected = animation.isRepeatable
-                    animationNameText.text = when (animation) {
-                        is LegsAnimation -> "Legs: " + animation.name
-                        is BodyAnimation -> "Body: " + animation.name
-                        else -> "Unidentified type"
-                    }
+                    animationNameText.text = animation.type.toString() + ": " + animation.name
                     return true
                 }
                 else {
