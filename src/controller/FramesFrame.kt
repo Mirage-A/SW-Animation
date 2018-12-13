@@ -86,6 +86,7 @@ class FramesFrame : JFrame() {
         newFrameButton.setSize(buttonSize, buttonSize)
         newFrameButton.isVisible = true
         newFrameButton.toolTipText = "Create a new frame"
+        newFrameButton.isEnabled = false
         panel.add(newFrameButton)
 
         copyLastFrameButton = JButton(ImageIcon("./icons/createCopy.png"))
@@ -93,6 +94,7 @@ class FramesFrame : JFrame() {
         copyLastFrameButton.setSize(buttonSize, buttonSize)
         copyLastFrameButton.isVisible = true
         copyLastFrameButton.toolTipText = "Create a copy of selected frame"
+        copyLastFrameButton.isEnabled = false
         panel.add(copyLastFrameButton)
 
         deleteFrameButton = JButton(ImageIcon("./icons/delete.png"))

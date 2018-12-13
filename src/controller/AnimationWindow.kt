@@ -124,7 +124,7 @@ class AnimationWindow : JFrame() {
     /**
      * Сама анимация (модель)
      */
-    private var animation : Animation = BodyAnimation()
+    private var animation : Animation = NullAnimation()
 
     /**
      * Инициализация всего интерфейса
@@ -899,8 +899,10 @@ class AnimationWindow : JFrame() {
                             }
                         }
                     }
+                    val tmp = animation
                     animation = newAnimation
                     serialize()
+                    animation = tmp
                     JOptionPane.showMessageDialog(this, "Animation created!", "New animation", JOptionPane.PLAIN_MESSAGE)
                 }
             }
@@ -929,7 +931,9 @@ class AnimationWindow : JFrame() {
             try {
                 val file = fc.selectedFile
                 if (file.name.endsWith(".swanim")) {
-                    serialize()
+                    if (animation !is NullAnimation) {
+                        serialize()
+                    }
                     val fis = FileInputStream(file)
                     val oin = ObjectInputStream(fis)
                     val obj = oin.readObject()
