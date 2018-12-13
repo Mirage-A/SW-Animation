@@ -22,7 +22,7 @@ import javax.swing.filechooser.FileFilter
  * Основной класс контроллера
  * Представляет собой основное окно редактора с кнопочками и их логикой
  */
-class AnimationWindow : JFrame() {
+class MainWindow : JFrame() {
     /**
      * View, на котором перерисовывается анимация
      */
@@ -30,9 +30,9 @@ class AnimationWindow : JFrame() {
     /**
      * Дополнительные окна - кадры, слои, размеры слоя соответственно
      */
-    private val framesFrame: FramesFrame
-    private val layersFrame: LayersFrame
-    private val slidersFrame: SlidersFrame
+    private val framesWindow: FramesWindow
+    private val layersWindow: LayersWindow
+    private val slidersWindow: SlidersWindow
     /**
      * Параметры мыши
      */
@@ -138,9 +138,9 @@ class AnimationWindow : JFrame() {
         contentPane.add(panel)
         defaultCloseOperation = WindowConstants.DO_NOTHING_ON_CLOSE
 
-        layersFrame = LayersFrame()
-        framesFrame = FramesFrame()
-        slidersFrame = SlidersFrame()
+        layersWindow = LayersWindow()
+        framesWindow = FramesWindow()
+        slidersWindow = SlidersWindow()
 
         // Кнопка выхода из редактора
         exitBtn = JButton("Save and exit")
@@ -223,7 +223,7 @@ class AnimationWindow : JFrame() {
             setBounds(saveAnimationBtn.x, saveAnimationBtn.y + saveAnimationBtn.height + 4, saveAnimationBtn.width, saveAnimationBtn.height)
             isOpaque = false
             horizontalAlignment = JTextField.CENTER
-            font = layersFrame.selectedFont
+            font = layersWindow.selectedFont
             isEditable = false
             isVisible = true
         }
@@ -272,7 +272,7 @@ class AnimationWindow : JFrame() {
         createMirroredAnimationBtn = JButton("Mirror animation")
         createMirroredAnimationBtn.setBounds(toggleAnimationBtn.x, toggleAnimationBtn.y + toggleAnimationBtn.height + 4, toggleAnimationBtn.width, toggleAnimationBtn.height)
         createMirroredAnimationBtn.addActionListener {
-            if (JOptionPane.showConfirmDialog(this@AnimationWindow, "Do you want to create a mirrored animation?", "Mirroring animation", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION) {
+            if (JOptionPane.showConfirmDialog(null, "Do you want to create a mirrored animation?", "Mirroring animation", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION) {
                 mirrorAnimation()
             }
         }
@@ -316,7 +316,7 @@ class AnimationWindow : JFrame() {
         moveDirectionText.run {
             isOpaque = false
             horizontalAlignment = JTextField.CENTER
-            font = layersFrame.selectedFont
+            font = layersWindow.selectedFont
             isEditable = false
             setBounds(isAnimationRepeatableCheckbox.x, isAnimationRepeatableCheckbox.y + isAnimationRepeatableCheckbox.height + 4, isAnimationRepeatableCheckbox.width, isAnimationRepeatableCheckbox.height)
             isVisible = true
@@ -338,38 +338,38 @@ class AnimationWindow : JFrame() {
                     }
                     animation.curMoveDirection = MoveDirection.fromString(cb.text)
                     animation.frames = animation.data[animation.curMoveDirection]!![animation.curWeaponType]!!
-                    framesFrame.frameButtons.clear()
-                    framesFrame.scrollPanel.removeAll()
-                    framesFrame.scrollPanel.repaint()
-                    framesFrame.scrollPane.revalidate()
-                    slidersFrame.isVisible = false
+                    framesWindow.frameButtons.clear()
+                    framesWindow.scrollPanel.removeAll()
+                    framesWindow.scrollPanel.repaint()
+                    framesWindow.scrollPane.revalidate()
+                    slidersWindow.isVisible = false
                     setCurFrame(-1)
-                    layersFrame.newLayerButton.isEnabled = true
-                    layersFrame.newEnabled = true
-                    layersFrame.deleteLayerButton.isEnabled = false
-                    layersFrame.deleteEnabled = false
-                    layersFrame.renameLayerButton.isEnabled = false
-                    layersFrame.renameEnabled = false
-                    layersFrame.upLayerButton.isEnabled = false
-                    layersFrame.upEnabled = false
-                    layersFrame.downLayerButton.isEnabled = false
-                    layersFrame.downEnabled = false
-                    layersFrame.scrollPanel.removeAll()
-                    layersFrame.layerButtons.clear()
-                    layersFrame.scrollPanel.repaint()
-                    layersFrame.scrollPane.revalidate()
+                    layersWindow.newLayerButton.isEnabled = true
+                    layersWindow.newEnabled = true
+                    layersWindow.deleteLayerButton.isEnabled = false
+                    layersWindow.deleteEnabled = false
+                    layersWindow.renameLayerButton.isEnabled = false
+                    layersWindow.renameEnabled = false
+                    layersWindow.upLayerButton.isEnabled = false
+                    layersWindow.upEnabled = false
+                    layersWindow.downLayerButton.isEnabled = false
+                    layersWindow.downEnabled = false
+                    layersWindow.scrollPanel.removeAll()
+                    layersWindow.layerButtons.clear()
+                    layersWindow.scrollPanel.repaint()
+                    layersWindow.scrollPane.revalidate()
                     panel.frame = null
                     for (i in animation.frames.indices) {
                         val tmp = JButton("frame$i")
                         tmp.addActionListener {
                             setCurFrame(Integer.parseInt(tmp.text.substring(5)))
-                            framesFrame.deleteFrameButton.isEnabled = true
-                            framesFrame.deleteEnabled = true
+                            framesWindow.deleteFrameButton.isEnabled = true
+                            framesWindow.deleteEnabled = true
                         }
-                        framesFrame.frameButtons.add(tmp)
-                        framesFrame.scrollPanel.add(tmp)
+                        framesWindow.frameButtons.add(tmp)
+                        framesWindow.scrollPanel.add(tmp)
                     }
-                    framesFrame.scrollPane.revalidate()
+                    framesWindow.scrollPane.revalidate()
                     setCurFrame(-1)
                     panel.frame = null
                 }
@@ -387,7 +387,7 @@ class AnimationWindow : JFrame() {
         weaponTypeText.run {
             isOpaque = false
             horizontalAlignment = JTextField.CENTER
-            font = layersFrame.selectedFont
+            font = layersWindow.selectedFont
             isEditable = false
             setBounds(moveDirectionCheckboxes[moveDirectionCheckboxes.size-1].x, moveDirectionCheckboxes[moveDirectionCheckboxes.size-1].y + moveDirectionCheckboxes[moveDirectionCheckboxes.size-1].height + 4, moveDirectionCheckboxes[moveDirectionCheckboxes.size-1].width, moveDirectionCheckboxes[moveDirectionCheckboxes.size-1].height)
             isVisible = true
@@ -408,38 +408,38 @@ class AnimationWindow : JFrame() {
                     }
                     animation.curWeaponType = WeaponType.fromString(cb.text)
                     animation.frames = animation.data[animation.curMoveDirection]!![animation.curWeaponType]!!
-                    framesFrame.frameButtons.clear()
-                    framesFrame.scrollPanel.removeAll()
-                    framesFrame.scrollPanel.repaint()
-                    framesFrame.scrollPane.revalidate()
-                    slidersFrame.isVisible = false
+                    framesWindow.frameButtons.clear()
+                    framesWindow.scrollPanel.removeAll()
+                    framesWindow.scrollPanel.repaint()
+                    framesWindow.scrollPane.revalidate()
+                    slidersWindow.isVisible = false
                     setCurFrame(-1)
-                    layersFrame.newLayerButton.isEnabled = true
-                    layersFrame.newEnabled = true
-                    layersFrame.deleteLayerButton.isEnabled = false
-                    layersFrame.deleteEnabled = false
-                    layersFrame.renameLayerButton.isEnabled = false
-                    layersFrame.renameEnabled = false
-                    layersFrame.upLayerButton.isEnabled = false
-                    layersFrame.upEnabled = false
-                    layersFrame.downLayerButton.isEnabled = false
-                    layersFrame.downEnabled = false
-                    layersFrame.scrollPanel.removeAll()
-                    layersFrame.layerButtons.clear()
-                    layersFrame.scrollPanel.repaint()
-                    layersFrame.scrollPane.revalidate()
+                    layersWindow.newLayerButton.isEnabled = true
+                    layersWindow.newEnabled = true
+                    layersWindow.deleteLayerButton.isEnabled = false
+                    layersWindow.deleteEnabled = false
+                    layersWindow.renameLayerButton.isEnabled = false
+                    layersWindow.renameEnabled = false
+                    layersWindow.upLayerButton.isEnabled = false
+                    layersWindow.upEnabled = false
+                    layersWindow.downLayerButton.isEnabled = false
+                    layersWindow.downEnabled = false
+                    layersWindow.scrollPanel.removeAll()
+                    layersWindow.layerButtons.clear()
+                    layersWindow.scrollPanel.repaint()
+                    layersWindow.scrollPane.revalidate()
                     panel.frame = null
                     for (i in animation.frames.indices) {
                         val tmp = JButton("frame$i")
                         tmp.addActionListener {
                             setCurFrame(Integer.parseInt(tmp.text.substring(5)))
-                            framesFrame.deleteFrameButton.isEnabled = true
-                            framesFrame.deleteEnabled = true
+                            framesWindow.deleteFrameButton.isEnabled = true
+                            framesWindow.deleteEnabled = true
                         }
-                        framesFrame.frameButtons.add(tmp)
-                        framesFrame.scrollPanel.add(tmp)
+                        framesWindow.frameButtons.add(tmp)
+                        framesWindow.scrollPanel.add(tmp)
                     }
-                    framesFrame.scrollPane.revalidate()
+                    framesWindow.scrollPane.revalidate()
                     setCurFrame(-1)
                     panel.frame = null
                 }
@@ -467,16 +467,16 @@ class AnimationWindow : JFrame() {
         })
         isVisible = true
         val screen = Toolkit.getDefaultToolkit().screenSize
-        layersFrame.setLocation(screen.width - layersFrame.width - 20, screen.height - layersFrame.height - 60)
-        layersFrame.isVisible = true
-        framesFrame.setLocation(screen.width - framesFrame.width - 20, screen.height - layersFrame.height - framesFrame.height - 80)
-        framesFrame.isVisible = true
-        slidersFrame.setLocation(layersFrame.x - 20 - slidersFrame.width, screen.height - 60 - slidersFrame.height)
-        slidersFrame.isVisible = false
+        layersWindow.setLocation(screen.width - layersWindow.width - 20, screen.height - layersWindow.height - 60)
+        layersWindow.isVisible = true
+        framesWindow.setLocation(screen.width - framesWindow.width - 20, screen.height - layersWindow.height - framesWindow.height - 80)
+        framesWindow.isVisible = true
+        slidersWindow.setLocation(layersWindow.x - 20 - slidersWindow.width, screen.height - 60 - slidersWindow.height)
+        slidersWindow.isVisible = false
 
         //Кнопочки мини-окна со слоями
         //Кнопочка создания нового слоя
-        layersFrame.newLayerButton.addActionListener {
+        layersWindow.newLayerButton.addActionListener {
             val fc = JFileChooser("./drawable")
             fc.addChoosableFileFilter(object : FileFilter() {
                 override fun getDescription(): String {
@@ -497,35 +497,35 @@ class AnimationWindow : JFrame() {
                         frame.layers.add(Layer(layer))
                     }
                     val tmp = JButton(layer.layerName)
-                    tmp.addActionListener { loadLayer(layersFrame.layerButtons.indexOf(tmp)) }
-                    layersFrame.layerButtons.add(tmp)
-                    layersFrame.scrollPanel.add(tmp)
-                    layersFrame.scrollPanel.revalidate()
-                    loadLayer(layersFrame.layerButtons.size - 1)
+                    tmp.addActionListener { loadLayer(layersWindow.layerButtons.indexOf(tmp)) }
+                    layersWindow.layerButtons.add(tmp)
+                    layersWindow.scrollPanel.add(tmp)
+                    layersWindow.scrollPanel.revalidate()
+                    loadLayer(layersWindow.layerButtons.size - 1)
                 }
             }
         }
         //Кнопочка удаления слоя
-        layersFrame.deleteLayerButton.addActionListener {
+        layersWindow.deleteLayerButton.addActionListener {
             if (animation.curFrame != -1) {
                 val frame = animation.frames[animation.curFrame]
                 if (frame.curLayer != -1) {
                     val layer = frame.layers[frame.curLayer]
-                    if (JOptionPane.showConfirmDialog(layersFrame, "Delete the layer " +layer.layerName + "?", "Delete layer", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.YES_OPTION) {
-                        layersFrame.scrollPanel.remove(layersFrame.layerButtons[frame.curLayer])
-                        layersFrame.layerButtons.removeAt(frame.curLayer)
+                    if (JOptionPane.showConfirmDialog(layersWindow, "Delete the layer " +layer.layerName + "?", "Delete layer", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.YES_OPTION) {
+                        layersWindow.scrollPanel.remove(layersWindow.layerButtons[frame.curLayer])
+                        layersWindow.layerButtons.removeAt(frame.curLayer)
                         val layerID = frame.curLayer
                         frame.curLayer = -1
-                        layersFrame.deleteLayerButton.isEnabled = false
-                        layersFrame.deleteEnabled = false
-                        layersFrame.renameLayerButton.isEnabled = false
-                        layersFrame.renameEnabled = false
-                        layersFrame.upLayerButton.isEnabled = false
-                        layersFrame.upEnabled = false
-                        layersFrame.downLayerButton.isEnabled = false
-                        layersFrame.downEnabled = false
-                        layersFrame.scrollPanel.repaint()
-                        layersFrame.scrollPane.revalidate()
+                        layersWindow.deleteLayerButton.isEnabled = false
+                        layersWindow.deleteEnabled = false
+                        layersWindow.renameLayerButton.isEnabled = false
+                        layersWindow.renameEnabled = false
+                        layersWindow.upLayerButton.isEnabled = false
+                        layersWindow.upEnabled = false
+                        layersWindow.downLayerButton.isEnabled = false
+                        layersWindow.downEnabled = false
+                        layersWindow.scrollPanel.repaint()
+                        layersWindow.scrollPane.revalidate()
                         for (fr in animation.frames) {
                             fr.curLayer = -1
                             fr.layers.removeAt(layerID)
@@ -535,42 +535,42 @@ class AnimationWindow : JFrame() {
             }
         }
         //Кнопочка переименования слоя
-        layersFrame.renameLayerButton.addActionListener {
+        layersWindow.renameLayerButton.addActionListener {
             if (animation.curFrame != -1) {
                 val frame = animation.frames[animation.curFrame]
                 if (frame.curLayer != -1) {
                     val layer = frame.layers[frame.curLayer]
-                    val newName = JOptionPane.showInputDialog(layersFrame, "Create a new name for the layer " + layer.layerName, "Rename the layer", JOptionPane.PLAIN_MESSAGE).trim()
+                    val newName = JOptionPane.showInputDialog(layersWindow, "Create a new name for the layer " + layer.layerName, "Rename the layer", JOptionPane.PLAIN_MESSAGE).trim()
                     layer.layerName = newName
-                    layersFrame.layerButtons[frame.curLayer].text = newName
+                    layersWindow.layerButtons[frame.curLayer].text = newName
                 }
             }
         }
         //Кнопочка поднятия слоя наверх
-        layersFrame.upLayerButton.addActionListener {
+        layersWindow.upLayerButton.addActionListener {
             if (animation.curFrame != -1) {
                 val frame = animation.frames[animation.curFrame]
                 if (frame.curLayer != -1) {
                     if (frame.curLayer > 0) {
-                        val btns = layersFrame.layerButtons
-                        layersFrame.layerButtons = ArrayList()
+                        val btns = layersWindow.layerButtons
+                        layersWindow.layerButtons = ArrayList()
 
                         for (i in 0 until frame.curLayer - 1) {
-                            layersFrame.layerButtons.add(btns[i])
+                            layersWindow.layerButtons.add(btns[i])
                         }
-                        layersFrame.layerButtons.add(btns[frame.curLayer])
-                        layersFrame.layerButtons.add(btns[frame.curLayer - 1])
+                        layersWindow.layerButtons.add(btns[frame.curLayer])
+                        layersWindow.layerButtons.add(btns[frame.curLayer - 1])
                         for (i in frame.curLayer + 1 until btns.size) {
-                            layersFrame.layerButtons.add(btns[i])
+                            layersWindow.layerButtons.add(btns[i])
                         }
 
 
-                        layersFrame.scrollPanel.removeAll()
-                        for (i in layersFrame.layerButtons.indices) {
-                            layersFrame.scrollPanel.add(layersFrame.layerButtons[i])
+                        layersWindow.scrollPanel.removeAll()
+                        for (i in layersWindow.layerButtons.indices) {
+                            layersWindow.scrollPanel.add(layersWindow.layerButtons[i])
                         }
-                        layersFrame.scrollPanel.repaint()
-                        layersFrame.scrollPane.revalidate()
+                        layersWindow.scrollPanel.repaint()
+                        layersWindow.scrollPane.revalidate()
 
                         val layerID = frame.curLayer
                         for (fr in animation.frames) {
@@ -585,29 +585,29 @@ class AnimationWindow : JFrame() {
         }
 
         //Кнопочка опускания слоя вниз
-        layersFrame.downLayerButton.addActionListener {
+        layersWindow.downLayerButton.addActionListener {
             if (animation.curFrame != -1) {
                 val frame = animation.frames[animation.curFrame]
                 if (frame.curLayer != -1) {
                     if (frame.curLayer < frame.layers.size - 1) {
-                        val btns = layersFrame.layerButtons
-                        layersFrame.layerButtons = ArrayList()
+                        val btns = layersWindow.layerButtons
+                        layersWindow.layerButtons = ArrayList()
 
                         for (i in 0 until frame.curLayer) {
-                            layersFrame.layerButtons.add(btns[i])
+                            layersWindow.layerButtons.add(btns[i])
                         }
-                        layersFrame.layerButtons.add(btns[frame.curLayer + 1])
-                        layersFrame.layerButtons.add(btns[frame.curLayer])
+                        layersWindow.layerButtons.add(btns[frame.curLayer + 1])
+                        layersWindow.layerButtons.add(btns[frame.curLayer])
                         for (i in frame.curLayer + 2 until btns.size) {
-                            layersFrame.layerButtons.add(btns[i])
+                            layersWindow.layerButtons.add(btns[i])
                         }
 
-                        layersFrame.scrollPanel.removeAll()
-                        for (i in layersFrame.layerButtons.indices) {
-                            layersFrame.scrollPanel.add(layersFrame.layerButtons[i])
+                        layersWindow.scrollPanel.removeAll()
+                        for (i in layersWindow.layerButtons.indices) {
+                            layersWindow.scrollPanel.add(layersWindow.layerButtons[i])
                         }
-                        layersFrame.scrollPanel.repaint()
-                        layersFrame.scrollPane.revalidate()
+                        layersWindow.scrollPanel.repaint()
+                        layersWindow.scrollPane.revalidate()
 
                         val layerID = frame.curLayer
                         for (fr in animation.frames) {
@@ -623,7 +623,7 @@ class AnimationWindow : JFrame() {
 
         //Кнопочки мини-окна с кадрами
         //Кнопочка создания нового кадра
-        framesFrame.newFrameButton.addActionListener {
+        framesWindow.newFrameButton.addActionListener {
             val newFrame = Frame()
             var layersKol = 0
             if (animation.frames.isNotEmpty()) {
@@ -635,59 +635,59 @@ class AnimationWindow : JFrame() {
             val tmp = JButton("frame"+animation.frames.size)
             tmp.addActionListener {
                 setCurFrame(Integer.parseInt(tmp.text.substring(5)))
-                framesFrame.deleteFrameButton.isEnabled = true
-                framesFrame.deleteEnabled = true
+                framesWindow.deleteFrameButton.isEnabled = true
+                framesWindow.deleteEnabled = true
             }
             animation.frames.add(newFrame)
-            framesFrame.frameButtons.add(tmp)
-            framesFrame.scrollPanel.add(tmp)
-            framesFrame.scrollPanel.repaint()
-            framesFrame.scrollPane.revalidate()
+            framesWindow.frameButtons.add(tmp)
+            framesWindow.scrollPanel.add(tmp)
+            framesWindow.scrollPanel.repaint()
+            framesWindow.scrollPane.revalidate()
         }
 
         //Кнопочка копирования текущего кадра
-        framesFrame.copyLastFrameButton.addActionListener {
+        framesWindow.copyLastFrameButton.addActionListener {
             if (animation.curFrame != -1) {
                 val tmp = JButton("frame" + (animation.frames.size))
                 tmp.addActionListener {
                     setCurFrame(Integer.parseInt(tmp.text.substring(5)))
-                    framesFrame.deleteFrameButton.isEnabled = true
-                    framesFrame.deleteEnabled = true
+                    framesWindow.deleteFrameButton.isEnabled = true
+                    framesWindow.deleteEnabled = true
                 }
-                framesFrame.frameButtons.add(tmp)
-                framesFrame.scrollPanel.add(tmp)
-                framesFrame.scrollPanel.repaint()
-                framesFrame.scrollPane.revalidate()
+                framesWindow.frameButtons.add(tmp)
+                framesWindow.scrollPanel.add(tmp)
+                framesWindow.scrollPanel.repaint()
+                framesWindow.scrollPane.revalidate()
                 animation.frames.add(Frame(animation.frames[animation.curFrame]))
             }
         }
 
         //Кнопочка удаления кадра
-        framesFrame.deleteFrameButton.addActionListener {
-            if (JOptionPane.showConfirmDialog(framesFrame, "Delete the frame " + animation.curFrame + "?", "Delete frame", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.YES_OPTION) {
+        framesWindow.deleteFrameButton.addActionListener {
+            if (JOptionPane.showConfirmDialog(framesWindow, "Delete the frame " + animation.curFrame + "?", "Delete frame", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.YES_OPTION) {
                 if (animation.curFrame != -1) {
                     val lastCurFrame = animation.curFrame
                     setCurFrame(-1)
                     animation.frames.removeAt(lastCurFrame)
-                    framesFrame.deleteFrameButton.isEnabled = false
-                    framesFrame.deleteEnabled = false
-                    framesFrame.scrollPanel.remove(framesFrame.frameButtons[framesFrame.frameButtons.size - 1])
-                    framesFrame.frameButtons.removeAt(framesFrame.frameButtons.size - 1)
-                    framesFrame.scrollPanel.repaint()
-                    framesFrame.scrollPane.revalidate()
-                    layersFrame.layerButtons.clear()
-                    layersFrame.scrollPanel.removeAll()
-                    layersFrame.scrollPane.revalidate()
-                    layersFrame.newLayerButton.isEnabled = false
-                    layersFrame.newEnabled = false
-                    layersFrame.deleteLayerButton.isEnabled = false
-                    layersFrame.deleteEnabled = false
-                    layersFrame.renameLayerButton.isEnabled = false
-                    layersFrame.renameEnabled = false
-                    layersFrame.upLayerButton.isEnabled = false
-                    layersFrame.upEnabled = false
-                    layersFrame.downLayerButton.isEnabled = false
-                    layersFrame.downEnabled = false
+                    framesWindow.deleteFrameButton.isEnabled = false
+                    framesWindow.deleteEnabled = false
+                    framesWindow.scrollPanel.remove(framesWindow.frameButtons[framesWindow.frameButtons.size - 1])
+                    framesWindow.frameButtons.removeAt(framesWindow.frameButtons.size - 1)
+                    framesWindow.scrollPanel.repaint()
+                    framesWindow.scrollPane.revalidate()
+                    layersWindow.layerButtons.clear()
+                    layersWindow.scrollPanel.removeAll()
+                    layersWindow.scrollPane.revalidate()
+                    layersWindow.newLayerButton.isEnabled = false
+                    layersWindow.newEnabled = false
+                    layersWindow.deleteLayerButton.isEnabled = false
+                    layersWindow.deleteEnabled = false
+                    layersWindow.renameLayerButton.isEnabled = false
+                    layersWindow.renameEnabled = false
+                    layersWindow.upLayerButton.isEnabled = false
+                    layersWindow.upEnabled = false
+                    layersWindow.downLayerButton.isEnabled = false
+                    layersWindow.downEnabled = false
                 }
                 else {
                     JOptionPane.showMessageDialog(null, "No frames selected")
@@ -697,34 +697,34 @@ class AnimationWindow : JFrame() {
 
         //Слайдеры мини-окна со слайдерами изменения размера
         //Слайдер изменения размера слоя
-        slidersFrame.sizeSlider.addChangeListener {
+        slidersWindow.sizeSlider.addChangeListener {
             if (animation.curFrame != -1) {
                 val frame = animation.frames[animation.curFrame]
                 if (frame.curLayer != -1) {
                     val layer = frame.layers[frame.curLayer]
-                    layer.scale = slidersFrame.sizeSlider.value / 100f
+                    layer.scale = slidersWindow.sizeSlider.value / 100f
                 }
             }
         }
 
         //Слайдер изменения ширины слоя
-        slidersFrame.widthSlider.addChangeListener {
+        slidersWindow.widthSlider.addChangeListener {
             if (animation.curFrame != -1) {
                 val frame = animation.frames[animation.curFrame]
                 if (frame.curLayer != -1) {
                     val layer = frame.layers[frame.curLayer]
-                    layer.scaleX = slidersFrame.widthSlider.value / 100f
+                    layer.scaleX = slidersWindow.widthSlider.value / 100f
                 }
             }
         }
 
         //Слайдер изменения высоты слоя
-        slidersFrame.heightSlider.addChangeListener {
+        slidersWindow.heightSlider.addChangeListener {
             if (animation.curFrame != -1) {
                 val frame = animation.frames[animation.curFrame]
                 if (frame.curLayer != -1) {
                     val layer = frame.layers[frame.curLayer]
-                    layer.scaleY = slidersFrame.heightSlider.value / 100f
+                    layer.scaleY = slidersWindow.heightSlider.value / 100f
                 }
             }
         }
@@ -939,20 +939,20 @@ class AnimationWindow : JFrame() {
                     val obj = oin.readObject()
                     animation = obj as Animation
                     animation.frames = animation.data[animation.curMoveDirection]!![animation.curWeaponType]!!
-                    framesFrame.frameButtons.clear()
-                    framesFrame.scrollPanel.removeAll()
+                    framesWindow.frameButtons.clear()
+                    framesWindow.scrollPanel.removeAll()
                     for (i in animation.frames.indices) {
                         val tmp = JButton("frame$i")
                         tmp.addActionListener {
                             setCurFrame(Integer.parseInt(tmp.text.substring(5)))
-                            framesFrame.deleteFrameButton.isEnabled = true
-                            framesFrame.deleteEnabled = true
+                            framesWindow.deleteFrameButton.isEnabled = true
+                            framesWindow.deleteEnabled = true
                         }
-                        framesFrame.frameButtons.add(tmp)
-                        framesFrame.scrollPanel.add(tmp)
+                        framesWindow.frameButtons.add(tmp)
+                        framesWindow.scrollPanel.add(tmp)
                     }
-                    framesFrame.scrollPane.revalidate()
-                    framesFrame.scrollPanel.repaint()
+                    framesWindow.scrollPane.revalidate()
+                    framesWindow.scrollPanel.repaint()
                     for (cb in moveDirectionCheckboxes) {
                         cb.isSelected = (cb.text == animation.curMoveDirection.toString())
                     }
@@ -984,61 +984,61 @@ class AnimationWindow : JFrame() {
      */
     private fun loadLayer(layerID: Int) {
         if (animation.frames[animation.curFrame].curLayer != -1) {
-            layersFrame.layerButtons[animation.frames[animation.curFrame].curLayer].font = layersFrame.basicFont
+            layersWindow.layerButtons[animation.frames[animation.curFrame].curLayer].font = layersWindow.basicFont
         }
-        layersFrame.layerButtons[layerID].font = layersFrame.selectedFont
+        layersWindow.layerButtons[layerID].font = layersWindow.selectedFont
         animation.frames[animation.curFrame].curLayer = layerID
-        layersFrame.deleteLayerButton.isEnabled = true
-        layersFrame.deleteEnabled = true
-        layersFrame.renameLayerButton.isEnabled = true
-        layersFrame.renameEnabled = true
-        layersFrame.upLayerButton.isEnabled = true
-        layersFrame.upEnabled = true
-        layersFrame.downLayerButton.isEnabled = true
-        layersFrame.downEnabled = true
+        layersWindow.deleteLayerButton.isEnabled = true
+        layersWindow.deleteEnabled = true
+        layersWindow.renameLayerButton.isEnabled = true
+        layersWindow.renameEnabled = true
+        layersWindow.upLayerButton.isEnabled = true
+        layersWindow.upEnabled = true
+        layersWindow.downLayerButton.isEnabled = true
+        layersWindow.downEnabled = true
 
         val layer = animation.frames[animation.curFrame].layers[layerID]
-        slidersFrame.sizeSlider.value = Math.round(layer.scale * 100)
-        slidersFrame.widthSlider.value = Math.round(layer.scaleX * 100)
-        slidersFrame.heightSlider.value = Math.round(layer.scaleY * 100)
-        slidersFrame.isVisible = true
+        slidersWindow.sizeSlider.value = Math.round(layer.scale * 100)
+        slidersWindow.widthSlider.value = Math.round(layer.scaleX * 100)
+        slidersWindow.heightSlider.value = Math.round(layer.scaleY * 100)
+        slidersWindow.isVisible = true
     }
 
     /**
      * Переключает активный кадр
      */
     private fun loadFrame(frameID: Int) {
-        slidersFrame.isVisible = false
-        layersFrame.deleteLayerButton.isEnabled = false
-        layersFrame.deleteEnabled = false
-        layersFrame.renameLayerButton.isEnabled = false
-        layersFrame.renameEnabled = false
-        layersFrame.upLayerButton.isEnabled = false
-        layersFrame.upEnabled = false
-        layersFrame.downLayerButton.isEnabled = false
-        layersFrame.downEnabled = false
-        layersFrame.scrollPanel.removeAll()
-        layersFrame.layerButtons.clear()
+        slidersWindow.isVisible = false
+        layersWindow.deleteLayerButton.isEnabled = false
+        layersWindow.deleteEnabled = false
+        layersWindow.renameLayerButton.isEnabled = false
+        layersWindow.renameEnabled = false
+        layersWindow.upLayerButton.isEnabled = false
+        layersWindow.upEnabled = false
+        layersWindow.downLayerButton.isEnabled = false
+        layersWindow.downEnabled = false
+        layersWindow.scrollPanel.removeAll()
+        layersWindow.layerButtons.clear()
         if (frameID != -1) {
-            layersFrame.newLayerButton.isEnabled = true
-            layersFrame.newEnabled = true
+            layersWindow.newLayerButton.isEnabled = true
+            layersWindow.newEnabled = true
             val frame = animation.frames[frameID]
             frame.curLayer = -1
             for (layer in frame.layers) {
                 val tmp = JButton(layer.layerName)
-                tmp.addActionListener { loadLayer(layersFrame.layerButtons.indexOf(tmp)) }
-                layersFrame.layerButtons.add(tmp)
-                layersFrame.scrollPanel.add(tmp)
+                tmp.addActionListener { loadLayer(layersWindow.layerButtons.indexOf(tmp)) }
+                layersWindow.layerButtons.add(tmp)
+                layersWindow.scrollPanel.add(tmp)
             }
             panel.frame = frame
         }
         else {
             panel.frame = null
-            layersFrame.newLayerButton.isEnabled = false
-            layersFrame.newEnabled = false
+            layersWindow.newLayerButton.isEnabled = false
+            layersWindow.newEnabled = false
         }
-        layersFrame.scrollPanel.repaint()
-        layersFrame.scrollPane.revalidate()
+        layersWindow.scrollPanel.repaint()
+        layersWindow.scrollPane.revalidate()
         panel.repaint()
     }
 
@@ -1072,23 +1072,23 @@ class AnimationWindow : JFrame() {
      */
     private fun setCurFrame(frameID : Int) {
         if (animation.curFrame != -1) {
-            framesFrame.frameButtons[animation.curFrame].font = layersFrame.basicFont
+            framesWindow.frameButtons[animation.curFrame].font = layersWindow.basicFont
         }
         animation.curFrame = frameID
         if (frameID == -1) {
-            framesFrame.copyEnabled = false
-            framesFrame.deleteEnabled = false
-            framesFrame.upEnabled = false
-            framesFrame.downEnabled = false
-            framesFrame.isEnabled = !panel.isPlayingAnimation
+            framesWindow.copyEnabled = false
+            framesWindow.deleteEnabled = false
+            framesWindow.upEnabled = false
+            framesWindow.downEnabled = false
+            framesWindow.isEnabled = !panel.isPlayingAnimation
         }
         else {
-            framesFrame.copyEnabled = true
-            framesFrame.deleteEnabled = true
-            framesFrame.upEnabled = true
-            framesFrame.downEnabled = true
-            framesFrame.isEnabled = !panel.isPlayingAnimation
-            framesFrame.frameButtons[animation.curFrame].font = layersFrame.selectedFont
+            framesWindow.copyEnabled = true
+            framesWindow.deleteEnabled = true
+            framesWindow.upEnabled = true
+            framesWindow.downEnabled = true
+            framesWindow.isEnabled = !panel.isPlayingAnimation
+            framesWindow.frameButtons[animation.curFrame].font = layersWindow.selectedFont
         }
         loadFrame(frameID)
     }
@@ -1101,9 +1101,9 @@ class AnimationWindow : JFrame() {
         isAnimationRepeatableCheckbox.isEnabled = false
         changeDurationBtn.isEnabled = false
         openAnotherAnimationBtn.isEnabled = false
-        framesFrame.isEnabled = false
-        layersFrame.isEnabled = false
-        slidersFrame.isEnabled = false
+        framesWindow.isEnabled = false
+        layersWindow.isEnabled = false
+        slidersWindow.isEnabled = false
         for (cb in moveDirectionCheckboxes) {
             cb.isEnabled = false
         }
@@ -1127,9 +1127,9 @@ class AnimationWindow : JFrame() {
         isAnimationRepeatableCheckbox.isEnabled = true
         changeDurationBtn.isEnabled = true
         openAnotherAnimationBtn.isEnabled = true
-        framesFrame.isEnabled = true
-        layersFrame.isEnabled = true
-        slidersFrame.isEnabled = true
+        framesWindow.isEnabled = true
+        layersWindow.isEnabled = true
+        slidersWindow.isEnabled = true
         for (cb in moveDirectionCheckboxes) {
             cb.isEnabled = true
         }
@@ -1177,11 +1177,13 @@ class AnimationWindow : JFrame() {
         return a * a
     }
 
-
+    /**
+     * Точка входа в программу
+     */
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            AnimationWindow()
+            MainWindow()
         }
     }
 }

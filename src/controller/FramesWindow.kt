@@ -15,7 +15,7 @@ import javax.swing.ScrollPaneConstants
 /**
  * Дополнительное окно, позволяющее работать с кадрами анимации
  */
-class FramesFrame : JFrame() {
+class FramesWindow : JFrame() {
     /**
      * Размер маленьких кнопочек
      */

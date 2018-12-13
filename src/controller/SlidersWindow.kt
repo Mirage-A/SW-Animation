@@ -12,7 +12,7 @@ import javax.swing.JSlider
 /**
  * Дополнительное окно, позволяющее работать с размерами слоя
  */
-class SlidersFrame : JFrame() {
+class SlidersWindow : JFrame() {
     /**
      * Слайдер, отвечающий за размер слоя
      */

@@ -16,7 +16,7 @@ import javax.swing.ScrollPaneConstants
 /**
  * Дополнительное окно, позволяющее работать со слоями
  */
-class LayersFrame : JFrame() {
+class LayersWindow : JFrame() {
     /**
      * Размер маленьких кнопочек
      */
