@@ -540,7 +540,7 @@ class AnimationWindow : JFrame() {
                 val frame = animation.frames[animation.curFrame]
                 if (frame.curLayer != -1) {
                     val layer = frame.layers[frame.curLayer]
-                    val newName = JOptionPane.showInputDialog(layersFrame, "Create a new name for the layer " + layer.layerName, "Rename the layer", JOptionPane.PLAIN_MESSAGE).trim { it <= ' ' }
+                    val newName = JOptionPane.showInputDialog(layersFrame, "Create a new name for the layer " + layer.layerName, "Rename the layer", JOptionPane.PLAIN_MESSAGE).trim()
                     layer.layerName = newName
                     layersFrame.layerButtons[frame.curLayer].text = newName
                 }
@@ -954,21 +954,17 @@ class AnimationWindow : JFrame() {
                     framesFrame.scrollPane.revalidate()
                     framesFrame.scrollPanel.repaint()
                     for (cb in moveDirectionCheckboxes) {
-                        cb.isSelected = (cb.text.equals(animation.curMoveDirection.toString()))
+                        cb.isSelected = (cb.text == animation.curMoveDirection.toString())
                     }
                     for (cb in weaponTypeCheckboxes) {
-                        cb.isSelected = (cb.text.equals(animation.curWeaponType.toString()))
+                        cb.isSelected = (cb.text == animation.curWeaponType.toString())
                     }
                     setCurFrame(animation.curFrame)
                     isAnimationRepeatableCheckbox.isSelected = animation.isRepeatable
-                    if (animation is LegsAnimation) {
-                        animationNameText.text = "Legs: " + animation.name
-                    }
-                    else if (animation is BodyAnimation) {
-                        animationNameText.text = "Body: " + animation.name
-                    }
-                    else {
-                        animationNameText.text = "Unidentified type"
+                    animationNameText.text = when (animation) {
+                        is LegsAnimation -> "Legs: " + animation.name
+                        is BodyAnimation -> "Body: " + animation.name
+                        else -> "Unidentified type"
                     }
                     return true
                 }
@@ -1055,9 +1051,9 @@ class AnimationWindow : JFrame() {
             JOptionPane.showMessageDialog(null, "This move direction can't be mirrored")
         }
         else {
-            var mirroredFrames = animation.data[mirroredMD]!![animation.curWeaponType]!!
+            val mirroredFrames = animation.data[mirroredMD]!![animation.curWeaponType]!!
             mirroredFrames.clear()
-            var curFrames = animation.data[animation.curMoveDirection]!![animation.curWeaponType]!!
+            val curFrames = animation.data[animation.curMoveDirection]!![animation.curWeaponType]!!
             for (frame in curFrames) {
                 mirroredFrames.add(Frame(frame))
             }

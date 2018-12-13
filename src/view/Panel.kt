@@ -13,7 +13,6 @@ import java.util.ArrayList
 
 import javax.imageio.ImageIO
 import javax.swing.JPanel
-import javax.swing.JScrollPane
 import javax.swing.Timer
 
 /**
@@ -186,7 +185,7 @@ class Panel : JPanel() {
             val scaledWidth = layer.basicWidth * layer.scale * layer.scaleX
             val scaledHeight = layer.basicHeight * layer.scale * layer.scaleY
             gr.color = Color.BLUE
-            val g = gr as Graphics2D
+            gr as Graphics2D
             val at = AffineTransform.getTranslateInstance(((layer.x - scaledWidth / 2) * zoom / 100 + scrW / 2).toDouble(), ((layer.y - scaledHeight / 2 + centerY) * zoom / 100 + scrH / 2).toDouble())
             at.rotate(-layer.angle.toDouble(), (scaledWidth / 2 * zoom / 100).toDouble(), (scaledHeight / 2 * zoom / 100).toDouble())
             gr.drawImage(ram.getScaledInstance(Math.round(scaledWidth * zoom / 100), Math.round(scaledHeight * zoom / 100), Image.SCALE_SMOOTH), at, null)

@@ -19,7 +19,7 @@ class Layer (var imageName: String, var x : Float = 0f, var y : Float = 0f, var 
     /**
      * Название слоя
      */
-    var layerName: String
+    var layerName = imageName.substring(0, imageName.length - 4)
     /**
      * Изображение слоя
      */
@@ -27,7 +27,6 @@ class Layer (var imageName: String, var x : Float = 0f, var y : Float = 0f, var 
     var basicImage: BufferedImage? = null
 
     init {
-        layerName = imageName.substring(0, imageName.length - 4)
         loadImage()
     }
     constructor(origin : Layer) : this(origin.imageName, origin.x, origin.y, origin.scale, origin.scaleX, origin.scaleY,
