@@ -3,6 +3,9 @@ package model
 import java.io.Serializable
 import java.lang.Exception
 
+/**
+ * Направление движения
+ */
 enum class MoveDirection : Serializable{
     RIGHT,
     UP_RIGHT,
@@ -13,6 +16,9 @@ enum class MoveDirection : Serializable{
     DOWN,
     DOWN_RIGHT;
 
+    /**
+     * Преобразует направление движения в строку
+     */
     override fun toString() : String {
         return when (this) {
             RIGHT -> "RIGHT"
@@ -26,6 +32,9 @@ enum class MoveDirection : Serializable{
         }
     }
 
+    /**
+     * Возвращает направление движения, обратное к данному относительно вертикальной оси
+     */
     fun mirrored() : MoveDirection {
         return when (this) {
             RIGHT -> LEFT
@@ -40,6 +49,10 @@ enum class MoveDirection : Serializable{
     }
 
     companion object {
+        /**
+         * Преобразует строку в направление движения (операция, обратная toString())
+         * @throws Exception если строка не соответствует никакому направлению движения
+         */
         fun fromString(str: String) : MoveDirection {
             return when (str) {
                 "RIGHT" -> RIGHT

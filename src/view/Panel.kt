@@ -16,21 +16,58 @@ import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.Timer
 
+/**
+ * Основной класс вида
+ * Представляет собой наследника JPanel, на которой рисуется анимация
+ */
 class Panel : JPanel() {
+    /**
+     * Включено ли рисование изображения гуманоида в редакторе
+     */
     internal var drawPlayer = true
-    internal var verticalScroll: JScrollPane? = null
-    internal var horizontalScroll: JScrollPane? = null
+    /**
+     * Изображение гуманоида
+     */
     internal var player: Image = BufferedImage(1,1, BufferedImage.TYPE_INT_ARGB)
+    /**
+     * Изображение синей рамки, отрисовываемое поверх активного слоя
+     */
     private var ram: BufferedImage = BufferedImage(1,1, BufferedImage.TYPE_INT_ARGB)
+    /**
+     * Текущий кадр, который отрисовывается на панели, если анимация отключена
+     */
     var frame : Frame? = null
+    /**
+     * Список кадров, которые анимируются, если анимация включена
+     */
     var frames : ArrayList<Frame> = ArrayList()
+    /**
+     * Коэффициент увеличения кадра в редакторе (в процентах)
+     */
     internal var zoom = 600
+    /**
+     * Смещение центра координат по вертикальной оси относительно центра экрана (без учёта zoom-а)
+     */
     internal val centerY = 106 - 64
-    internal val pointRadius = 4
+    /**
+     * Таймер перерисовки панели
+     */
     internal var t: Timer
+    /**
+     * Включена ли анимация
+     */
     internal var isPlayingAnimation = false
+    /**
+     * Время старта анимации
+     */
     var startTime = 0L
+    /**
+     * Является ли анимация повторяемой (иначе она останавливается на последнем кадре)
+     */
     var isRepeatable : Boolean = false
+    /**
+     * Длительность (период) анимации
+     */
     var duration = 1L
 
     init {
@@ -46,6 +83,9 @@ class Panel : JPanel() {
         t = Timer(1000 / 60, ActionListener { repaint() })
     }
 
+    /**
+     * Метод перерисовки панели
+     */
     public override fun paintComponent(gr: Graphics) {
         super.paintComponent(gr)
         val scrW = width
@@ -60,10 +100,6 @@ class Panel : JPanel() {
                 else {
                     timePassed = duration
                 }
-                /*timePassed = when (true) {
-                    isRepeatable -> 0
-                    else -> duration - 1
-                }*/
             }
             if (frames.size == 1 || timePassed == duration) {
                 val curFrame = frames[frames.size - 1]
@@ -160,7 +196,12 @@ class Panel : JPanel() {
         }
     }
 
-    fun curValue(startValue: Float, endValue : Float, progress : Float) : Float {
+    /**
+     * Возвращает значение между startValue и endValue, причем степень перехода от первого ко второму равна progress
+     * (если progress == 0, то возвращается startValue, если progress == 1, то возвращается endValue,
+     * если progress == 0.5, то возвращается их среднее арифметическое и т.д.)
+     */
+    private fun curValue(startValue: Float, endValue : Float, progress : Float) : Float {
         return startValue + (endValue - startValue) * progress
     }
 }

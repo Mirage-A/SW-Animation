@@ -9,9 +9,21 @@ import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JSlider
 
+/**
+ * Дополнительное окно, позволяющее работать с размерами слоя
+ */
 class SlidersFrame : JFrame() {
+    /**
+     * Слайдер, отвечающий за размер слоя
+     */
     internal var sizeSlider: JSlider
+    /**
+     * Слайдер, отвечающий за ширину слоя
+     */
     internal var widthSlider: JSlider
+    /**
+     * Слайдер, отвечающий за высоту слоя
+     */
     internal var heightSlider: JSlider
 
     init {
@@ -65,6 +77,10 @@ class SlidersFrame : JFrame() {
 
     }
 
+    /**
+     * Перегрузка метода setEnabled класса JFrame
+     * Не изменяет активность самого окна, но изменяет активность всех элементов внутри окна
+     */
     override fun setEnabled(b: Boolean) {
         sizeSlider.isEnabled = b
         widthSlider.isEnabled = b

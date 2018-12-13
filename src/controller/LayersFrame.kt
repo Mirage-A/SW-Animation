@@ -13,22 +13,61 @@ import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.ScrollPaneConstants
 
+/**
+ * Дополнительное окно, позволяющее работать со слоями
+ */
 class LayersFrame : JFrame() {
+    /**
+     * Размер маленьких кнопочек
+     */
     private val buttonSize = 20
+    /**
+     * Панель окна
+     */
     internal var scrollPanel: JPanel
+    /**
+     * Прокручиваемая панелька, вложенная в scrollPanel и содержащая кнопки с выбором слоя
+     */
     internal var scrollPane: JScrollPane
+    /**
+     * Кнопочка создания нового слоя
+     */
     internal var newLayerButton: JButton
-    var newEnabled = true
+    /**
+     * Кнопочка удаления выбранного слоя
+     */
     internal var deleteLayerButton: JButton
-    var deleteEnabled = true
+    /**
+     * Кнопочка переименования выбранного слоя
+     */
     internal var renameLayerButton: JButton
-    var renameEnabled = true
+    /**
+     * Кнопочка поднятия выбранного слоя наверх
+     */
     internal var upLayerButton: JButton
-    var upEnabled = true
+    /**
+     * Кнопочка опускания выбранного слоя вниз
+     */
     internal var downLayerButton: JButton
-    var downEnabled = true
-    internal var btns: ArrayList<JButton>
+    /**
+     * Активны ли данные кнопки (без учета того, активно ли все окно)
+     */
+    internal var newEnabled = true
+    internal var deleteEnabled = true
+    internal var renameEnabled = true
+    internal var upEnabled = true
+    internal var downEnabled = true
+    /**
+     * Кнопки переключения слоя
+     */
+    internal var layerButtons: ArrayList<JButton>
+    /**
+     * Шрифт кнопки, отвечающей за неактивный слой
+     */
     internal val basicFont = JButton().font
+    /**
+     * Шрифт кнопки, отвечающей за активный слой
+     */
     internal val selectedFont = Font(basicFont.fontName, Font.BOLD, basicFont.size + 4)
 
     init {
@@ -36,7 +75,7 @@ class LayersFrame : JFrame() {
         title = "Layers"
         isAlwaysOnTop = true
         defaultCloseOperation = JFrame.DO_NOTHING_ON_CLOSE
-        btns = ArrayList()
+        layerButtons = ArrayList()
         val panel = JPanel()
         panel.layout = null
         contentPane.add(panel)
@@ -104,6 +143,13 @@ class LayersFrame : JFrame() {
         isVisible = false
     }
 
+    /**
+     * Перегрузка метода setEnabled класса JFrame
+     * Не изменяет активность самого окна, но изменяет активность всех элементов внутри окна
+     * (кнопочек, панели с кнопками выбора кадра и этих кнопок)
+     * setEnabled(true) также учитывает для маленьких кнопочек то, выполняются ли условия для их активности
+     * (учитываются значения newEnabled, copyEnabled и т.д.)
+     */
     override fun setEnabled(b: Boolean) {
         scrollPanel.isEnabled = b
         scrollPane.isEnabled = b
@@ -112,7 +158,7 @@ class LayersFrame : JFrame() {
         renameLayerButton.isEnabled = b && renameEnabled
         upLayerButton.isEnabled = b && upEnabled
         downLayerButton.isEnabled = b && downEnabled
-        for (btn in btns) {
+        for (btn in layerButtons) {
             btn.isEnabled = b
         }
     }

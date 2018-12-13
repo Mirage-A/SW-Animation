@@ -8,6 +8,10 @@ import java.nio.file.Files
 
 import javax.swing.JOptionPane
 
+/**
+ * Генератор файла с кодом, который потом вставляется в проект Shattered World - Client
+ * для воспроизведения анимаций внутри игры
+ */
 class CodeGenerator {
     companion object {
         fun generate() {

@@ -12,29 +12,62 @@ import javax.swing.JPanel
 import javax.swing.JScrollPane
 import javax.swing.ScrollPaneConstants
 
+/**
+ * Дополнительное окно, позволяющее работать с кадрами анимации
+ */
 class FramesFrame : JFrame() {
+    /**
+     * Размер маленьких кнопочек
+     */
     private val buttonSize = 20
-    internal var scrollPanel: JPanel
-    internal var scrollPane: JScrollPane
-    internal var newFrameButton: JButton
-    var newEnabled = true
-    internal var copyLastFrameButton: JButton
-    var copyEnabled = true
-    internal var deleteFrameButton: JButton
-    var deleteEnabled = true
-    internal var upFrameButton: JButton
-    var upEnabled = true
-    internal var downFrameButton: JButton
-    var downEnabled = true
-    //internal var loadFrameButton: JButton
-    internal var btns: ArrayList<JButton>
+    /**
+     * Панель окна
+     */
+    internal val scrollPanel: JPanel
+    /**
+     * Прокручиваемая панелька, вложенная в scrollPanel и содержащая кнопки с выбором кадра
+     */
+    internal val scrollPane: JScrollPane
+    /**
+     * Кнопочка создания нового кадра
+     */
+    internal val newFrameButton: JButton
+    /**
+     * Кнопочка копирования выбранного кадра
+     */
+    internal val copyLastFrameButton: JButton
+    /**
+     * Кнопочка удаления выбранного кадра
+     */
+    internal val deleteFrameButton: JButton
+    /**
+     * Кнопочка поднятия выбранного кадра наверх
+     */
+    internal val upFrameButton: JButton
+    /**
+     * Кнопочка опускания выбранного кадра вниз
+     */
+    internal val downFrameButton: JButton
+    /**
+     * Активны ли данные кнопки (без учета того, активно ли все окно)
+     */
+    private var newEnabled = true
+    internal var copyEnabled = true
+    internal var deleteEnabled = true
+    internal var upEnabled = true
+    internal var downEnabled = true
+
+    /**
+     * Кнопки переключения кадра
+     */
+    internal var frameButtons: ArrayList<JButton>
 
     init {
         setSize(200, 250)
         title = "Frames"
         isAlwaysOnTop = true
         defaultCloseOperation = JFrame.DO_NOTHING_ON_CLOSE
-        btns = ArrayList()
+        frameButtons = ArrayList()
         val panel = JPanel()
         panel.layout = null
         contentPane.add(panel)
@@ -70,13 +103,6 @@ class FramesFrame : JFrame() {
         deleteFrameButton.isEnabled = false
         panel.add(deleteFrameButton)
 
-        /*loadFrameButton = JButton(ImageIcon("./icons/copy.png"))
-        loadFrameButton.setBounds(buttonSize * 3, height - 47 - buttonSize, buttonSize, buttonSize)
-        loadFrameButton.setSize(buttonSize, buttonSize)
-        loadFrameButton.isVisible = true
-        loadFrameButton.toolTipText = "Create a copy of another frame"
-        panel.add(loadFrameButton)*/
-
         upFrameButton = JButton(ImageIcon("./icons/up.png"))
         upFrameButton.setBounds(buttonSize * 3, height - 47 - buttonSize, buttonSize, buttonSize)
         upFrameButton.setSize(buttonSize, buttonSize)
@@ -101,13 +127,19 @@ class FramesFrame : JFrame() {
                 deleteFrameButton.setBounds(buttonSize * 2, height - 47 - buttonSize, buttonSize, buttonSize)
                 upFrameButton.setBounds(buttonSize * 3, height - 47 - buttonSize, buttonSize, buttonSize)
                 downFrameButton.setBounds(buttonSize * 4, height - 47 - buttonSize, buttonSize, buttonSize)
-                //loadFrameButton.setBounds(buttonSize * 3, height - 47 - buttonSize, buttonSize, buttonSize)
             }
         })
         scrollPane.revalidate()
         isVisible = false
     }
 
+    /**
+     * Перегрузка метода setEnabled класса JFrame
+     * Не изменяет активность самого окна, но изменяет активность всех элементов внутри окна
+     * (кнопочек, панели с кнопками выбора кадра и этих кнопок)
+     * setEnabled(true) также учитывает для маленьких кнопочек то, выполняются ли условия для их активности
+     * (учитываются значения newEnabled, copyEnabled и т.д.)
+     */
     override fun setEnabled(b: Boolean) {
         scrollPanel.isEnabled = b
         scrollPane.isEnabled = b
@@ -116,8 +148,7 @@ class FramesFrame : JFrame() {
         deleteFrameButton.isEnabled = b && deleteEnabled
         upFrameButton.isEnabled = b && upEnabled
         downFrameButton.isEnabled = b && downEnabled
-        //loadFrameButton.isEnabled = b
-        for (btn in btns) {
+        for (btn in frameButtons) {
             btn.isEnabled = b
         }
     }
