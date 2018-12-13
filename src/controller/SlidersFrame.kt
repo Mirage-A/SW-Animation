@@ -1,4 +1,4 @@
-package ui
+package controller
 
 import java.io.File
 
@@ -20,7 +20,7 @@ class SlidersFrame : JFrame() {
         val space = 0
 
         setSize(sliderWidth + space * 2 + 42, 42 + sliderHeight * 3 + space * 4)
-        title = "logic.Layer size"
+        title = "Layer size"
         isAlwaysOnTop = true
         defaultCloseOperation = JFrame.DO_NOTHING_ON_CLOSE
 

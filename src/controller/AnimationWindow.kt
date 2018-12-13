@@ -1,11 +1,11 @@
-package ui
+package controller
 
-import logic.*
+import model.*
+import view.Panel
 import java.awt.Color
 import java.awt.Cursor
 import java.awt.Image
 import java.awt.Toolkit
-import java.awt.event.ActionListener
 import java.awt.event.MouseEvent
 import java.awt.event.MouseListener
 import java.awt.event.MouseMotionListener
@@ -18,28 +18,117 @@ import javax.imageio.ImageIO
 import javax.swing.*
 import javax.swing.filechooser.FileFilter
 
+/**
+ * Основной класс контроллера
+ * Представляет собой основное окно редактора с кнопочками и их логикой
+ */
 class AnimationWindow : JFrame() {
-    private var panel: Panel = Panel()
-    private var layersFrame: LayersFrame = LayersFrame()
-    private var framesFrame: FramesFrame = FramesFrame()
-    private var slidersFrame: SlidersFrame = SlidersFrame()
-    private var isMoving = false
-    private var x1: Int = 0
-    private var y1: Int = 0
-    private var animTimer: Timer = Timer(1, {})
-    private var mdList = ArrayList<JCheckBox>()
-    private var wtList = ArrayList<JCheckBox>()
-    private var repeat: JCheckBox = JCheckBox()
-    private var changeDuration : JButton = JButton()
-    private var anim : JButton = JButton()
-    private var exitBtn : JButton = JButton()
-    private var openAnotherAnimationBtn : JButton = JButton()
-    private var newAnimationBtn : JButton = JButton()
-    private var saveBtn : JButton = JButton()
-    private var animationNameText : JTextField = JTextField()
-
+    /**
+     * View, на котором перерисовывается анимация
+     */
+    private val panel: Panel
+    /**
+     * Дополнительные окна - кадры, слои, размеры слоя соответственно
+     */
+    private val framesFrame: FramesFrame
+    private val layersFrame: LayersFrame
+    private val slidersFrame: SlidersFrame
+    /**
+     * Параметры мыши
+     */
+    /**
+     * Зажата ли мышь (двигается ли какой-то слой в данный момент)
+     */
+    private var isMouseMoving = false
+    /**
+     * Координаты мыши (обновляются, если она зажата)
+     */
+    private var mouseX: Int = 0
+    private var mouseY: Int = 0
+    /**
+     * Элементы интерфейса в левом верхнем углу
+     */
+    /**
+     * Чекбоксы с выбором направления движения
+     */
+    private val moveDirectionCheckboxes = ArrayList<JCheckBox>()
+    /**
+     * Слайдер, позволяющий приближать/отдалять картинку в редакторе
+     */
+    private val zoomSlider :JSlider
+    /**
+     * Чекбоксы с выбором типа оружия
+     */
+    private val weaponTypeCheckboxes = ArrayList<JCheckBox>()
+    /**
+     * Чекбокс, определяющий, повторяется ли анимация после завершения
+     */
+    private val isAnimationRepeatableCheckbox: JCheckBox
+    /**
+     * Чекбокс, определяющий, показывать ли эскиз гуманоида на фоне для помощи в подборе размера изображений
+     */
+    private val showPlayerImageCheckbox : JCheckBox
+    /**
+     * Кнопочка, позволяющая выбрать длительность (период) анимации
+     */
+    private val changeDurationBtn : JButton
+    /**
+     * Кнопочка, позволяющая запустить или остановить анимацию
+     */
+    private val toggleAnimationBtn : JButton
+    /**
+     * Кнопочка, позволяющая создать отраженную относительно вертикальной оси анимацию
+     * для соответствующего направления движения
+     */
+    private val createMirroredAnimationBtn: JButton
+    /**
+     * Текст "Move direction: " над чекбоксами с выбором направления движения
+     */
+    private val moveDirectionText: JTextField
+    /**
+     * Текст "Weapon type: " над чекбоксами с выбором типа оружия
+     */
+    private val weaponTypeText : JTextField
+    /**
+     * Элементы интерфейса в правом верхнем углу
+     */
+    /**
+     * Кнопочка, отвечающая за выход из редактора
+     */
+    private val exitBtn : JButton
+    /**
+     * Кнопочка, позволяющая выбрать и загрузить другую анимацию
+     */
+    private val openAnotherAnimationBtn : JButton
+    /**
+     * Кнопочка, позволяющая создать новую анимацию
+     */
+    private val newAnimationBtn : JButton
+    /**
+     * Кнопочка, позволяющая сохранить (сериализовать) текущую анимацию
+     */
+    private val saveAnimationBtn : JButton
+    /**
+     * Кнопочка, позволяюшая выбрать FPS перерисовки анимации в редакторе
+     */
+    private val fpsBtn : JButton
+    /**
+     * Кнопочка, запускающая CodeGenerator, генерирующий файл с кодом,
+     * который потом нужно вставить в проект Shattered World - Client
+     */
+    private val generateCodeBtn : JButton
+    /**
+     * Текст, отображающий на экране тип и название текущей анимации
+     */
+    private val animationNameText : JTextField
+    /**
+     * Сама анимация (модель)
+     */
     private var animation : Animation = BodyAnimation()
 
+    /**
+     * Инициализация всего интерфейса
+     */
     init {
         extendedState = JFrame.MAXIMIZED_BOTH
         isUndecorated = true
@@ -48,6 +137,10 @@ class AnimationWindow : JFrame() {
         panel = Panel()
         contentPane.add(panel)
         defaultCloseOperation = WindowConstants.DO_NOTHING_ON_CLOSE
+
+        layersFrame = LayersFrame()
+        framesFrame = FramesFrame()
+        slidersFrame = SlidersFrame()
 
         // Кнопка выхода из редактора
         exitBtn = JButton("Save and exit")
@@ -59,10 +152,10 @@ class AnimationWindow : JFrame() {
         panel.add(exitBtn)
 
         //Кнопка изменения скорости перерисовки
-        val fpsBtn = JButton("FPS: 60")
+        fpsBtn = JButton("FPS: 60")
         fpsBtn.setBounds(exitBtn.x, exitBtn.y + exitBtn.height + 4, exitBtn.width, exitBtn.height)
         fpsBtn.addActionListener {
-            val input = JOptionPane.showInputDialog(null, "Input maximum FPS for editor\nHigher values may lower performance\nThis setting only affects animation player in this editor\nDefault value : 60 FPS", 60)
+            val input = JOptionPane.showInputDialog(null, "Input maximum FPS for editor\nHigher values may lower performance\nThis setting only affects animation showPlayerImageCheckbox in this editor\nDefault value : 60 FPS", 60)
             try {
                 val newFPS = Integer.parseInt(input)
                 if (newFPS > 0) {
@@ -81,7 +174,7 @@ class AnimationWindow : JFrame() {
         panel.add(fpsBtn)
 
         //Кнопка генерации кода
-        val generateCodeBtn = JButton("Generate code")
+        generateCodeBtn = JButton("Generate code")
         generateCodeBtn.setBounds(fpsBtn.x, fpsBtn.y + fpsBtn.height + 4, fpsBtn.width, fpsBtn.height)
         generateCodeBtn.addActionListener {
             if (JOptionPane.showConfirmDialog(null, "Do you want to generate source code file for Shattered World game?\nIf such file already exists, it will be overwritten.", "Code generation", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.YES_OPTION) {
@@ -114,20 +207,20 @@ class AnimationWindow : JFrame() {
         panel.add(newAnimationBtn)
 
         // Кнопка сохранения
-        saveBtn = JButton("Save animation")
-        saveBtn.run {
+        saveAnimationBtn = JButton("Save animation")
+        saveAnimationBtn.run {
             setBounds(newAnimationBtn.x, newAnimationBtn.y + newAnimationBtn.height + 4, newAnimationBtn.width, newAnimationBtn.height)
             addActionListener {
                 serialize()
             }
             isVisible = true
         }
-        panel.add(saveBtn)
+        panel.add(saveAnimationBtn)
 
         // Текст с названием и типом анимации
         animationNameText = JTextField("No animation loaded")
         animationNameText.run {
-            setBounds(saveBtn.x, saveBtn.y + saveBtn.height + 4, saveBtn.width, saveBtn.height)
+            setBounds(saveAnimationBtn.x, saveAnimationBtn.y + saveAnimationBtn.height + 4, saveAnimationBtn.width, saveAnimationBtn.height)
             isOpaque = false
             horizontalAlignment = JTextField.CENTER
             font = layersFrame.selectedFont
@@ -139,20 +232,20 @@ class AnimationWindow : JFrame() {
 
 
         // Чекбокс, который переключает отображение изображения игрока на фоне
-        val player = JCheckBox("Show shape")
-        player.isSelected = true
-        player.setBounds(8, 10, 160, 24)
-        player.addChangeListener { panel.drawPlayer = player.isSelected }
-        player.isVisible = true
-        panel.add(player)
+        showPlayerImageCheckbox = JCheckBox("Show shape")
+        showPlayerImageCheckbox.isSelected = true
+        showPlayerImageCheckbox.setBounds(8, 10, 160, 24)
+        showPlayerImageCheckbox.addChangeListener { panel.drawPlayer = showPlayerImageCheckbox.isSelected }
+        showPlayerImageCheckbox.isVisible = true
+        panel.add(showPlayerImageCheckbox)
 
         //Слайдер, позволяющий приближать и отдалять картинку
-        val zoomSlider = JSlider(100, 800, panel.zoom)
-        zoomSlider.setBounds(player.x, player.y + player.height + 2, player.width, player.height)
+        zoomSlider = JSlider(100, 800, panel.zoom)
+        zoomSlider.setBounds(showPlayerImageCheckbox.x, showPlayerImageCheckbox.y + showPlayerImageCheckbox.height + 2, showPlayerImageCheckbox.width, showPlayerImageCheckbox.height)
         zoomSlider.addChangeListener {
             panel.zoom = zoomSlider.value
             try {
-                panel.player = ImageIO.read(File("./icons/player.png"))
+                panel.player = ImageIO.read(File("./icons/showPlayerImageCheckbox.png"))
                 panel.player = panel.player.getScaledInstance(panel.player.getWidth(null) * panel.zoom / 100, panel.player.getHeight(null) * panel.zoom / 100, Image.SCALE_SMOOTH)
             } catch (ex: Exception) {
                 ex.printStackTrace()
@@ -162,34 +255,34 @@ class AnimationWindow : JFrame() {
         panel.add(zoomSlider)
 
         //Кнопка старта/остановки анимации
-        anim = JButton("Start animation")
-        anim.setBounds(zoomSlider.x, zoomSlider.y + zoomSlider.height + 2, zoomSlider.width, zoomSlider.height)
-        anim.addActionListener {
+        toggleAnimationBtn = JButton("Start animation")
+        toggleAnimationBtn.setBounds(zoomSlider.x, zoomSlider.y + zoomSlider.height + 2, zoomSlider.width, zoomSlider.height)
+        toggleAnimationBtn.addActionListener {
             if (!panel.isPlayingAnimation) {
                 startAnimation()
             } else {
                 stopAnimation()
             }
         }
-        anim.foreground = Color(0, 208, 0)
-        anim.isVisible = true
-        panel.add(anim)
+        toggleAnimationBtn.foreground = Color(0, 208, 0)
+        toggleAnimationBtn.isVisible = true
+        panel.add(toggleAnimationBtn)
 
         //Кнопка создания отраженной анимации
-        val reverse = JButton("Mirror animation")
-        reverse.setBounds(anim.x, anim.y + anim.height + 4, anim.width, anim.height)
-        reverse.addActionListener {
+        createMirroredAnimationBtn = JButton("Mirror animation")
+        createMirroredAnimationBtn.setBounds(toggleAnimationBtn.x, toggleAnimationBtn.y + toggleAnimationBtn.height + 4, toggleAnimationBtn.width, toggleAnimationBtn.height)
+        createMirroredAnimationBtn.addActionListener {
             if (JOptionPane.showConfirmDialog(this@AnimationWindow, "Do you want to create a mirrored animation?", "Mirroring animation", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION) {
                 mirrorAnimation()
             }
         }
-        reverse.isVisible = true
-        panel.add(reverse)
+        createMirroredAnimationBtn.isVisible = true
+        panel.add(createMirroredAnimationBtn)
 
         //Кнопка изменения продолжительности анимации
-        changeDuration = JButton("Animation duration")
-        changeDuration.setBounds(reverse.x, reverse.y + reverse.height + 4, reverse.width, reverse.height)
-        changeDuration.addActionListener {
+        changeDurationBtn = JButton("Animation duration")
+        changeDurationBtn.setBounds(createMirroredAnimationBtn.x, createMirroredAnimationBtn.y + createMirroredAnimationBtn.height + 4, createMirroredAnimationBtn.width, createMirroredAnimationBtn.height)
+        changeDurationBtn.addActionListener {
             val input = JOptionPane.showInputDialog(null, "Input new animation duration here to change it\nFor repeatable animations, duration means period\n(Input 1000 to set duration to 1 sec)\nCurrent value : " + animation.duration + " ms", animation.duration)
             try {
                 val newDuration = Integer.parseInt(input)
@@ -204,28 +297,28 @@ class AnimationWindow : JFrame() {
                 JOptionPane.showMessageDialog(null, "Incorrect input")
             }
         }
-        changeDuration.isVisible = true
-        panel.add(changeDuration)
+        changeDurationBtn.isVisible = true
+        panel.add(changeDurationBtn)
 
         //Чекбокс, позволяющий выбрать, нужно ли воспроизводить анимацию по кругу или
         //остановить воспроизведение на последнем кадре
-        repeat = JCheckBox("Repeatable")
-        repeat.isSelected = false
-        repeat.setBounds(changeDuration.x, changeDuration.y + changeDuration.height + 4, changeDuration.width, changeDuration.height)
-        repeat.addChangeListener {
-            animation.isRepeatable = repeat.isSelected
+        isAnimationRepeatableCheckbox = JCheckBox("Repeatable")
+        isAnimationRepeatableCheckbox.isSelected = false
+        isAnimationRepeatableCheckbox.setBounds(changeDurationBtn.x, changeDurationBtn.y + changeDurationBtn.height + 4, changeDurationBtn.width, changeDurationBtn.height)
+        isAnimationRepeatableCheckbox.addChangeListener {
+            animation.isRepeatable = isAnimationRepeatableCheckbox.isSelected
         }
-        repeat.isVisible = true
-        panel.add(repeat)
+        isAnimationRepeatableCheckbox.isVisible = true
+        panel.add(isAnimationRepeatableCheckbox)
 
         //Текст "Move direction:"
-        val moveDirectionText = JTextField("Move direction:")
+        moveDirectionText = JTextField("Move direction:")
         moveDirectionText.run {
             isOpaque = false
             horizontalAlignment = JTextField.CENTER
             font = layersFrame.selectedFont
             isEditable = false
-            setBounds(repeat.x, repeat.y + repeat.height + 4, repeat.width, repeat.height)
+            setBounds(isAnimationRepeatableCheckbox.x, isAnimationRepeatableCheckbox.y + isAnimationRepeatableCheckbox.height + 4, isAnimationRepeatableCheckbox.width, isAnimationRepeatableCheckbox.height)
             isVisible = true
         }
         panel.add(moveDirectionText)
@@ -234,11 +327,11 @@ class AnimationWindow : JFrame() {
         //Чекбоксы выбора moveDirection-а
         for (md in MoveDirection.values()) {
             val cb = JCheckBox(md.toString())
-            cb.setBounds(anim.x, moveDirectionText.y + (anim.height + 4) * (mdList.size + 1) + 4, anim.width, anim.height)
+            cb.setBounds(toggleAnimationBtn.x, moveDirectionText.y + (toggleAnimationBtn.height + 4) * (moveDirectionCheckboxes.size + 1) + 4, toggleAnimationBtn.width, toggleAnimationBtn.height)
             cb.addActionListener {
                 if (cb.isSelected) {
                     stopAnimation()
-                    for (checkbox in mdList) {
+                    for (checkbox in moveDirectionCheckboxes) {
                         if (checkbox != cb) {
                             checkbox.isSelected = false
                         }
@@ -284,19 +377,19 @@ class AnimationWindow : JFrame() {
                     cb.isSelected = true
                 }
             }
-            mdList.add(cb)
+            moveDirectionCheckboxes.add(cb)
             cb.isVisible = true
             panel.add(cb)
         }
 
         //Текст "Weapon type:"
-        val weaponTypeText = JTextField("Weapon type:")
+        weaponTypeText = JTextField("Weapon type:")
         weaponTypeText.run {
             isOpaque = false
             horizontalAlignment = JTextField.CENTER
             font = layersFrame.selectedFont
             isEditable = false
-            setBounds(mdList[mdList.size-1].x, mdList[mdList.size-1].y + mdList[mdList.size-1].height + 4, mdList[mdList.size-1].width, mdList[mdList.size-1].height)
+            setBounds(moveDirectionCheckboxes[moveDirectionCheckboxes.size-1].x, moveDirectionCheckboxes[moveDirectionCheckboxes.size-1].y + moveDirectionCheckboxes[moveDirectionCheckboxes.size-1].height + 4, moveDirectionCheckboxes[moveDirectionCheckboxes.size-1].width, moveDirectionCheckboxes[moveDirectionCheckboxes.size-1].height)
             isVisible = true
         }
         panel.add(weaponTypeText)
@@ -304,11 +397,11 @@ class AnimationWindow : JFrame() {
         //Чекбоксы выбора weaponType-а
         for (wt in WeaponType.values()) {
             val cb = JCheckBox(wt.toString())
-            cb.setBounds(anim.x, weaponTypeText.y + (anim.height + 4) * (wtList.size + 1) + 4, anim.width, anim.height)
+            cb.setBounds(toggleAnimationBtn.x, weaponTypeText.y + (toggleAnimationBtn.height + 4) * (weaponTypeCheckboxes.size + 1) + 4, toggleAnimationBtn.width, toggleAnimationBtn.height)
             cb.addActionListener {
                 if (cb.isSelected) {
                     stopAnimation()
-                    for (checkbox in wtList) {
+                    for (checkbox in weaponTypeCheckboxes) {
                         if (checkbox != cb) {
                             checkbox.isSelected = false
                         }
@@ -354,7 +447,7 @@ class AnimationWindow : JFrame() {
                     cb.isSelected = true
                 }
             }
-            wtList.add(cb)
+            weaponTypeCheckboxes.add(cb)
             cb.isVisible = true
             panel.add(cb)
         }
@@ -373,9 +466,6 @@ class AnimationWindow : JFrame() {
             override fun windowActivated(e: WindowEvent) {}
         })
         isVisible = true
-        layersFrame = LayersFrame()
-        framesFrame = FramesFrame()
-        slidersFrame = SlidersFrame()
         val screen = Toolkit.getDefaultToolkit().screenSize
         layersFrame.setLocation(screen.width - layersFrame.width - 20, screen.height - layersFrame.height - 60)
         layersFrame.isVisible = true
@@ -605,25 +695,9 @@ class AnimationWindow : JFrame() {
             }
         }
 
-        //Кнопочка загрузки кадра
+        //Кнопочка загрузки кадра (была ранее, сейчас в ней нет особого смысла, но можно как-нибудь реализовать)
         /*framesFrame.loadFrameButton.addActionListener {
             JOptionPane.showMessageDialog(null, "Copying frames is unavailable in this version")
-            val fc = JFileChooser("./animations")
-            fc.addChoosableFileFilter(object : FileFilter() {
-
-                override fun getDescription(): String {
-                    return "Shattered World animations (.SWANIM)"
-                }
-
-                override fun accept(f: File): Boolean {
-                    return f.name.endsWith(".swanim")
-                }
-            })
-            fc.dialogTitle = "Choose a frame to create a copy of it"
-
-            if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-                //TODO копирование кадров
-            }
         }*/
 
         //Слайдеры мини-окна со слайдерами изменения размера
@@ -663,7 +737,7 @@ class AnimationWindow : JFrame() {
         //Добавляем возможность перемещать и поворачивать слои мышкой
         addMouseListener(object : MouseListener {
             override fun mouseReleased(e: MouseEvent) {
-                isMoving = false
+                isMouseMoving = false
             }
 
             override fun mousePressed(e: MouseEvent) {
@@ -677,11 +751,11 @@ class AnimationWindow : JFrame() {
                         val scaledHeight = layer.basicHeight * layer.scale * layer.scaleY
                         val range = Math.sqrt(sqr((layer.x * panel.zoom / 100 + scrW / 2 - e.x).toDouble()) + sqr(((layer.y + panel.centerY) * panel.zoom / 100 + scrH / 2 - e.y).toDouble())).toInt()
                         if (range < Math.min(scaledWidth, scaledHeight) * panel.zoom / 200) {
-                            isMoving = true
-                            x1 = Math.round((e.x - (layer.x * panel.zoom / 100f + scrW / 2f)) * 100f / panel.zoom)
-                            y1 = Math.round(((layer.y + panel.centerY) * panel.zoom / 100f + scrH / 2f - e.y) * 100f / panel.zoom)
+                            isMouseMoving = true
+                            mouseX = Math.round((e.x - (layer.x * panel.zoom / 100f + scrW / 2f)) * 100f / panel.zoom)
+                            mouseY = Math.round(((layer.y + panel.centerY) * panel.zoom / 100f + scrH / 2f - e.y) * 100f / panel.zoom)
                         } else {
-                            isMoving = false
+                            isMouseMoving = false
                         }
                     }
                 }
@@ -728,9 +802,9 @@ class AnimationWindow : JFrame() {
                         val layer = frame.layers[frame.curLayer]
                         val scrW = panel.width
                         val scrH = panel.height
-                        if (isMoving) {
-                            layer.x = (e.x - scrW / 2f) * 100f / panel.zoom - x1
-                            layer.y = (e.y - scrH / 2f) * 100f / panel.zoom - panel.centerY + y1
+                        if (isMouseMoving) {
+                            layer.x = (e.x - scrW / 2f) * 100f / panel.zoom - mouseX
+                            layer.y = (e.y - scrH / 2f) * 100f / panel.zoom - panel.centerY + mouseY
                         } else {
                             val sy = ((layer.y + panel.centerY) * panel.zoom / 100 + scrH / 2 - e.y).toDouble()
                             val sx = (e.x - layer.x * panel.zoom / 100 - scrW / 2).toDouble()
@@ -880,14 +954,14 @@ class AnimationWindow : JFrame() {
                     }
                     framesFrame.scrollPane.revalidate()
                     framesFrame.scrollPanel.repaint()
-                    for (cb in mdList) {
+                    for (cb in moveDirectionCheckboxes) {
                         cb.isSelected = (cb.text.equals(animation.curMoveDirection.toString()))
                     }
-                    for (cb in wtList) {
+                    for (cb in weaponTypeCheckboxes) {
                         cb.isSelected = (cb.text.equals(animation.curWeaponType.toString()))
                     }
                     setCurFrame(animation.curFrame)
-                    repeat.isSelected = animation.isRepeatable
+                    isAnimationRepeatableCheckbox.isSelected = animation.isRepeatable
                     if (animation is LegsAnimation) {
                         animationNameText.text = "Legs: " + animation.name
                     }
@@ -1016,20 +1090,20 @@ class AnimationWindow : JFrame() {
      * Начинает воспроизведение анимации
      */
     private fun startAnimation() {
-        anim.text = "Stop animation"
-        repeat.isEnabled = false
-        changeDuration.isEnabled = false
+        toggleAnimationBtn.text = "Stop animation"
+        isAnimationRepeatableCheckbox.isEnabled = false
+        changeDurationBtn.isEnabled = false
         openAnotherAnimationBtn.isEnabled = false
         framesFrame.isEnabled = false
         layersFrame.isEnabled = false
         slidersFrame.isEnabled = false
-        for (cb in mdList) {
+        for (cb in moveDirectionCheckboxes) {
             cb.isEnabled = false
         }
-        for (cb in wtList) {
+        for (cb in weaponTypeCheckboxes) {
             cb.isEnabled = false
         }
-        anim.foreground = Color.RED
+        toggleAnimationBtn.foreground = Color.RED
         panel.frames = animation.frames
         panel.isRepeatable = animation.isRepeatable
         panel.duration = animation.duration + 0L
@@ -1041,18 +1115,18 @@ class AnimationWindow : JFrame() {
      * Останавливает воспроизведение анимации
      */
     private fun stopAnimation() {
-        anim.text = "Start animation"
-        anim.foreground = Color(0, 208, 0)
-        repeat.isEnabled = true
-        changeDuration.isEnabled = true
+        toggleAnimationBtn.text = "Start animation"
+        toggleAnimationBtn.foreground = Color(0, 208, 0)
+        isAnimationRepeatableCheckbox.isEnabled = true
+        changeDurationBtn.isEnabled = true
         openAnotherAnimationBtn.isEnabled = true
         framesFrame.isEnabled = true
         layersFrame.isEnabled = true
         slidersFrame.isEnabled = true
-        for (cb in mdList) {
+        for (cb in moveDirectionCheckboxes) {
             cb.isEnabled = true
         }
-        for (cb in wtList) {
+        for (cb in weaponTypeCheckboxes) {
             cb.isEnabled = true
         }
         panel.isPlayingAnimation = false
@@ -1078,10 +1152,9 @@ class AnimationWindow : JFrame() {
         }
     }
 
-    private fun sqr(a: Double): Double {
-        return a * a
-    }
-
+    /**
+     * Функция, которая выводит окно с подтверждением выхода из редактора
+     */
     private fun checkExit() {
         val ans = JOptionPane.showOptionDialog(contentPane, "Do you want to exit editor?\nAll you work will be saved.", "Exit", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, arrayOf("Save and exit", "Cancel"), 0)
         if (ans == JOptionPane.YES_OPTION) {
@@ -1089,6 +1162,14 @@ class AnimationWindow : JFrame() {
             System.exit(0)
         }
     }
+
+    /**
+     * Вспомогательная функция, вычисляет квадрат числа типа Double
+     */
+    private fun sqr(a: Double): Double {
+        return a * a
+    }
+
 
     companion object {
         @JvmStatic

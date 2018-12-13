@@ -1,7 +1,6 @@
-package ui
+package view
 
-import logic.Frame
-import logic.Layer
+import model.Frame
 import java.awt.Color
 import java.awt.Graphics
 import java.awt.Graphics2D

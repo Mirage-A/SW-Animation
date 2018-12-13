@@ -1,3 +1,3 @@
-package logic
+package model
 
 class LegsAnimation : Animation()

@@ -1,4 +1,4 @@
-package logic
+package model
 
 import java.io.Serializable
 import java.lang.Exception

@@ -1,9 +1,10 @@
+package controller
+
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 import java.io.File
 import java.io.FileWriter
 import java.nio.file.Files
-import java.util.Scanner
 
 import javax.swing.JOptionPane
 
@@ -88,7 +89,7 @@ class CodeGenerator {
 
             val ss = StringSelection(String(Files.readAllBytes(file.toPath())))
             Toolkit.getDefaultToolkit().systemClipboard.setContents(ss, null)
-            JOptionPane.showMessageDialog(null, "Compilation completed!\nThe code has been copied to clipboard.", "Shattered World logic.Animation CodeGenerator", JOptionPane.INFORMATION_MESSAGE)
+            JOptionPane.showMessageDialog(null, "Compilation completed!\nThe code has been copied to clipboard.", "Shattered World model.Animation controller.CodeGenerator", JOptionPane.INFORMATION_MESSAGE)
 
 
         }

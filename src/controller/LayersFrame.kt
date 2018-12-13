@@ -1,4 +1,4 @@
-package ui
+package controller
 
 import java.awt.Font
 import java.awt.event.ComponentAdapter
