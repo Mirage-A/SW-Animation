@@ -28,7 +28,7 @@ class CodeGenerator {
             val legsList = loadAllAnimations(legsAnimationsFolder, warnings)
             checkBodyAnimations(bodyList, warnings)
             checkLegsAnimations(legsList, warnings)
-            val file = File("./HumanoidDrawerTmp.kt") // TODO убрать Tmp
+            val file = File("HumanoidDrawerTmp.kt") // TODO убрать Tmp
             if (!file.exists()) {
                 file.createNewFile()
             }
@@ -97,23 +97,29 @@ class CodeGenerator {
                     "        return startValue + (endValue - startValue) * progress\n" +
                     "    }\n")
 
-
+            /**
+             * Тут будет генерация методов отрисовки
+             * Основной метод - draw, в нем when по типу анимации body, moveDirection-у и weaponType-у
+             * Для каждой анимации:
+             * 1) Вызываем метод getBodyPoint(), который через when по типу анимации legs, moveDirection-у и времени
+             * возвращает координаты bodyPoint-а, т.е. точки, которая считается началом координат при отрисовке тела
+             * (тело может двигаться по мере анимации legs)
+             * 2) Делаем when по времени и отрисовываем слои:
+             * а) Слой leftleg - вызываем drawLeftLeg(), также с тройным when-ом
+             * по типу анимации legs, moveDirection-у и времени
+             * б) Слой rightleg - вызываем drawRightLeg(), аналогично
+             * в) Другой слой - просто отрисовываем (не забываем про смещение на bodyPoint)
+             * Итого 4 метода: draw, getBodyPoint, drawLeftLeg, drawRightLeg
+             */
 
             out.write("}\n")
             out.close()
 
-            if (warnings.isNotEmpty()) {
-                val warningText = StringBuilder().append("WARNINGS: " + warnings.size)
-                for (warning in warnings) {
-                    warningText.append("\n")
-                    warningText.append(warning)
-                }
-                JOptionPane.showMessageDialog(null, warningText)
-            }
+            showWarnings(warnings)
 
             val ss = StringSelection(String(Files.readAllBytes(file.toPath())))
             Toolkit.getDefaultToolkit().systemClipboard.setContents(ss, null)
-            JOptionPane.showMessageDialog(null, "Code generation completed!\nThe code has been copied to clipboard.", "Shattered World Animation Code Generator", JOptionPane.INFORMATION_MESSAGE)
+            JOptionPane.showMessageDialog(null, "Code generation completed!\nGenerated file : " + file.absolutePath + "\nThe code has also been copied to clipboard.", "Shattered World Animation Code Generator", JOptionPane.INFORMATION_MESSAGE)
 
 
         }
@@ -193,7 +199,45 @@ class CodeGenerator {
          * Если анимация не является корректной анимацией legs, то она удаляется и добавляется warning
          */
         private fun checkLegsAnimations(animationsList : LinkedList<Animation>, warnings : ArrayList<String>) {
+            for (anim in animationsList) {
+                if (anim.type != AnimationType.LEGS) {
+                    warnings.add("Legs animation " + anim.name + " is not correct legs animation. Delete it or move it to the folder " + anim.type.toString() + ". Animation is ignored.")
+                    animationsList.remove(anim)
+                }
+                else {
+                    val frames = anim.frames
+                    if (frames.isEmpty()) {
+                        warnings.add("Legs animation " + anim.name + " is empty.")
+                    }
+                    else {
+                        val layers = frames[0].layers
+                        var bodyPointFound = false
+                        for (layer in layers) {
+                            if (layer.imageName == "bodypoint.png") {
+                                bodyPointFound = true
+                            }
+                        }
+                        if (!bodyPointFound) {
+                            warnings.add("Legs animation " + anim.name + " does not contain bodypoint.png layer. Animation is ignored.")
+                            animationsList.remove(anim)
+                        }
+                    }
+                }
+            }
+        }
 
+        /**
+         * Отображает окошко с warning-ами
+         */
+        private fun showWarnings(warnings: ArrayList<String>) {
+            if (warnings.isNotEmpty()) {
+                val warningText = StringBuilder()
+                for (warning in warnings) {
+                    warningText.append("\n")
+                    warningText.append(warning)
+                }
+                JOptionPane.showMessageDialog(null, warningText, "WARNINGS: " + warnings.size, JOptionPane.WARNING_MESSAGE)
+            }
         }
     }
 }
