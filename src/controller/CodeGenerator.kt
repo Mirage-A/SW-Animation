@@ -284,6 +284,18 @@ class CodeGenerator {
                 (layerName == "onehandedleft") or (layerName == "shield") -> "weapon2"
                 else -> layerName
             }
+            val angle1 = (startLayer.angle % (2 * Math.PI)).toFloat()
+            var angle2 = (endLayer.angle % (2 * Math.PI)).toFloat()
+            if (angle2 > angle1) {
+                if (angle1  - angle2  + 2 * Math.PI < angle2 - angle1) {
+                    angle2 -= 2 * Math.PI.toFloat()
+                }
+            }
+            if (angle2 < angle1) {
+                if (angle2  - angle1  + 2 * Math.PI < angle1 - angle2) {
+                    angle2 += 2 * Math.PI.toFloat()
+                }
+            }
             return "batch.draw(textures[\"" + layerName +"\"]!!.getTexture(), " +
                     "x + curValue("+startLayer.x+"f, "+endLayer.x+"f, progress), " +
                     "y + curValue("+startLayer.y+"f, "+endLayer.y+"f, progress), " +
@@ -293,7 +305,7 @@ class CodeGenerator {
                     "curValue("+startLayer.basicHeight+"f, "+endLayer.basicHeight+"f, progress), " +
                     "curValue("+startLayer.scale * startLayer.scaleX+"f, "+endLayer.scale * endLayer.scaleX+"f, progress), " +
                     "curValue("+startLayer.scale * startLayer.scaleY+"f, "+endLayer.scale * endLayer.scaleY+"f, progress), " +
-                    "curValue(" + startLayer.angle + "f, " + endLayer.angle + "f, progress), " +
+                    "curValue(" + angle1 + "f, " + angle2 + "f, progress), " +
                     "0, 0, " +
                     startLayer.basicWidth + ", " +
                     startLayer.basicHeight + ", false, false)\n"
@@ -317,6 +329,18 @@ class CodeGenerator {
                 (layerName == "onehandedleft") or (layerName == "shield") -> "weapon2"
                 else -> layerName
             }
+            val angle1 = (startLayer.angle % (2 * Math.PI)).toFloat()
+            var angle2 = (endLayer.angle % (2 * Math.PI)).toFloat()
+            if (angle2 > angle1) {
+                if (angle1  - angle2  + 2 * Math.PI < angle2 - angle1) {
+                    angle2 -= 2 * Math.PI.toFloat()
+                }
+            }
+            if (angle2 < angle1) {
+                if (angle2  - angle1  + 2 * Math.PI < angle1 - angle2) {
+                    angle2 += 2 * Math.PI.toFloat()
+                }
+            }
             return "batch.draw(textures[\"" + layerName +"\"]!!.getTexture(), " +
                     "bodyX + curValue("+startLayer.x+"f, "+endLayer.x+"f, progress), " +
                     "bodyY + curValue("+startLayer.y+"f, "+endLayer.y+"f, progress), " +
@@ -326,7 +350,7 @@ class CodeGenerator {
                     "curValue("+startLayer.basicHeight+"f, "+endLayer.basicHeight+"f, progress), " +
                     "curValue("+startLayer.scale * startLayer.scaleX+"f, "+endLayer.scale * endLayer.scaleX+"f, progress), " +
                     "curValue("+startLayer.scale * startLayer.scaleY+"f, "+endLayer.scale * endLayer.scaleY+"f, progress), " +
-                    "curValue(" + startLayer.angle + "f, " + endLayer.angle + "f, progress), " +
+                    "curValue(" + angle1 + "f, " + angle2 + "f, progress), " +
                     "0, 0, " +
                     startLayer.basicWidth + ", " +
                     startLayer.basicHeight + ", false, false)\n"
