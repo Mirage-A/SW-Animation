@@ -122,8 +122,11 @@ class CodeGenerator {
              * Метод draw
              */
             out.write("    override fun draw(batch: SpriteBatch, x: Float, y: Float, bodyTimePassedSinceStart: Long, legsTimePassedSinceStart: Long) {\n")
+            out.write("        val bodyPoint = getBodyPoint(legsTimePassedSinceStart)\n" +
+                    "        val bodyX = x + bodyPoint.x\n" +
+                    "        val bodyY = y + bodyPoint.y\n")
             out.write(generateBodyWhens(bodyList) {startFrame, endFrame ->
-                "CODE\n"
+                "                                " + generateBodyDraw(startFrame, endFrame)
             })
             out.write("    }\n") // Конец draw
 
@@ -162,6 +165,30 @@ class CodeGenerator {
 
             JOptionPane.showMessageDialog(null, "Code generation completed!\nGenerated file : " + file.absolutePath, "Shattered World Animation Code Generator", JOptionPane.INFORMATION_MESSAGE)
 
+        }
+
+        /**
+         * Генерирует код отрисовки всего кадра
+         */
+        private fun generateBodyDraw(startFrame: Frame, endFrame: Frame) : String {
+            val code = StringBuilder("")
+            for (layerIndex in startFrame.layers.indices) {
+                val startLayer = startFrame.layers[layerIndex]
+                val endLayer = endFrame.layers[layerIndex]
+                val layerName = startLayer.layerName
+                when (true) {
+                    (layerName == "leftleg") -> {
+                        code.append("drawLeftLeg(batch, x, y, legsTimePassedSinceStart)\n")
+                    }
+                    (layerName == "rightleg") -> {
+                        code.append("drawRightLeg(batch, x, y, legsTimePassedSinceStart)\n")
+                    }
+                    else -> {
+                        code.append(generateBodyLayerDraw(startLayer, endLayer))
+                    }
+                }
+            }
+            return code.toString()
         }
 
         /**
@@ -364,9 +391,9 @@ class CodeGenerator {
                 for (bodyAnim in bodyAnimations) {
                     code.append("            BodyAction." + bodyAnim.name + " -> {\n")
                     if (bodyAnim.isRepeatable) {
-                        code.append("                val timePassed = legsTimePassedSinceStart % " + bodyAnim.duration + "L\n")
+                        code.append("                val timePassed = bodyTimePassedSinceStart % " + bodyAnim.duration + "L\n")
                     } else {
-                        code.append("                val timePassed = Math.min(legsTimePassedSinceStart, " + bodyAnim.duration + "L)\n")
+                        code.append("                val timePassed = Math.min(bodyTimePassedSinceStart, " + bodyAnim.duration + "L)\n")
                     }
                     code.append("                when (moveDirection) {\n")
                     for (moveDirection in MoveDirection.values()) {
