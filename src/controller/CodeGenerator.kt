@@ -96,7 +96,12 @@ class CodeGenerator {
                     "\n" +
                     "    fun curValue(startValue: Float, endValue : Float, progress : Float) : Float {\n" +
                     "        return startValue + (endValue - startValue) * progress\n" +
-                    "    }\n")
+                    "    }\n" +
+                    "\n" +
+                    "    fun curValue(startPoint: Point, endPoint: Point, progress: Float) : Point {\n" +
+                    "        return Point(curValue(startPoint.x, endPoint.x, progress), curValue(startPoint.y, endPoint.y, progress))\n" +
+                    "    }\n" +
+                    "\n")
 
             /**
              * Тут будет генерация методов отрисовки
@@ -118,9 +123,28 @@ class CodeGenerator {
              */
             out.write("fun getBodyPoint(legsTimePassedSinceStart: Long) : Point {\n")
             out.write(generateLegsWhens(legsList) {startFrame, endFrame ->
-                "GENERATED CODE"
+                "return curValue(Point(" + getBodyPoint(startFrame).first + "f, " + getBodyPoint(startFrame).second + "f), " +
+                        "Point(" + getBodyPoint(endFrame).first + "f, " + getBodyPoint(endFrame).second + "f), progress)"
             })
             out.write("}\n") // Конец getBodyPoint
+
+            /**
+             * Метод drawLeftLeg
+             */
+            out.write("fun drawLeftLeg(batch: SpriteBatch, x: Float, y: Float, legsTimePassedSinceStart: Long) {\n")
+            out.write(generateLegsWhens(legsList) {startFrame, endFrame ->
+                generateLeftLegDraw(startFrame, endFrame)
+            })
+            out.write("}\n") // Конец drawLeftLeg
+
+            /**
+             * Метод drawRightLeg
+             */
+            out.write("fun drawRightLeg(batch: SpriteBatch, x: Float, y: Float, legsTimePassedSinceStart: Long) {\n")
+            out.write(generateLegsWhens(legsList) {startFrame, endFrame ->
+                generateRightLegDraw(startFrame, endFrame)
+            })
+            out.write("}\n") // Конец drawRightLeg
 
             out.write("}\n") // Конец класса
             out.close()
@@ -133,26 +157,134 @@ class CodeGenerator {
 
         }
 
-        private fun isBodyPart(layerName: String): Boolean {
-            return (layerName == "neck") or (layerName == "handtop") or (layerName == "handbottom") or (layerName == "cloak") or
-                    layerName.startsWith("onehanded") or (layerName == "twohanded") or (layerName == "shield") or (layerName == "bow") or (layerName == "staff") or
-                    layerName.startsWith("head") or layerName.startsWith("body")
+        /**
+         * Генерирует код отрисовки leftLeg
+         */
+        private fun generateLeftLegDraw(startFrame: Frame, endFrame: Frame) : String {
+            val topStart = findLayer(startFrame, "leftlegtop")
+            val bottomStart = findLayer(startFrame, "leftlegbottom")
+            val topEnd = findLayer(endFrame, "leftlegtop")
+            val bottomEnd = findLayer(endFrame, "leftlegbottom")
+            return if ((topStart == null) or (bottomStart == null) or (topEnd == null) or (bottomEnd == null)) {
+                "" //TODO обработать отсутствие необходимых слоев в анимации legs
+            }
+            else {
+                if (startFrame.layers.indexOf(topStart) < startFrame.layers.indexOf(bottomStart)) {
+                    generateLayerDraw(topStart!!, topEnd!!) +
+                            generateLayerDraw(bottomStart!!, bottomEnd!!)
+                }
+                else {
+                    generateLayerDraw(bottomStart!!, bottomEnd!!) +
+                            generateLayerDraw(topStart!!, topEnd!!)
+                }
+            }
         }
 
         /**
-         * Функция, которая генерирует when-ы по legsAction-у и moveDirection-у и внутри
+         * Генерирует код отрисовки rightLeg
+         */
+        private fun generateRightLegDraw(startFrame: Frame, endFrame: Frame) : String {
+            val topStart = findLayer(startFrame, "rightlegtop")
+            val bottomStart = findLayer(startFrame, "rightlegbottom")
+            val topEnd = findLayer(endFrame, "rightlegtop")
+            val bottomEnd = findLayer(endFrame, "rightlegbottom")
+            return if ((topStart == null) or (bottomStart == null) or (topEnd == null) or (bottomEnd == null)) {
+                "" //TODO обработать отсутствие необходимых слоев в анимации legs
+            }
+            else {
+                if (startFrame.layers.indexOf(topStart) < startFrame.layers.indexOf(bottomStart)) {
+                    generateLayerDraw(topStart!!, topEnd!!) +
+                            generateLayerDraw(bottomStart!!, bottomEnd!!)
+                }
+                else {
+                    generateLayerDraw(bottomStart!!, bottomEnd!!) +
+                            generateLayerDraw(topStart!!, topEnd!!)
+                }
+            }
+        }
+
+        /**
+         * Находит слой в кадре по названию
+         * @return Слой с данным названием (если он присутствует в кадре) или null иначе
+         */
+        private fun findLayer(frame : Frame, layerName: String) : Layer? {
+            for (layer in frame.layers) {
+                if (layer.layerName == layerName) {
+                    return layer
+                }
+            }
+            return null
+        }
+
+        /**
+         * Генерирует строку кода, отрисовывающую переход слоя от startLayer к endLayer
+         * Сгенерированный код использует переменные progress, x, y
+         */
+        private fun generateLayerDraw(startLayer: Layer, endLayer : Layer) : String {
+            var layerName = startLayer.layerName
+            if ((layerName == "leftleg") or (layerName == "rightleg") or (layerName == "bodypoint")) {
+                return ""
+            }
+            layerName = when (true) {
+                layerName.startsWith("head") -> layerName.substring(0, 5)
+                (layerName == "leftlegtop") or (layerName == "rightlegtop") -> "legtop"
+                (layerName == "leftlegbottom") or (layerName == "rightlegbottom") -> "legbottom"
+                (layerName == "onehandedright") or (layerName == "twohanded") or (layerName == "bow") or
+                        (layerName == "staff") -> "weapon1"
+                (layerName == "onehandedleft") or (layerName == "shield") -> "weapon2"
+                else -> layerName
+            }
+            return "batch.draw(textures[\"" + layerName +"\"]!!.getTexture(), " +
+                    "x + curValue("+startLayer.x+"f, "+endLayer.x+"f, progress), " +
+                    "y + curValue("+startLayer.y+"f, "+endLayer.y+"f, progress), " +
+                    "curValue("+startLayer.basicWidth+"f, "+endLayer.basicWidth+"f, progress)/2, " +
+                    "curValue("+startLayer.basicHeight+"f, "+endLayer.basicHeight+"f, progress)/2, " +
+                    "curValue("+startLayer.basicWidth+"f, "+endLayer.basicWidth+"f, progress), " +
+                    "curValue("+startLayer.basicHeight+"f, "+endLayer.basicHeight+"f, progress), " +
+                    "curValue("+startLayer.scale * startLayer.scaleX+"f, "+endLayer.scale * endLayer.scaleX+"f, progress), " +
+                    "curValue("+startLayer.scale * startLayer.scaleY+"f, "+endLayer.scale * endLayer.scaleY+"f, progress), " +
+                    "curValue(" + startLayer.angle + "f, " + endLayer.angle + "f, progress), " +
+                    "0, 0, " +
+                    startLayer.basicWidth + ", " +
+                    startLayer.basicHeight + ", false, false)\n"
+        }
+
+        /**
+         * Генерирует строку кода, отрисовывающую переход слоя от startLayer к endLayer
+         * Сгенерированный код использует переменные progress, bodyX, bodyY
+         */
+        private fun generateBodyLayerDraw(startLayer: Layer, endLayer : Layer) : String {
+            var layerName = startLayer.layerName
+            if ((layerName == "leftleg") or (layerName == "rightleg") or (layerName == "bodypoint")) {
+                return ""
+            }
+            layerName = when (true) {
+                layerName.startsWith("head") -> layerName.substring(0, 5)
+                (layerName == "leftlegtop") or (layerName == "rightlegtop") -> "legtop"
+                (layerName == "leftlegbottom") or (layerName == "rightlegbottom") -> "legbottom"
+                (layerName == "onehandedright") or (layerName == "twohanded") or (layerName == "bow") or
+                        (layerName == "staff") -> "weapon1"
+                (layerName == "onehandedleft") or (layerName == "shield") -> "weapon2"
+                else -> layerName
+            }
+            return "batch.draw(textures[\"" + layerName +"\"]!!.getTexture(), " +
+                    "bodyX + curValue("+startLayer.x+"f, "+endLayer.x+"f, progress), " +
+                    "bodyY + curValue("+startLayer.y+"f, "+endLayer.y+"f, progress), " +
+                    "curValue("+startLayer.basicWidth+"f, "+endLayer.basicWidth+"f, progress)/2, " +
+                    "curValue("+startLayer.basicHeight+"f, "+endLayer.basicHeight+"f, progress)/2, " +
+                    "curValue("+startLayer.basicWidth+"f, "+endLayer.basicWidth+"f, progress), " +
+                    "curValue("+startLayer.basicHeight+"f, "+endLayer.basicHeight+"f, progress), " +
+                    "curValue("+startLayer.scale * startLayer.scaleX+"f, "+endLayer.scale * endLayer.scaleX+"f, progress), " +
+                    "curValue("+startLayer.scale * startLayer.scaleY+"f, "+endLayer.scale * endLayer.scaleY+"f, progress), " +
+                    "curValue(" + startLayer.angle + "f, " + endLayer.angle + "f, progress), " +
+                    "0, 0, " +
+                    startLayer.basicWidth + ", " +
+                    startLayer.basicHeight + ", false, false)\n"
+        }
+
+        /**
+         * Функция, которая генерирует when-ы по legsAction-у, moveDirection-у и timePassedSinceStart-у и внутри
          * самого вложенного when-а вставляет код, возвращаемый лямбдой.
-         * Сгенерированный код имеет вид:
-         * when (legsAction) {
-         *      LegsAction.NAME -> {
-         *          val timePassed = TIME_PASSED
-         *          when (moveDirection) {
-         *              MoveDirection.NAME -> {
-         *                  GENERATED CODE BY LAMBDA
-         *              }
-         *          }
-         *      }
-         * }
          * @param legsAnimations Анимации legs, по которым делается первый when
          * @param getInnerCode Лямбда, которая по двум кадрам и прогрессу перехода между ними
          * возвращает строку кода, которую нужно вставить в самый вложенный when.
@@ -180,7 +312,7 @@ class CodeGenerator {
                         if (frames.isNotEmpty()) {
                             if (frames.size == 1) {
                                 code.append("val progress = 1f\n")
-                                code.append(getInnerCode(frames[0], frames[0]) + "\n")
+                                code.append(getInnerCode(frames[0], frames[0]))
                             }
                             else {
                                 code.append("when (true) {\n")
@@ -192,7 +324,7 @@ class CodeGenerator {
                                 }
                                 code.append("else -> {\n")
                                 code.append("val progress = 1f\n")
-                                code.append(getInnerCode(frames[frames.size - 1], frames[frames.size - 1]) + "\n")
+                                code.append(getInnerCode(frames[frames.size - 1], frames[frames.size - 1]))
                                 code.append("}\n") // Конец блока else -> {}
                                 code.append("}\n") // Конец when (true)
                             }
@@ -205,6 +337,19 @@ class CodeGenerator {
                 code.append("}\n") // Конец when (legsAction)
             }
             return code.toString()
+        }
+
+        /**
+         * Просматривает слои кадра и возвращает координаты центра слоя bodypoint
+         * Если такого слоя нет, возвращает (0f, 0f)
+         */
+        private fun getBodyPoint(frame : Frame) : Pair<Float, Float> {
+            for (layer in frame.layers) {
+                if (layer.layerName == "bodypoint") {
+                    return Pair(layer.x, layer.y)
+                }
+            }
+            return Pair(0f, 0f)
         }
 
         /**
@@ -284,6 +429,14 @@ class CodeGenerator {
                 }
                 JOptionPane.showMessageDialog(null, warningText, "WARNINGS: " + warnings.size, JOptionPane.WARNING_MESSAGE)
             }
+        }
+
+        /**
+         * Тестовая точка входа в программу
+         */
+        @JvmStatic
+        fun main(args: Array<String>) {
+            generate()
         }
     }
 }
