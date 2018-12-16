@@ -121,39 +121,37 @@ class CodeGenerator {
             /**
              * Метод getBodyPoint
              */
-            out.write("fun getBodyPoint(legsTimePassedSinceStart: Long) : Point {\n")
+            out.write("    fun getBodyPoint(legsTimePassedSinceStart: Long) : Point {\n")
             out.write(generateLegsWhens(legsList) {startFrame, endFrame ->
-                "return curValue(Point(" + getBodyPoint(startFrame).first + "f, " + getBodyPoint(startFrame).second + "f), " +
-                        "Point(" + getBodyPoint(endFrame).first + "f, " + getBodyPoint(endFrame).second + "f), progress)"
+                "                        return curValue(Point(" + getBodyPoint(startFrame).first + "f, " + getBodyPoint(startFrame).second + "f), " +
+                        "Point(" + getBodyPoint(endFrame).first + "f, " + getBodyPoint(endFrame).second + "f), progress)\n"
             })
-            out.write("}\n") // Конец getBodyPoint
+            out.write("    }\n") // Конец getBodyPoint
 
             /**
              * Метод drawLeftLeg
              */
-            out.write("fun drawLeftLeg(batch: SpriteBatch, x: Float, y: Float, legsTimePassedSinceStart: Long) {\n")
+            out.write("    fun drawLeftLeg(batch: SpriteBatch, x: Float, y: Float, legsTimePassedSinceStart: Long) {\n")
             out.write(generateLegsWhens(legsList) {startFrame, endFrame ->
                 generateLeftLegDraw(startFrame, endFrame)
             })
-            out.write("}\n") // Конец drawLeftLeg
+            out.write("    }\n") // Конец drawLeftLeg
 
             /**
              * Метод drawRightLeg
              */
-            out.write("fun drawRightLeg(batch: SpriteBatch, x: Float, y: Float, legsTimePassedSinceStart: Long) {\n")
+            out.write("    fun drawRightLeg(batch: SpriteBatch, x: Float, y: Float, legsTimePassedSinceStart: Long) {\n")
             out.write(generateLegsWhens(legsList) {startFrame, endFrame ->
                 generateRightLegDraw(startFrame, endFrame)
             })
-            out.write("}\n") // Конец drawRightLeg
+            out.write("    }\n") // Конец drawRightLeg
 
             out.write("}\n") // Конец класса
             out.close()
 
             showWarnings()
 
-            val ss = StringSelection(String(Files.readAllBytes(file.toPath())))
-            Toolkit.getDefaultToolkit().systemClipboard.setContents(ss, null)
-            JOptionPane.showMessageDialog(null, "Code generation completed!\nGenerated file : " + file.absolutePath + "\nThe code has also been copied to clipboard.", "Shattered World Animation Code Generator", JOptionPane.INFORMATION_MESSAGE)
+            JOptionPane.showMessageDialog(null, "Code generation completed!\nGenerated file : " + file.absolutePath, "Shattered World Animation Code Generator", JOptionPane.INFORMATION_MESSAGE)
 
         }
 
@@ -170,12 +168,12 @@ class CodeGenerator {
             }
             else {
                 if (startFrame.layers.indexOf(topStart) < startFrame.layers.indexOf(bottomStart)) {
-                    generateLayerDraw(topStart!!, topEnd!!) +
-                            generateLayerDraw(bottomStart!!, bottomEnd!!)
+                    "                        " + generateLayerDraw(topStart!!, topEnd!!) +
+                            "                        " + generateLayerDraw(bottomStart!!, bottomEnd!!)
                 }
                 else {
-                    generateLayerDraw(bottomStart!!, bottomEnd!!) +
-                            generateLayerDraw(topStart!!, topEnd!!)
+                    "                        " + generateLayerDraw(bottomStart!!, bottomEnd!!) +
+                            "                        " + generateLayerDraw(topStart!!, topEnd!!)
                 }
             }
         }
@@ -193,12 +191,12 @@ class CodeGenerator {
             }
             else {
                 if (startFrame.layers.indexOf(topStart) < startFrame.layers.indexOf(bottomStart)) {
-                    generateLayerDraw(topStart!!, topEnd!!) +
-                            generateLayerDraw(bottomStart!!, bottomEnd!!)
+                    "                        " + generateLayerDraw(topStart!!, topEnd!!) +
+                            "                        " + generateLayerDraw(bottomStart!!, bottomEnd!!)
                 }
                 else {
-                    generateLayerDraw(bottomStart!!, bottomEnd!!) +
-                            generateLayerDraw(topStart!!, topEnd!!)
+                    "                        " + generateLayerDraw(bottomStart!!, bottomEnd!!) +
+                            "                        " + generateLayerDraw(topStart!!, topEnd!!)
                 }
             }
         }
@@ -296,45 +294,45 @@ class CodeGenerator {
         private fun generateLegsWhens(legsAnimations : Collection<Animation>, getInnerCode : (startFrame : Frame, endFrame : Frame) -> String) : String {
             val code = StringBuilder("")
             if (legsAnimations.isNotEmpty()) {
-                code.append("when (legsAction) {\n")
+                code.append("        when (legsAction) {\n")
                 for (legsAnim in legsAnimations) {
-                    code.append("LegsAction." + legsAnim.name + " -> {\n")
+                    code.append("            LegsAction." + legsAnim.name + " -> {\n")
                     if (legsAnim.isRepeatable) {
-                        code.append("val timePassed = legsTimePassedSinceStart % " + legsAnim.duration + "L\n")
+                        code.append("                val timePassed = legsTimePassedSinceStart % " + legsAnim.duration + "L\n")
                     } else {
-                        code.append("val timePassed = Math.min(legsTimePassedSinceStart, " + legsAnim.duration + "L)\n")
+                        code.append("                val timePassed = Math.min(legsTimePassedSinceStart, " + legsAnim.duration + "L)\n")
                     }
-                    code.append("when (moveDirection) {\n")
+                    code.append("                when (moveDirection) {\n")
                     for (moveDirection in MoveDirection.values()) {
                         val frames = legsAnim.data[moveDirection]!![WeaponType.ONE_HANDED]!!
-                        code.append("MoveDirection." + moveDirection.toString() + " -> {\n")
+                        code.append("                    MoveDirection." + moveDirection.toString() + " -> {\n")
                         val interval = legsAnim.duration.toFloat() / (frames.size - 1f)
                         if (frames.isNotEmpty()) {
                             if (frames.size == 1) {
-                                code.append("val progress = 1f\n")
+                                code.append("                        val progress = 1f\n")
                                 code.append(getInnerCode(frames[0], frames[0]))
                             }
                             else {
-                                code.append("when (true) {\n")
+                                code.append("                        when (true) {\n")
                                 for (i in 1 until frames.size) {
-                                    code.append("timePassed < " + (interval * i + 1) + " -> {\n")
-                                    code.append("val progress = (timePassed - " + (interval * i) + "f) / " + interval + "f")
+                                    code.append("                            timePassed < " + (interval * i + 1) + " -> {\n")
+                                    code.append("                                val progress = (timePassed - " + (interval * i) + "f) / " + interval + "f")
                                     code.append(getInnerCode(frames[i - 1], frames[i]) + "\n")
-                                    code.append("}\n") // Конец блока timePassed < TIME -> {}
+                                    code.append("                            }\n") // Конец блока timePassed < TIME -> {}
                                 }
-                                code.append("else -> {\n")
-                                code.append("val progress = 1f\n")
+                                code.append("                            else -> {\n")
+                                code.append("                                val progress = 1f\n")
                                 code.append(getInnerCode(frames[frames.size - 1], frames[frames.size - 1]))
-                                code.append("}\n") // Конец блока else -> {}
-                                code.append("}\n") // Конец when (true)
+                                code.append("                            }\n") // Конец блока else -> {}
+                                code.append("                        }\n") // Конец when (true)
                             }
                         }
-                        code.append("}\n") // Конец блока MoveDirection.name -> {}
+                        code.append("                    }\n") // Конец блока MoveDirection.name -> {}
                     }
-                    code.append("}\n") // Конец when (moveDirection)
-                    code.append("}\n") // Конец блока LegsAction.name -> {}
+                    code.append("                }\n") // Конец when (moveDirection)
+                    code.append("            }\n") // Конец блока LegsAction.name -> {}
                 }
-                code.append("}\n") // Конец when (legsAction)
+                code.append("        }\n") // Конец when (legsAction)
             }
             return code.toString()
         }
