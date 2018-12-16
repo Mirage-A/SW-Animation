@@ -39,6 +39,7 @@ class CodeGenerator {
                     "\n" +
                     "import com.mirage.view.TextureLoader\n" +
                     "import com.badlogic.gdx.graphics.g2d.SpriteBatch\n" +
+                    "import com.mirage.model.scene.Point\n" +
                     "import com.mirage.view.scene.objects.AnimatedObjectDrawer\n" +
                     "import java.util.HashMap\n" +
                     "\n" +
@@ -51,7 +52,8 @@ class CodeGenerator {
                     "    /**\n" +
                     "     * Действие, которое анимируется (ожидание, бег, атака и т.д.)\n" +
                     "     */\n" +
-                    "    var action: Action = Action.IDLE\n" +
+                    "    var bodyAction = BodyAction.IDLE\n" +
+                    "    var legsAction = LegsAction.IDLE\n" +
                     "    /**\n" +
                     "     * Направление движения\n" +
                     "     */\n" +
@@ -66,6 +68,16 @@ class CodeGenerator {
                     "     * Должен содержать ключи head[0-7], body, handtop, handbottom, legtop, legbottom, cloak, weapon1, weapon2\n" +
                     "     */\n" +
                     "    var textures: MutableMap<String, AnimatedTexture>\n" +
+                    "\n" +
+                    "    /**\n" +
+                    "     * Время начала анимации body\n" +
+                    "     */\n" +
+                    "    var bodyStartTime = 0L\n" +
+                    "\n" +
+                    "    /**\n" +
+                    "     * Время начала анимации legs\n" +
+                    "     */\n" +
+                    "    var legsStartTime = 0L\n" +
                     "\n" +
                     "    constructor() {\n" +
                     "        textures = HashMap()\n" +
@@ -86,19 +98,20 @@ class CodeGenerator {
                     "        this.textures = textures\n" +
                     "    }\n" +
                     "\n" +
-                    "    constructor(textures: MutableMap<String, AnimatedTexture>, action: Action, moveDirection: MoveDirection, weaponType: WeaponType) {\n" +
+                    "    constructor(textures: MutableMap<String, AnimatedTexture>, bodyAction: BodyAction, legsAction: LegsAction, moveDirection: MoveDirection, weaponType: WeaponType) {\n" +
                     "        this.textures = textures\n" +
-                    "        this.action = action\n" +
+                    "        this.bodyAction = bodyAction\n" +
+                    "        this.legsAction = legsAction\n" +
                     "        this.moveDirection = moveDirection\n" +
                     "        this.weaponType = weaponType\n" +
                     "    }\n" +
                     "\n" +
                     "\n" +
-                    "    fun curValue(startValue: Float, endValue : Float, progress : Float) : Float {\n" +
+                    "    private fun curValue(startValue: Float, endValue : Float, progress : Float) : Float {\n" +
                     "        return startValue + (endValue - startValue) * progress\n" +
                     "    }\n" +
                     "\n" +
-                    "    fun curValue(startPoint: Point, endPoint: Point, progress: Float) : Point {\n" +
+                    "    private fun curValue(startPoint: Point, endPoint: Point, progress: Float) : Point {\n" +
                     "        return Point(curValue(startPoint.x, endPoint.x, progress), curValue(startPoint.y, endPoint.y, progress))\n" +
                     "    }\n" +
                     "\n")
@@ -121,7 +134,9 @@ class CodeGenerator {
             /**
              * Метод draw
              */
-            out.write("    override fun draw(batch: SpriteBatch, x: Float, y: Float, bodyTimePassedSinceStart: Long, legsTimePassedSinceStart: Long) {\n")
+            out.write("    override fun draw(batch: SpriteBatch, x: Float, y: Float, timePassedSinceStart: Long) {\n")
+            out.write("    val bodyTimePassedSinceStart = timePassedSinceStart - bodyStartTime\n" +
+                    "    val legsTimePassedSinceStart = timePassedSinceStart - legsStartTime\n")
             out.write("        val bodyPoint = getBodyPoint(legsTimePassedSinceStart)\n" +
                     "        val bodyX = x + bodyPoint.x\n" +
                     "        val bodyY = y + bodyPoint.y\n")
@@ -133,17 +148,18 @@ class CodeGenerator {
             /**
              * Метод getBodyPoint
              */
-            out.write("    fun getBodyPoint(legsTimePassedSinceStart: Long) : Point {\n")
+            out.write("    private fun getBodyPoint(legsTimePassedSinceStart: Long) : Point {\n")
             out.write(generateLegsWhens(legsList) {startFrame, endFrame ->
                 "                        return curValue(Point(" + getBodyPoint(startFrame).first + "f, " + getBodyPoint(startFrame).second + "f), " +
                         "Point(" + getBodyPoint(endFrame).first + "f, " + getBodyPoint(endFrame).second + "f), progress)\n"
             })
+            out.write("        return Point(0f, 0f)\n")
             out.write("    }\n") // Конец getBodyPoint
 
             /**
              * Метод drawLeftLeg
              */
-            out.write("    fun drawLeftLeg(batch: SpriteBatch, x: Float, y: Float, legsTimePassedSinceStart: Long) {\n")
+            out.write("    private fun drawLeftLeg(batch: SpriteBatch, x: Float, y: Float, legsTimePassedSinceStart: Long) {\n")
             out.write(generateLegsWhens(legsList) {startFrame, endFrame ->
                 generateLeftLegDraw(startFrame, endFrame)
             })
@@ -152,7 +168,7 @@ class CodeGenerator {
             /**
              * Метод drawRightLeg
              */
-            out.write("    fun drawRightLeg(batch: SpriteBatch, x: Float, y: Float, legsTimePassedSinceStart: Long) {\n")
+            out.write("    private fun drawRightLeg(batch: SpriteBatch, x: Float, y: Float, legsTimePassedSinceStart: Long) {\n")
             out.write(generateLegsWhens(legsList) {startFrame, endFrame ->
                 generateRightLegDraw(startFrame, endFrame)
             })
