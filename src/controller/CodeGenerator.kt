@@ -1,7 +1,6 @@
 package controller
 
-import model.Animation
-import model.AnimationType
+import model.*
 import java.awt.Toolkit
 import java.awt.datatransfer.StringSelection
 import java.io.File
@@ -13,6 +12,7 @@ import java.nio.file.Files
 import java.util.*
 
 import javax.swing.JOptionPane
+import kotlin.collections.ArrayList
 
 /**
  * Генератор файла с кодом, который потом вставляется в проект Shattered World - Client
@@ -112,7 +112,16 @@ class CodeGenerator {
              * Итого 4 метода: draw, getBodyPoint, drawLeftLeg, drawRightLeg
              */
 
-            out.write("}\n")
+            /**
+             * Метод getBodyPoint
+             */
+            out.write("fun getBodyPoint(legsTimePassedSinceStart: Long) : Point {\n")
+            out.write(generateLegsWhens(legsList) {
+                "GENERATED CODE"
+            })
+            out.write("}\n") // Конец getBodyPoint
+
+            out.write("}\n") // Конец класса
             out.close()
 
             showWarnings(warnings)
@@ -120,7 +129,6 @@ class CodeGenerator {
             val ss = StringSelection(String(Files.readAllBytes(file.toPath())))
             Toolkit.getDefaultToolkit().systemClipboard.setContents(ss, null)
             JOptionPane.showMessageDialog(null, "Code generation completed!\nGenerated file : " + file.absolutePath + "\nThe code has also been copied to clipboard.", "Shattered World Animation Code Generator", JOptionPane.INFORMATION_MESSAGE)
-
 
         }
 
@@ -131,11 +139,58 @@ class CodeGenerator {
         }
 
         /**
+         * Функция, которая генерирует when-ы по legsAction-у и moveDirection-у и внутри
+         * самого вложенного when-а вставляет код, возвращаемый лямбдой.
+         * Сгенерированный код имеет вид:
+         * when (legsAction) {
+         *      LegsAction.NAME -> {
+         *          val timePassed = TIME_PASSED
+         *          when (moveDirection) {
+         *              MoveDirection.NAME -> {
+         *                  GENERATED CODE BY LAMBDA
+         *              }
+         *          }
+         *      }
+         * }
+         * @param legsAnimations Анимации legs, по которым делается первый when
+         * @param getInnerCode Лямбда, которая по списку кадров
+         * возвращает строку кода, которую нужно вставить в самый вложенный when.
+         * Код, возвращаемый лямбдой, может использовать переменную timePassed, отвечающую за время анимации
+         * (оно не более чем duration анимации).
+         * @return Сгенерированный код со всеми when-ами, который вставляется, например, в getBodyPoint.
+         * ВАЖНО! Внутри сгенерированного кода используется переменная legsTimePassedSinceStart типа Long,
+         * которая должна быть объявлена в сгенерированной функции
+         */
+        private fun generateLegsWhens(legsAnimations : Collection<Animation>, getInnerCode : (ArrayList<Frame>) -> String) : String {
+            val code = StringBuilder()
+            code.append("when (legsAction) {\n")
+            for (legsAnim in legsAnimations) {
+                code.append("LegsAction." + legsAnim.name + " -> {\n")
+                if (legsAnim.isRepeatable) {
+                    code.append("val timePassed = legsTimePassedSinceStart % " + legsAnim.duration + "L\n")
+                }
+                else {
+                    code.append("val timePassed = Math.min(legsTimePassedSinceStart, " + legsAnim.duration + "L)\n")
+                }
+                code.append("when (moveDirection) {\n")
+                for (moveDirection in MoveDirection.values()) {
+                    code.append("MoveDirection." + moveDirection.toString() + " -> {\n")
+                    code.append(getInnerCode(legsAnim.data[moveDirection]!![WeaponType.ONE_HANDED]!!))
+                    code.append("\n}\n") // Конец блока MoveDirection.name -> {}
+                }
+                code.append("}\n") // Конец when (moveDirection)
+                code.append("}\n") // Конец блока LegsAction.name -> {}
+            }
+            code.append("}\n") // Конец when (legsAction)
+            return code.toString()
+        }
+
+        /**
          * Загружает и десериализует все анимации из заданной директории и возвращает их список
          * Если какой-то файл не является корректной анимацией, добавляется warning
          */
-        private fun loadAllAnimations(folder : File, warnings : ArrayList<String>) : LinkedList<Animation> {
-            val animationsList = LinkedList<Animation>()
+        private fun loadAllAnimations(folder : File, warnings : ArrayList<String>) : ArrayList<Animation> {
+            val animationsList = ArrayList<Animation>()
             if (folder.exists()) {
                 val filesList = folder.listFiles()
                 for (file in filesList) {
@@ -157,16 +212,19 @@ class CodeGenerator {
          * Проверяет все анимации из списка
          * Если анимация не является корректной анимацией body, то она удаляется и добавляется warning
          */
-        private fun checkBodyAnimations(animationsList : LinkedList<Animation>, warnings : ArrayList<String>) {
-            for (anim in animationsList) {
+        private fun checkBodyAnimations(animationsList : ArrayList<Animation>, warnings : ArrayList<String>) {
+            val isDeleted = Array(animationsList.size) {false}
+            for (index in animationsList.indices) {
+                val anim = animationsList[index]
                 if (anim.type != AnimationType.BODY) {
                     warnings.add("Body animation " + anim.name + " is not correct body animation. Delete it or move it to the folder " + anim.type.toString() + ". Animation is ignored.")
-                    animationsList.remove(anim)
+                    isDeleted[index] = true
                 }
                 else {
                     val frames = anim.frames
                     if (frames.isEmpty()) {
-                        warnings.add("Body animation " + anim.name + " is empty.")
+                        warnings.add("Body animation " + anim.name + " is empty. Animation is ignored.")
+                        isDeleted[index] = true
                     }
                     else {
                         val layers = frames[0].layers
@@ -187,9 +245,15 @@ class CodeGenerator {
                             warnings.add("Body animation " + anim.name + " does not contain rightleg.png layer. Animation is ignored.")
                         }
                         if (!leftLegFound || !rightLegFound) {
-                            animationsList.remove(anim)
+                            isDeleted[index] = true
                         }
                     }
+                }
+            }
+            var animationsDeleted = 0
+            for (index in isDeleted.indices) {
+                if (isDeleted[index]) {
+                    animationsList.removeAt(index - animationsDeleted++)
                 }
             }
         }
@@ -198,16 +262,19 @@ class CodeGenerator {
          * Проверяет все анимации из списка
          * Если анимация не является корректной анимацией legs, то она удаляется и добавляется warning
          */
-        private fun checkLegsAnimations(animationsList : LinkedList<Animation>, warnings : ArrayList<String>) {
-            for (anim in animationsList) {
+        private fun checkLegsAnimations(animationsList : ArrayList<Animation>, warnings : ArrayList<String>) {
+            val isDeleted = Array(animationsList.size) {false}
+            for (index in animationsList.indices) {
+                val anim = animationsList[index]
                 if (anim.type != AnimationType.LEGS) {
                     warnings.add("Legs animation " + anim.name + " is not correct legs animation. Delete it or move it to the folder " + anim.type.toString() + ". Animation is ignored.")
-                    animationsList.remove(anim)
+                    isDeleted[index] = true
                 }
                 else {
                     val frames = anim.frames
                     if (frames.isEmpty()) {
-                        warnings.add("Legs animation " + anim.name + " is empty.")
+                        warnings.add("Legs animation " + anim.name + " is empty. Animation is ignored.")
+                        isDeleted[index] = true
                     }
                     else {
                         val layers = frames[0].layers
@@ -219,9 +286,15 @@ class CodeGenerator {
                         }
                         if (!bodyPointFound) {
                             warnings.add("Legs animation " + anim.name + " does not contain bodypoint.png layer. Animation is ignored.")
-                            animationsList.remove(anim)
+                            isDeleted[index] = true
                         }
                     }
+                }
+            }
+            var animationsDeleted = 0
+            for (index in isDeleted.indices) {
+                if (isDeleted[index]) {
+                    animationsList.removeAt(index - animationsDeleted++)
                 }
             }
         }
