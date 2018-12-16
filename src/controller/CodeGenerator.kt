@@ -119,6 +119,15 @@ class CodeGenerator {
              */
 
             /**
+             * Метод draw
+             */
+            out.write("    override fun draw(batch: SpriteBatch, x: Float, y: Float, bodyTimePassedSinceStart: Long, legsTimePassedSinceStart: Long) {\n")
+            out.write(generateBodyWhens(bodyList) {startFrame, endFrame ->
+                "CODE\n"
+            })
+            out.write("    }\n") // Конец draw
+
+            /**
              * Метод getBodyPoint
              */
             out.write("    fun getBodyPoint(legsTimePassedSinceStart: Long) : Point {\n")
@@ -327,6 +336,69 @@ class CodeGenerator {
                                 code.append("                        }\n") // Конец when (true)
                             }
                         }
+                        code.append("                    }\n") // Конец блока MoveDirection.name -> {}
+                    }
+                    code.append("                }\n") // Конец when (moveDirection)
+                    code.append("            }\n") // Конец блока LegsAction.name -> {}
+                }
+                code.append("        }\n") // Конец when (legsAction)
+            }
+            return code.toString()
+        }
+
+        /**
+         * Функция, которая генерирует when-ы по bodyAction-у, moveDirection-у, weaponType-у и timePassedSinceStart-у и внутри
+         * самого вложенного when-а вставляет код, возвращаемый лямбдой.
+         * @param bodyAnimations Анимации body, по которым делается первый when
+         * @param getInnerCode Лямбда, которая по двум кадрам и прогрессу перехода между ними
+         * возвращает строку кода, которую нужно вставить в самый вложенный when.
+         * Код, возвращаемый лямбдой, может использовать переменную progress типа Float.
+         * @return Сгенерированный код со всеми when-ами, который вставляется, например, в draw.
+         * ВАЖНО! Внутри сгенерированного кода используется переменная bodyTimePassedSinceStart типа Long,
+         * которая должна быть объявлена в сгенерированной функции
+         */
+        private fun generateBodyWhens(bodyAnimations : Collection<Animation>, getInnerCode : (startFrame : Frame, endFrame : Frame) -> String) : String {
+            val code = StringBuilder("")
+            if (bodyAnimations.isNotEmpty()) {
+                code.append("        when (bodyAction) {\n")
+                for (bodyAnim in bodyAnimations) {
+                    code.append("            BodyAction." + bodyAnim.name + " -> {\n")
+                    if (bodyAnim.isRepeatable) {
+                        code.append("                val timePassed = legsTimePassedSinceStart % " + bodyAnim.duration + "L\n")
+                    } else {
+                        code.append("                val timePassed = Math.min(legsTimePassedSinceStart, " + bodyAnim.duration + "L)\n")
+                    }
+                    code.append("                when (moveDirection) {\n")
+                    for (moveDirection in MoveDirection.values()) {
+                        code.append("                    MoveDirection." + moveDirection.toString() + " -> {\n")
+                        code.append("                        when (weaponType) {\n")
+                        for (weaponType in WeaponType.values()) {
+                            code.append("                            WeaponType." + weaponType.toString() + " -> {\n")
+                            val frames = bodyAnim.data[moveDirection]!![weaponType]!!
+                            val interval = bodyAnim.duration.toFloat() / (frames.size - 1f)
+                            if (frames.isNotEmpty()) {
+                                if (frames.size == 1) {
+                                    code.append("                                val progress = 1f\n")
+                                    code.append(getInnerCode(frames[0], frames[0]))
+                                }
+                                else {
+                                    code.append("                                    when (true) {\n")
+                                    for (i in 1 until frames.size) {
+                                        code.append("                                        timePassed < " + (interval * i + 1) + " -> {\n")
+                                        code.append("                                        val progress = (timePassed - " + (interval * i) + "f) / " + interval + "f")
+                                        code.append(getInnerCode(frames[i - 1], frames[i]) + "\n")
+                                        code.append("                                    }\n") // Конец блока timePassed < TIME -> {}
+                                    }
+                                code.append("                                    else -> {\n")
+                                code.append("                                        val progress = 1f\n")
+                                code.append(getInnerCode(frames[frames.size - 1], frames[frames.size - 1]))
+                                code.append("                                    }\n") // Конец блока else -> {}
+                                code.append("                                }\n") // Конец when (true)
+                                }
+                            }
+                            code.append("                            }\n") // Конец блока WeaponType.name -> {}
+                        }
+                        code.append("                        }\n") // Конец when (weaponType)
                         code.append("                    }\n") // Конец блока MoveDirection.name -> {}
                     }
                     code.append("                }\n") // Конец when (moveDirection)
