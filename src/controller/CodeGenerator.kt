@@ -299,10 +299,10 @@ class CodeGenerator {
                 }
             }
             return "batch.draw(textures[\"" + layerName +"\"]!!.getTexture(), " +
-                    "x + curValue("+startLayer.x+"f, "+endLayer.x+"f, progress), " +
-                    "y - curValue("+startLayer.y+"f, "+endLayer.y+"f, progress), " +
-                    "curValue("+startLayer.basicWidth+"f, "+endLayer.basicWidth+"f, progress)/2, " +
-                    "curValue("+startLayer.basicHeight+"f, "+endLayer.basicHeight+"f, progress)/2, " +
+                    "x + curValue(" +startLayer.x+"f, "+endLayer.x+"f, progress) - curValue("+startLayer.basicWidth+"f, "+endLayer.basicWidth+"f, progress) / 2, " +
+                    "y - curValue("+startLayer.y+"f, "+endLayer.y+"f, progress) - curValue("+startLayer.basicHeight+"f, "+endLayer.basicHeight+"f, progress) / 2, " +
+                    "curValue("+startLayer.basicWidth+"f, "+endLayer.basicWidth+"f, progress) / 2, " +
+                    "curValue("+startLayer.basicHeight+"f, "+endLayer.basicHeight+"f, progress) / 2, " +
                     "curValue("+startLayer.basicWidth+"f, "+endLayer.basicWidth+"f, progress), " +
                     "curValue("+startLayer.basicHeight+"f, "+endLayer.basicHeight+"f, progress), " +
                     "curValue("+startLayer.scale * startLayer.scaleX+"f, "+endLayer.scale * endLayer.scaleX+"f, progress), " +
@@ -318,6 +318,7 @@ class CodeGenerator {
          * Сгенерированный код использует переменные progress, bodyX, bodyY
          */
         private fun generateBodyLayerDraw(startLayer: Layer, endLayer : Layer) : String {
+
             var layerName = startLayer.layerName
             if ((layerName == "leftleg") or (layerName == "rightleg") or (layerName == "bodypoint")) {
                 return ""
@@ -344,10 +345,10 @@ class CodeGenerator {
                 }
             }
             return "batch.draw(textures[\"" + layerName +"\"]!!.getTexture(), " +
-                    "bodyX + curValue("+startLayer.x+"f, "+endLayer.x+"f, progress), " +
-                    "bodyY - curValue("+startLayer.y+"f, "+endLayer.y+"f, progress), " +
-                    "curValue("+startLayer.basicWidth+"f, "+endLayer.basicWidth+"f, progress)/2, " +
-                    "curValue("+startLayer.basicHeight+"f, "+endLayer.basicHeight+"f, progress)/2, " +
+                    "bodyX + curValue("+startLayer.x+"f, "+endLayer.x+"f, progress) - curValue("+startLayer.basicWidth+"f, "+endLayer.basicWidth+"f, progress) / 2, " +
+                    "bodyY - curValue("+startLayer.y+"f, "+endLayer.y+"f, progress) - curValue("+startLayer.basicHeight+"f, "+endLayer.basicHeight+"f, progress) / 2, " +
+                    "curValue("+startLayer.basicWidth+"f, "+endLayer.basicWidth+"f, progress) / 2, " +
+                    "curValue("+startLayer.basicHeight+"f, "+endLayer.basicHeight+"f, progress) / 2, " +
                     "curValue("+startLayer.basicWidth+"f, "+endLayer.basicWidth+"f, progress), " +
                     "curValue("+startLayer.basicHeight+"f, "+endLayer.basicHeight+"f, progress), " +
                     "curValue("+startLayer.scale * startLayer.scaleX+"f, "+endLayer.scale * endLayer.scaleX+"f, progress), " +
@@ -485,7 +486,8 @@ class CodeGenerator {
         private fun getBodyPoint(frame : Frame) : Pair<Float, Float> {
             for (layer in frame.layers) {
                 if (layer.layerName == "bodypoint") {
-                    return Pair(layer.x, layer.y)
+                    println("" + layer.x + " " + (-layer.y))
+                    return Pair(layer.x, -layer.y)
                 }
             }
             return Pair(0f, 0f)
