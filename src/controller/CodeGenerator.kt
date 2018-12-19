@@ -486,7 +486,6 @@ class CodeGenerator {
         private fun getBodyPoint(frame : Frame) : Pair<Float, Float> {
             for (layer in frame.layers) {
                 if (layer.layerName == "bodypoint") {
-                    println("" + layer.x + " " + (-layer.y))
                     return Pair(layer.x, -layer.y)
                 }
             }
