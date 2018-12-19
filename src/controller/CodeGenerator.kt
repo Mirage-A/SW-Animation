@@ -134,6 +134,7 @@ class CodeGenerator {
              * Метод draw
              */
             out.write("    override fun draw(batch: SpriteBatch, x: Float, y: Float, timePassedSinceStart: Long) {\n")
+            out.write("batch.draw(TextureLoader.load(\"tiles/0001.png\"), x - 16, y - 8, 32f, 16f)\n")
             out.write("    val bodyTimePassedSinceStart = timePassedSinceStart - bodyStartTime\n" +
                     "    val legsTimePassedSinceStart = timePassedSinceStart - legsStartTime\n")
             out.write("        val bodyPoint = getBodyPoint(legsTimePassedSinceStart)\n" +
@@ -299,14 +300,14 @@ class CodeGenerator {
             }
             return "batch.draw(textures[\"" + layerName +"\"]!!.getTexture(), " +
                     "x + curValue("+startLayer.x+"f, "+endLayer.x+"f, progress), " +
-                    "y + curValue("+startLayer.y+"f, "+endLayer.y+"f, progress), " +
+                    "y - curValue("+startLayer.y+"f, "+endLayer.y+"f, progress), " +
                     "curValue("+startLayer.basicWidth+"f, "+endLayer.basicWidth+"f, progress)/2, " +
                     "curValue("+startLayer.basicHeight+"f, "+endLayer.basicHeight+"f, progress)/2, " +
                     "curValue("+startLayer.basicWidth+"f, "+endLayer.basicWidth+"f, progress), " +
                     "curValue("+startLayer.basicHeight+"f, "+endLayer.basicHeight+"f, progress), " +
                     "curValue("+startLayer.scale * startLayer.scaleX+"f, "+endLayer.scale * endLayer.scaleX+"f, progress), " +
                     "curValue("+startLayer.scale * startLayer.scaleY+"f, "+endLayer.scale * endLayer.scaleY+"f, progress), " +
-                    "curValue(" + angle1 + "f, " + angle2 + "f, progress), " +
+                    "curValue(" + Math.toDegrees(angle1.toDouble()).toFloat() + "f, " + Math.toDegrees(angle2.toDouble()).toFloat() + "f, progress), " +
                     "0, 0, " +
                     startLayer.basicWidth + ", " +
                     startLayer.basicHeight + ", false, false)\n"
@@ -344,14 +345,14 @@ class CodeGenerator {
             }
             return "batch.draw(textures[\"" + layerName +"\"]!!.getTexture(), " +
                     "bodyX + curValue("+startLayer.x+"f, "+endLayer.x+"f, progress), " +
-                    "bodyY + curValue("+startLayer.y+"f, "+endLayer.y+"f, progress), " +
+                    "bodyY - curValue("+startLayer.y+"f, "+endLayer.y+"f, progress), " +
                     "curValue("+startLayer.basicWidth+"f, "+endLayer.basicWidth+"f, progress)/2, " +
                     "curValue("+startLayer.basicHeight+"f, "+endLayer.basicHeight+"f, progress)/2, " +
                     "curValue("+startLayer.basicWidth+"f, "+endLayer.basicWidth+"f, progress), " +
                     "curValue("+startLayer.basicHeight+"f, "+endLayer.basicHeight+"f, progress), " +
                     "curValue("+startLayer.scale * startLayer.scaleX+"f, "+endLayer.scale * endLayer.scaleX+"f, progress), " +
                     "curValue("+startLayer.scale * startLayer.scaleY+"f, "+endLayer.scale * endLayer.scaleY+"f, progress), " +
-                    "curValue(" + angle1 + "f, " + angle2 + "f, progress), " +
+                    "curValue(" + Math.toDegrees(angle1.toDouble()).toFloat() + "f, " + Math.toDegrees(angle2.toDouble()).toFloat() + "f, progress), " +
                     "0, 0, " +
                     startLayer.basicWidth + ", " +
                     startLayer.basicHeight + ", false, false)\n"
