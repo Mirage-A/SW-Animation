@@ -75,14 +75,12 @@ class FramesWindow : JFrame() {
         scrollPanel = JPanel()
         scrollPanel.layout = BoxLayout(scrollPanel, BoxLayout.Y_AXIS)
         scrollPane = JScrollPane(scrollPanel)
-        scrollPane.setBounds(0, 0, width - 14, height - 46 - buttonSize)
         scrollPane.horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
         scrollPane.verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
         scrollPane.isVisible = true
         panel.add(scrollPane)
 
         newFrameButton = JButton(ImageIcon("./icons/create.png"))
-        newFrameButton.setBounds(0, height - 47 - buttonSize, buttonSize, buttonSize)
         newFrameButton.setSize(buttonSize, buttonSize)
         newFrameButton.isVisible = true
         newFrameButton.toolTipText = "Create a new frame"
@@ -90,7 +88,6 @@ class FramesWindow : JFrame() {
         panel.add(newFrameButton)
 
         copyLastFrameButton = JButton(ImageIcon("./icons/createCopy.png"))
-        copyLastFrameButton.setBounds(buttonSize, height - 47 - buttonSize, buttonSize, buttonSize)
         copyLastFrameButton.setSize(buttonSize, buttonSize)
         copyLastFrameButton.isVisible = true
         copyLastFrameButton.toolTipText = "Create a copy of selected frame"
@@ -98,7 +95,6 @@ class FramesWindow : JFrame() {
         panel.add(copyLastFrameButton)
 
         deleteFrameButton = JButton(ImageIcon("./icons/delete.png"))
-        deleteFrameButton.setBounds(buttonSize * 2, height - 47 - buttonSize, buttonSize, buttonSize)
         deleteFrameButton.setSize(buttonSize, buttonSize)
         deleteFrameButton.isVisible = true
         deleteFrameButton.toolTipText = "Delete selected frame"
@@ -106,7 +102,6 @@ class FramesWindow : JFrame() {
         panel.add(deleteFrameButton)
 
         upFrameButton = JButton(ImageIcon("./icons/up.png"))
-        upFrameButton.setBounds(buttonSize * 3, height - 47 - buttonSize, buttonSize, buttonSize)
         upFrameButton.setSize(buttonSize, buttonSize)
         upFrameButton.isVisible = true
         upFrameButton.toolTipText = "Move selected frame up"
@@ -114,7 +109,6 @@ class FramesWindow : JFrame() {
         panel.add(upFrameButton)
 
         downFrameButton = JButton(ImageIcon("./icons/down.png"))
-        downFrameButton.setBounds(buttonSize * 4, height - 47 - buttonSize, buttonSize, buttonSize)
         downFrameButton.setSize(buttonSize, buttonSize)
         downFrameButton.isVisible = true
         downFrameButton.toolTipText = "Move selected frame down"
@@ -123,12 +117,13 @@ class FramesWindow : JFrame() {
 
         addComponentListener(object : ComponentAdapter() {
             override fun componentResized(evt: ComponentEvent?) {
-                scrollPane.setBounds(0, 0, width - 14, height - 46 - buttonSize)
-                newFrameButton.setBounds(0, height - 47 - buttonSize, buttonSize, buttonSize)
-                copyLastFrameButton.setBounds(buttonSize, height - 47 - buttonSize, buttonSize, buttonSize)
-                deleteFrameButton.setBounds(buttonSize * 2, height - 47 - buttonSize, buttonSize, buttonSize)
-                upFrameButton.setBounds(buttonSize * 3, height - 47 - buttonSize, buttonSize, buttonSize)
-                downFrameButton.setBounds(buttonSize * 4, height - 47 - buttonSize, buttonSize, buttonSize)
+                scrollPane.setBounds(0, 0, width - 14, height - 38 - buttonSize)
+                newFrameButton.setBounds(0, height - 39 - buttonSize, buttonSize, buttonSize)
+                copyLastFrameButton.setBounds(buttonSize, height - 39 - buttonSize, buttonSize, buttonSize)
+                deleteFrameButton.setBounds(buttonSize * 2, height - 39 - buttonSize, buttonSize, buttonSize)
+                upFrameButton.setBounds(buttonSize * 3, height - 39 - buttonSize, buttonSize, buttonSize)
+                downFrameButton.setBounds(buttonSize * 4, height - 39 - buttonSize, buttonSize, buttonSize)
+                scrollPane.revalidate()
             }
         })
         scrollPane.revalidate()

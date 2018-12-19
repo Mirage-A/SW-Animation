@@ -83,14 +83,12 @@ class LayersWindow : JFrame() {
         scrollPanel = JPanel()
         scrollPanel.layout = BoxLayout(scrollPanel, BoxLayout.Y_AXIS)
         scrollPane = JScrollPane(scrollPanel)
-        scrollPane.setBounds(0, 0, width - 14, height - 46 - buttonSize)
         scrollPane.horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
         scrollPane.verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
         scrollPane.isVisible = true
         panel.add(scrollPane)
 
         newLayerButton = JButton(ImageIcon("./icons/create.png"))
-        newLayerButton.setBounds(0, height - 47 - buttonSize, buttonSize, buttonSize)
         newLayerButton.setSize(buttonSize, buttonSize)
         newLayerButton.isVisible = true
         newLayerButton.toolTipText = "Create a new layer"
@@ -98,7 +96,6 @@ class LayersWindow : JFrame() {
         panel.add(newLayerButton)
 
         deleteLayerButton = JButton(ImageIcon("./icons/delete.png"))
-        deleteLayerButton.setBounds(buttonSize, height - 47 - buttonSize, buttonSize, buttonSize)
         deleteLayerButton.setSize(buttonSize, buttonSize)
         deleteLayerButton.isVisible = true
         deleteLayerButton.toolTipText = "Delete selected layer"
@@ -106,7 +103,6 @@ class LayersWindow : JFrame() {
         panel.add(deleteLayerButton)
 
         renameLayerButton = JButton(ImageIcon("./icons/rename.png"))
-        renameLayerButton.setBounds(buttonSize * 2, height - 47 - buttonSize, buttonSize, buttonSize)
         renameLayerButton.setSize(buttonSize, buttonSize)
         renameLayerButton.isVisible = true
         renameLayerButton.toolTipText = "Rename selected layer"
@@ -114,7 +110,6 @@ class LayersWindow : JFrame() {
         panel.add(renameLayerButton)
 
         upLayerButton = JButton(ImageIcon("./icons/up.png"))
-        upLayerButton.setBounds(buttonSize * 3, height - 47 - buttonSize, buttonSize, buttonSize)
         upLayerButton.setSize(buttonSize, buttonSize)
         upLayerButton.isVisible = true
         upLayerButton.toolTipText = "Move selected layer up"
@@ -122,7 +117,6 @@ class LayersWindow : JFrame() {
         panel.add(upLayerButton)
 
         downLayerButton = JButton(ImageIcon("./icons/down.png"))
-        downLayerButton.setBounds(buttonSize * 4, height - 47 - buttonSize, buttonSize, buttonSize)
         downLayerButton.setSize(buttonSize, buttonSize)
         downLayerButton.isVisible = true
         downLayerButton.toolTipText = "Move selected layer down"
@@ -131,12 +125,13 @@ class LayersWindow : JFrame() {
 
         addComponentListener(object : ComponentAdapter() {
             override fun componentResized(evt: ComponentEvent?) {
-                scrollPane.setBounds(0, 0, width - 14, height - 46 - buttonSize)
-                newLayerButton.setBounds(0, height - 47 - buttonSize, buttonSize, buttonSize)
-                deleteLayerButton.setBounds(buttonSize, height - 47 - buttonSize, buttonSize, buttonSize)
-                renameLayerButton.setBounds(buttonSize * 2, height - 47 - buttonSize, buttonSize, buttonSize)
-                upLayerButton.setBounds(buttonSize * 3, height - 47 - buttonSize, buttonSize, buttonSize)
-                downLayerButton.setBounds(buttonSize * 4, height - 47 - buttonSize, buttonSize, buttonSize)
+                scrollPane.setBounds(0, 0, width - 14, height - 38 - buttonSize)
+                newLayerButton.setBounds(0, height - 39 - buttonSize, buttonSize, buttonSize)
+                deleteLayerButton.setBounds(buttonSize, height - 39 - buttonSize, buttonSize, buttonSize)
+                renameLayerButton.setBounds(buttonSize * 2, height - 39 - buttonSize, buttonSize, buttonSize)
+                upLayerButton.setBounds(buttonSize * 3, height - 39 - buttonSize, buttonSize, buttonSize)
+                downLayerButton.setBounds(buttonSize * 4, height - 39 - buttonSize, buttonSize, buttonSize)
+                scrollPane.revalidate()
             }
         })
         scrollPane.revalidate()
