@@ -9,7 +9,6 @@ import java.io.FileWriter
 import java.io.ObjectInputStream
 import java.lang.StringBuilder
 import java.nio.file.Files
-import java.util.*
 
 import javax.swing.JOptionPane
 import kotlin.collections.ArrayList
@@ -29,7 +28,7 @@ class CodeGenerator {
             val legsList = loadAllAnimations(legsAnimationsFolder)
             checkBodyAnimations(bodyList)
             checkLegsAnimations(legsList)
-            val file = File("HumanoidDrawerTmp.kt") // TODO убрать Tmp
+            val file = File("HumanoidDrawer.kt")
             if (!file.exists()) {
                 file.createNewFile()
             }
@@ -179,7 +178,9 @@ class CodeGenerator {
 
             showWarnings()
 
-            JOptionPane.showMessageDialog(null, "Code generation completed!\nGenerated file : " + file.absolutePath, "Shattered World Animation Code Generator", JOptionPane.INFORMATION_MESSAGE)
+            val ss = StringSelection(String(Files.readAllBytes(file.toPath())))
+            Toolkit.getDefaultToolkit().systemClipboard.setContents(ss, null)
+            JOptionPane.showMessageDialog(null, "Code generation completed!\nGenerated file : " + file.absolutePath + "\nThe code has also been copied to clipboard.", "Shattered World Animation Code Generator", JOptionPane.INFORMATION_MESSAGE)
 
         }
 
@@ -194,10 +195,10 @@ class CodeGenerator {
                 val layerName = startLayer.layerName
                 when (true) {
                     (layerName == "leftleg") -> {
-                        code.append("drawLeftLeg(batch, x, y, legsTimePassedSinceStart)\n")
+                        code.append("                                drawLeftLeg(batch, x, y, legsTimePassedSinceStart)\n")
                     }
                     (layerName == "rightleg") -> {
-                        code.append("drawRightLeg(batch, x, y, legsTimePassedSinceStart)\n")
+                        code.append("                                drawRightLeg(batch, x, y, legsTimePassedSinceStart)\n")
                     }
                     else -> {
                         code.append(generateBodyLayerDraw(startLayer, endLayer))
@@ -391,8 +392,8 @@ class CodeGenerator {
                             else {
                                 code.append("                        when (true) {\n")
                                 for (i in 1 until frames.size) {
-                                    code.append("                            timePassed < " + (interval * i + 1) + " -> {\n")
-                                    code.append("                                val progress = (timePassed - " + (interval * i) + "f) / " + interval + "f")
+                                    code.append("                            timePassed < " + (interval * i) + " -> {\n")
+                                    code.append("                                val progress = (timePassed - " + (interval * (i - 1)) + "f) / " + interval + "f\n")
                                     code.append(getInnerCode(frames[i - 1], frames[i]) + "\n")
                                     code.append("                            }\n") // Конец блока timePassed < TIME -> {}
                                 }
@@ -451,8 +452,8 @@ class CodeGenerator {
                                 else {
                                     code.append("                                    when (true) {\n")
                                     for (i in 1 until frames.size) {
-                                        code.append("                                        timePassed < " + (interval * i + 1) + " -> {\n")
-                                        code.append("                                        val progress = (timePassed - " + (interval * i) + "f) / " + interval + "f")
+                                        code.append("                                        timePassed < " + (interval * i) + " -> {\n")
+                                        code.append("                                        val progress = (timePassed - " + (interval * (i - 1)) + "f) / " + interval + "f\n")
                                         code.append(getInnerCode(frames[i - 1], frames[i]) + "\n")
                                         code.append("                                    }\n") // Конец блока timePassed < TIME -> {}
                                     }

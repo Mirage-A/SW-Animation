@@ -904,7 +904,10 @@ class MainWindow : JFrame() {
      * Возвращает true, если анимация успешно загружена, и false иначе
      */
     private fun loadAnimation() : Boolean {
-        val fc = JFileChooser("./")
+        val fc = JFileChooser(when (true) {
+            File("./animations").exists() -> "./animations"
+            else -> "./"
+        })
         fc.addChoosableFileFilter(object : FileFilter() {
 
             override fun getDescription(): String {
