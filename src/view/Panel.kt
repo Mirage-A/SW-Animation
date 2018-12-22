@@ -1,5 +1,6 @@
 package view
 
+import model.AnimationType
 import model.Frame
 import java.awt.Color
 import java.awt.Graphics
@@ -69,10 +70,15 @@ class Panel : JPanel() {
      */
     var duration = 1L
 
+    /**
+     * Тип анимации
+     */
+    var animType = AnimationType.NULL
+
     init {
         layout = null
         try {
-            player = ImageIO.read(File("./icons/player.png"))
+            player = ImageIO.read(File("./drawable/player.png"))
             player = player.getScaledInstance(player.getWidth(null) * zoom / 100, player.getHeight(null) * zoom / 100, Image.SCALE_SMOOTH)
             ram = ImageIO.read(File("./icons/ram.png"))
         } catch (ex: Exception) {
@@ -191,7 +197,12 @@ class Panel : JPanel() {
             gr.drawImage(ram.getScaledInstance(Math.round(scaledWidth * zoom / 100), Math.round(scaledHeight * zoom / 100), Image.SCALE_SMOOTH), at, null)
         }
         if (drawPlayer) {
-            gr.drawImage(player, scrW / 2 - player.getWidth(null) / 2, scrH / 2 - player.getHeight(null) / 2, null)
+            if (animType == AnimationType.LEGS) {
+                gr.drawImage(player, scrW / 2 - player.getWidth(null) / 2 + zoom / 200, scrH / 2 - player.getHeight(null) / 2, null)
+            }
+            else if (animType == AnimationType.BODY) {
+                gr.drawImage(player, scrW / 2 - player.getWidth(null) / 2 + zoom / 200, scrH / 2 - player.getHeight(null) / 2 + 67 * zoom / 200, null)
+            }
         }
     }
 

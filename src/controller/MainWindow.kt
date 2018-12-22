@@ -244,7 +244,7 @@ class MainWindow : JFrame() {
         zoomSlider.addChangeListener {
             panel.zoom = zoomSlider.value
             try {
-                panel.player = ImageIO.read(File("./icons/player.png"))
+                panel.player = ImageIO.read(File("./drawable/player.png"))
                 panel.player = panel.player.getScaledInstance(panel.player.getWidth(null) * panel.zoom / 100, panel.player.getHeight(null) * panel.zoom / 100, Image.SCALE_SMOOTH)
             } catch (ex: Exception) {
                 ex.printStackTrace()
@@ -955,6 +955,7 @@ class MainWindow : JFrame() {
                     setCurFrame(animation.curFrame)
                     isAnimationRepeatableCheckbox.isSelected = animation.isRepeatable
                     animationNameText.text = animation.type.toString() + ": " + animation.name
+                    panel.animType = animation.type
                     return true
                 }
                 else {
