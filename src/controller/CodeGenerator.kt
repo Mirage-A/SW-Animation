@@ -218,7 +218,7 @@ class CodeGenerator {
             val topEnd = findLayer(endFrame, "leftlegtop")
             val bottomEnd = findLayer(endFrame, "leftlegbottom")
             return if ((topStart == null) or (bottomStart == null) or (topEnd == null) or (bottomEnd == null)) {
-                "" //TODO обработать отсутствие необходимых слоев в анимации legs
+                "" //Тут можно как-нибудь обработать отсутствие необходимых слоев в анимации legs
             }
             else {
                 if (startFrame.layers.indexOf(topStart) < startFrame.layers.indexOf(bottomStart)) {
@@ -241,7 +241,7 @@ class CodeGenerator {
             val topEnd = findLayer(endFrame, "rightlegtop")
             val bottomEnd = findLayer(endFrame, "rightlegbottom")
             return if ((topStart == null) or (bottomStart == null) or (topEnd == null) or (bottomEnd == null)) {
-                "" //TODO обработать отсутствие необходимых слоев в анимации legs
+                "" //Тут можно как-нибудь обработать отсутствие необходимых слоев в анимации legs
             }
             else {
                 if (startFrame.layers.indexOf(topStart) < startFrame.layers.indexOf(bottomStart)) {

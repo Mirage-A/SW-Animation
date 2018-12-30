@@ -177,7 +177,13 @@ class MainWindow : JFrame() {
         generateCodeBtn.setBounds(fpsBtn.x, fpsBtn.y + fpsBtn.height + 4, fpsBtn.width, fpsBtn.height)
         generateCodeBtn.addActionListener {
             if (JOptionPane.showConfirmDialog(null, "Do you want to generate source code file for Shattered World game?\nIf such file already exists, it will be overwritten.", "Code generation", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.YES_OPTION) {
-                CodeGenerator.generate()
+                try {
+                    CodeGenerator.generate()
+                }
+                catch(ex: Exception) {
+                    JOptionPane.showMessageDialog(null, "Unexpected error occurred:\n" + ex.message, "Error :(", JOptionPane.ERROR_MESSAGE)
+                    System.exit(0)
+                }
             }
         }
         generateCodeBtn.isVisible = true
@@ -247,7 +253,8 @@ class MainWindow : JFrame() {
                 panel.player = ImageIO.read(File("./drawable/player.png"))
                 panel.player = panel.player.getScaledInstance(panel.player.getWidth(null) * panel.zoom / 100, panel.player.getHeight(null) * panel.zoom / 100, Image.SCALE_SMOOTH)
             } catch (ex: Exception) {
-                ex.printStackTrace()
+                JOptionPane.showMessageDialog(null, "Unexpected error occurred:\n" + ex.message, "Error :(", JOptionPane.ERROR_MESSAGE)
+                System.exit(0)
             }
         }
         zoomSlider.isVisible = true
@@ -1138,13 +1145,20 @@ class MainWindow : JFrame() {
         return a * a
     }
 
+
     /**
      * Точка входа в программу
      */
     companion object {
         @JvmStatic
         fun main(args: Array<String>) {
-            MainWindow()
+            try {
+                MainWindow()
+            }
+            catch(ex: Exception) {
+                JOptionPane.showMessageDialog(null, "Unexpected error occurred:\n" + ex.message, "Error :(", JOptionPane.ERROR_MESSAGE)
+                System.exit(0)
+            }
         }
     }
 }
