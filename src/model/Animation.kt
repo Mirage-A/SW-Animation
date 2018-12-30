@@ -113,7 +113,7 @@ class Animation() {
         val animation = document.addElement("animation")
         animation.run {
             addAttribute("type", type.toString())
-            addAttribute("name", name)
+            addAttribute("name", this@Animation.name)
             addAttribute("duration", "" + duration)
             addAttribute("isRepeatable", "" + isRepeatable)
         }
