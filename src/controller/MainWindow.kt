@@ -347,7 +347,6 @@ class MainWindow : JFrame() {
                     layersWindow.newEnabled = true
                     layersWindow.deleteLayerButton.isEnabled = false
                     layersWindow.deleteEnabled = false
-                    layersWindow.renameLayerButton.isEnabled = false
                     layersWindow.renameEnabled = false
                     layersWindow.upLayerButton.isEnabled = false
                     layersWindow.upEnabled = false
@@ -417,7 +416,6 @@ class MainWindow : JFrame() {
                     layersWindow.newEnabled = true
                     layersWindow.deleteLayerButton.isEnabled = false
                     layersWindow.deleteEnabled = false
-                    layersWindow.renameLayerButton.isEnabled = false
                     layersWindow.renameEnabled = false
                     layersWindow.upLayerButton.isEnabled = false
                     layersWindow.upEnabled = false
@@ -495,7 +493,7 @@ class MainWindow : JFrame() {
                     for (frame in animation.frames) {
                         frame.layers.add(Layer(layer))
                     }
-                    val tmp = JButton(layer.layerName)
+                    val tmp = JButton(layer.getName())
                     tmp.addActionListener { loadLayer(layersWindow.layerButtons.indexOf(tmp)) }
                     layersWindow.layerButtons.add(tmp)
                     layersWindow.scrollPanel.add(tmp)
@@ -510,14 +508,13 @@ class MainWindow : JFrame() {
                 val frame = animation.frames[animation.curFrame]
                 if (frame.curLayer != -1) {
                     val layer = frame.layers[frame.curLayer]
-                    if (JOptionPane.showConfirmDialog(layersWindow, "Delete the layer " +layer.layerName + "?", "Delete layer", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.YES_OPTION) {
+                    if (JOptionPane.showConfirmDialog(layersWindow, "Delete the layer " +layer.getName() + "?", "Delete layer", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.YES_OPTION) {
                         layersWindow.scrollPanel.remove(layersWindow.layerButtons[frame.curLayer])
                         layersWindow.layerButtons.removeAt(frame.curLayer)
                         val layerID = frame.curLayer
                         frame.curLayer = -1
                         layersWindow.deleteLayerButton.isEnabled = false
                         layersWindow.deleteEnabled = false
-                        layersWindow.renameLayerButton.isEnabled = false
                         layersWindow.renameEnabled = false
                         layersWindow.upLayerButton.isEnabled = false
                         layersWindow.upEnabled = false
@@ -530,18 +527,6 @@ class MainWindow : JFrame() {
                             fr.layers.removeAt(layerID)
                         }
                     }
-                }
-            }
-        }
-        //Кнопочка переименования слоя
-        layersWindow.renameLayerButton.addActionListener {
-            if (animation.curFrame != -1) {
-                val frame = animation.frames[animation.curFrame]
-                if (frame.curLayer != -1) {
-                    val layer = frame.layers[frame.curLayer]
-                    val newName = JOptionPane.showInputDialog(layersWindow, "Create a new name for the layer " + layer.layerName, "Rename the layer", JOptionPane.PLAIN_MESSAGE).trim()
-                    layer.layerName = newName
-                    layersWindow.layerButtons[frame.curLayer].text = newName
                 }
             }
         }
@@ -681,7 +666,6 @@ class MainWindow : JFrame() {
                     layersWindow.newEnabled = false
                     layersWindow.deleteLayerButton.isEnabled = false
                     layersWindow.deleteEnabled = false
-                    layersWindow.renameLayerButton.isEnabled = false
                     layersWindow.renameEnabled = false
                     layersWindow.upLayerButton.isEnabled = false
                     layersWindow.upEnabled = false
@@ -980,7 +964,6 @@ class MainWindow : JFrame() {
         animation.frames[animation.curFrame].curLayer = layerID
         layersWindow.deleteLayerButton.isEnabled = true
         layersWindow.deleteEnabled = true
-        layersWindow.renameLayerButton.isEnabled = true
         layersWindow.renameEnabled = true
         layersWindow.upLayerButton.isEnabled = true
         layersWindow.upEnabled = true
@@ -1001,7 +984,6 @@ class MainWindow : JFrame() {
         slidersWindow.isVisible = false
         layersWindow.deleteLayerButton.isEnabled = false
         layersWindow.deleteEnabled = false
-        layersWindow.renameLayerButton.isEnabled = false
         layersWindow.renameEnabled = false
         layersWindow.upLayerButton.isEnabled = false
         layersWindow.upEnabled = false
@@ -1015,7 +997,7 @@ class MainWindow : JFrame() {
             val frame = animation.frames[frameID]
             frame.curLayer = -1
             for (layer in frame.layers) {
-                val tmp = JButton(layer.layerName)
+                val tmp = JButton(layer.getName())
                 tmp.addActionListener { loadLayer(layersWindow.layerButtons.indexOf(tmp)) }
                 layersWindow.layerButtons.add(tmp)
                 layersWindow.scrollPanel.add(tmp)
@@ -1049,8 +1031,7 @@ class MainWindow : JFrame() {
             }
             for (mFrame in mirroredFrames) {
                 for (mLayer in mFrame.layers) {
-                    mLayer.x *= -1
-                    mLayer.angle *= -1
+                    mLayer.mirror()
                 }
             }
 

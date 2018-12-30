@@ -193,7 +193,7 @@ class CodeGenerator {
             for (layerIndex in startFrame.layers.indices) {
                 val startLayer = startFrame.layers[layerIndex]
                 val endLayer = endFrame.layers[layerIndex]
-                val layerName = startLayer.layerName
+                val layerName = startLayer.getName()
                 when (true) {
                     (layerName == "leftleg") -> {
                         code.append("                                drawLeftLeg(batch, x, y, legsTimePassedSinceStart)\n")
@@ -261,7 +261,7 @@ class CodeGenerator {
          */
         private fun findLayer(frame : Frame, layerName: String) : Layer? {
             for (layer in frame.layers) {
-                if (layer.layerName == layerName) {
+                if (layer.getName() == layerName) {
                     return layer
                 }
             }
@@ -273,7 +273,7 @@ class CodeGenerator {
          * Сгенерированный код использует переменные progress, x, y
          */
         private fun generateLayerDraw(startLayer: Layer, endLayer : Layer) : String {
-            var layerName = startLayer.layerName
+            var layerName = startLayer.getName()
             if ((layerName == "leftleg") or (layerName == "rightleg") or (layerName == "bodypoint")) {
                 return ""
             }
@@ -319,7 +319,7 @@ class CodeGenerator {
          */
         private fun generateBodyLayerDraw(startLayer: Layer, endLayer : Layer) : String {
 
-            var layerName = startLayer.layerName
+            var layerName = startLayer.getName()
             if ((layerName == "leftleg") or (layerName == "rightleg") or (layerName == "bodypoint")) {
                 return ""
             }
@@ -485,7 +485,7 @@ class CodeGenerator {
          */
         private fun getBodyPoint(frame : Frame) : Pair<Float, Float> {
             for (layer in frame.layers) {
-                if (layer.layerName == "bodypoint") {
+                if (layer.getName() == "bodypoint") {
                     return Pair(layer.x, -layer.y)
                 }
             }

@@ -39,11 +39,11 @@ enum class MoveDirection : Serializable{
         return when (this) {
             RIGHT -> LEFT
             UP_RIGHT -> UP_LEFT
-            UP -> UP
+            UP -> DOWN
             UP_LEFT -> UP_RIGHT
             LEFT -> RIGHT
             DOWN_LEFT -> DOWN_RIGHT
-            DOWN -> DOWN
+            DOWN -> UP
             DOWN_RIGHT -> DOWN_LEFT
         }
     }

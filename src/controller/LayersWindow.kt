@@ -38,10 +38,6 @@ class LayersWindow : JFrame() {
      */
     internal var deleteLayerButton: JButton
     /**
-     * Кнопочка переименования выбранного слоя
-     */
-    internal var renameLayerButton: JButton
-    /**
      * Кнопочка поднятия выбранного слоя наверх
      */
     internal var upLayerButton: JButton
@@ -102,13 +98,6 @@ class LayersWindow : JFrame() {
         deleteLayerButton.isEnabled = false
         panel.add(deleteLayerButton)
 
-        renameLayerButton = JButton(ImageIcon("./icons/rename.png"))
-        renameLayerButton.setSize(buttonSize, buttonSize)
-        renameLayerButton.isVisible = true
-        renameLayerButton.toolTipText = "Rename selected layer"
-        renameLayerButton.isEnabled = false
-        panel.add(renameLayerButton)
-
         upLayerButton = JButton(ImageIcon("./icons/up.png"))
         upLayerButton.setSize(buttonSize, buttonSize)
         upLayerButton.isVisible = true
@@ -128,9 +117,8 @@ class LayersWindow : JFrame() {
                 scrollPane.setBounds(0, 0, width - 14, height - 38 - buttonSize)
                 newLayerButton.setBounds(0, height - 39 - buttonSize, buttonSize, buttonSize)
                 deleteLayerButton.setBounds(buttonSize, height - 39 - buttonSize, buttonSize, buttonSize)
-                renameLayerButton.setBounds(buttonSize * 2, height - 39 - buttonSize, buttonSize, buttonSize)
-                upLayerButton.setBounds(buttonSize * 3, height - 39 - buttonSize, buttonSize, buttonSize)
-                downLayerButton.setBounds(buttonSize * 4, height - 39 - buttonSize, buttonSize, buttonSize)
+                upLayerButton.setBounds(buttonSize * 2, height - 39 - buttonSize, buttonSize, buttonSize)
+                downLayerButton.setBounds(buttonSize * 3, height - 39 - buttonSize, buttonSize, buttonSize)
                 scrollPane.revalidate()
             }
         })
@@ -150,7 +138,6 @@ class LayersWindow : JFrame() {
         scrollPane.isEnabled = b
         newLayerButton.isEnabled = b && newEnabled
         deleteLayerButton.isEnabled = b && deleteEnabled
-        renameLayerButton.isEnabled = b && renameEnabled
         upLayerButton.isEnabled = b && upEnabled
         downLayerButton.isEnabled = b && downEnabled
         for (btn in layerButtons) {

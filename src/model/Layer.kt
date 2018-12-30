@@ -17,10 +17,6 @@ class Layer (var imageName: String, var x : Float = 0f, var y : Float = 0f, var 
     var basicWidth: Int = 0
     var basicHeight: Int = 0
     /**
-     * Название слоя
-     */
-    var layerName = imageName.substring(0, imageName.length - 4)
-    /**
      * Изображение слоя
      */
     @Transient
@@ -43,5 +39,29 @@ class Layer (var imageName: String, var x : Float = 0f, var y : Float = 0f, var 
         } catch (ex: Exception) {
             ex.printStackTrace()
         }
+    }
+
+    /**
+     * Обрезает формат изображения и возвращает название слоя
+     */
+    fun getName() = imageName.substring(0, imageName.length - 4)
+
+
+    /**
+     * Отражает этот слой относительно вертикальной оси
+     * Также меняет right и left слои местами
+     */
+    fun mirror() {
+        x *= -1
+        angle *= -1
+        imageName = when (true) {
+            imageName.startsWith("left") -> "right" + imageName.substring(4)
+            imageName.startsWith("right") -> "left" + imageName.substring(5)
+            imageName.startsWith("head") -> imageName.substring(0..3) +
+                    MoveDirection.fromString(imageName.substring(4, imageName.length - 4)).mirrored().toString() +
+                    imageName.substring(imageName.length - 4)
+            else -> imageName
+        }
+        loadImage()
     }
 }
