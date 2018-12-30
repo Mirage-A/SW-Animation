@@ -504,10 +504,7 @@ class CodeGenerator {
                 val filesList = folder.listFiles()
                 for (file in filesList) {
                     try {
-                        val fis = FileInputStream(file)
-                        val oin = ObjectInputStream(fis)
-                        val obj = oin.readObject()
-                        animationsList.add(obj as Animation)
+                        animationsList.add(Animation(file))
                     }
                     catch(ex : Exception) {
                         warnings.add("File " + file.absolutePath + " is not correct animation. Delete it. Animation is ignored.")
