@@ -906,10 +906,7 @@ class MainWindow : JFrame() {
                     if (animation.type != AnimationType.NULL) {
                         serialize()
                     }
-                    val fis = FileInputStream(file)
-                    val oin = ObjectInputStream(fis)
-                    val obj = oin.readObject()
-                    animation = obj as Animation
+                    animation = Animation(file)
                     animation.frames = animation.data[animation.curMoveDirection]!![animation.curWeaponType]!!
                     framesWindow.frameButtons.clear()
                     framesWindow.scrollPanel.removeAll()

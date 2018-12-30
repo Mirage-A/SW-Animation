@@ -3,6 +3,7 @@ package model
 import java.io.File
 import org.dom4j.io.SAXReader
 import org.dom4j.DocumentHelper
+import org.dom4j.Element
 import java.io.FileWriter
 import org.dom4j.io.OutputFormat
 import org.dom4j.io.XMLWriter
@@ -60,8 +61,46 @@ class Animation() {
      * Конструктор считывания анимации из файла XML (.swa)
      */
     constructor(swaFile : File) : this() {
+        for (moveDirection in MoveDirection.values()) {
+            data[moveDirection] = HashMap()
+            for (weaponType in WeaponType.values()) {
+                data[moveDirection]!![weaponType] = ArrayList()
+            }
+        }
         val reader = SAXReader()
         val document = reader.read(swaFile)
+        val animation = document.rootElement
+        type = AnimationType.fromString(animation.attributeValue("type"))
+        name = animation.attributeValue("name")
+        duration = Integer.parseInt(animation.attributeValue("duration"))
+        isRepeatable = animation.attributeValue("isRepeatable") == "true"
+        for (md in animation.elements()) {
+            md as Element
+            val moveDirection = MoveDirection.fromString(md.name)
+            for (wt in md.elements()) {
+                wt as Element
+                val weaponType = WeaponType.fromString(wt.name)
+                val framesArr = data[moveDirection]!![weaponType]!!
+                for (fr in wt.elements()) {
+                    fr as Element
+                    val frame = Frame()
+                    for (lyr in fr.elements()) {
+                        lyr as Element
+                        val layer = Layer(
+                                lyr.attributeValue("imageName"),
+                                lyr.attributeValue("x").toFloat(),
+                                lyr.attributeValue("y").toFloat(),
+                                lyr.attributeValue("scale").toFloat(),
+                                lyr.attributeValue("scaleX").toFloat(),
+                                lyr.attributeValue("scaleY").toFloat(),
+                                lyr.attributeValue("angle").toFloat()
+                        )
+                        frame.layers.add(layer)
+                    }
+                    framesArr.add(frame)
+                }
+            }
+        }
 
         frames = data[MoveDirection.RIGHT]!![WeaponType.ONE_HANDED]!!
     }
@@ -71,7 +110,6 @@ class Animation() {
      */
     fun serialize(swaFile: File) {
         val document = DocumentHelper.createDocument()
-
         val animation = document.addElement("animation")
         animation.run {
             addAttribute("type", type.toString())
@@ -79,13 +117,11 @@ class Animation() {
             addAttribute("duration", "" + duration)
             addAttribute("isRepeatable", "" + isRepeatable)
         }
-        val anim = animation.addElement("data")
         for (md in MoveDirection.values()) {
-            val moveDirection = anim.addElement(md.toString())
+            val moveDirection = animation.addElement(md.toString())
             for (wt in WeaponType.values()) {
                 val weaponType = moveDirection.addElement(wt.toString())
                 val frames = data[md]!![wt]!!
-                weaponType.addAttribute("framesCount", "" + frames.size)
                 for (frameIndex in frames.indices) {
                     val frame = frames[frameIndex]
                     val fr = weaponType.addElement("frame$frameIndex")
