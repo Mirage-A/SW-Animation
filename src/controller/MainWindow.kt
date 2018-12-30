@@ -1030,9 +1030,7 @@ class MainWindow : JFrame() {
                 mirroredFrames.add(Frame(frame))
             }
             for (mFrame in mirroredFrames) {
-                for (mLayer in mFrame.layers) {
-                    mLayer.mirror()
-                }
+                mFrame.mirror()
             }
 
         }

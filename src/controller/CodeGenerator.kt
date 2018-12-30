@@ -325,6 +325,8 @@ class CodeGenerator {
             }
             layerName = when (true) {
                 layerName.startsWith("head") -> layerName.substring(0, 5)
+                (layerName == "lefthandtop") or (layerName == "righthandtop") -> "handtop"
+                (layerName == "lefthandbottom") or (layerName == "righthandbottom") -> "handbottom"
                 (layerName == "leftlegtop") or (layerName == "rightlegtop") -> "legtop"
                 (layerName == "leftlegbottom") or (layerName == "rightlegbottom") -> "legbottom"
                 (layerName == "onehandedright") or (layerName == "twohanded") or (layerName == "bow") or

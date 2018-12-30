@@ -54,13 +54,10 @@ class Layer (var imageName: String, var x : Float = 0f, var y : Float = 0f, var 
     fun mirror() {
         x *= -1
         angle *= -1
-        imageName = when (true) {
-            imageName.startsWith("left") -> "right" + imageName.substring(4)
-            imageName.startsWith("right") -> "left" + imageName.substring(5)
-            imageName.startsWith("head") -> imageName.substring(0..3) +
+        if (imageName.startsWith("head")) {
+            imageName = imageName.substring(0..3) +
                     MoveDirection.fromString(imageName.substring(4, imageName.length - 4)).mirrored().toString() +
                     imageName.substring(imageName.length - 4)
-            else -> imageName
         }
         loadImage()
     }
