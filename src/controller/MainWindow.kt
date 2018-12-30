@@ -407,12 +407,12 @@ class MainWindow : JFrame() {
                     }
                     animation.curWeaponType = WeaponType.fromString(cb.text)
                     animation.frames = animation.data[animation.curMoveDirection]!![animation.curWeaponType]!!
+                    animation.curFrame = -1
                     framesWindow.frameButtons.clear()
                     framesWindow.scrollPanel.removeAll()
                     framesWindow.scrollPanel.repaint()
                     framesWindow.scrollPane.revalidate()
                     slidersWindow.isVisible = false
-                    setCurFrame(-1)
                     layersWindow.newLayerButton.isEnabled = true
                     layersWindow.newEnabled = true
                     layersWindow.deleteLayerButton.isEnabled = false
