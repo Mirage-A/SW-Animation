@@ -1,12 +1,11 @@
 package model
 
-import java.io.Serializable
 import java.lang.Exception
 
 /**
  * Направление движения
  */
-enum class MoveDirection : Serializable{
+enum class MoveDirection {
     RIGHT,
     UP_RIGHT,
     UP,

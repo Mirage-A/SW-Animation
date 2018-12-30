@@ -1,12 +1,11 @@
 package model
 
-import java.io.Serializable
 import java.lang.Exception
 
 /**
  * Тип оружия
  */
-enum class WeaponType : Serializable{
+enum class WeaponType {
     ONE_HANDED,
     ONE_HANDED_AND_SHIELD,
     DUAL,

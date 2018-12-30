@@ -1,11 +1,10 @@
 package model
 
-import java.io.Serializable
 
 /**
  * Кадр анимации
  */
-class Frame() : Serializable{
+class Frame() {
     /**
      * Список слоёв на кадре
      */

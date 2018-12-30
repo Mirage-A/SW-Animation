@@ -830,12 +830,7 @@ class MainWindow : JFrame() {
         if (!file.exists()) {
             file.createNewFile()
         }
-        val fos = FileOutputStream(path)
-        val oos = ObjectOutputStream(fos)
-        oos.writeObject(animation)
-        oos.flush()
-        oos.close()
-
+        animation.serialize(file)
     }
 
     /**

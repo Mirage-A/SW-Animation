@@ -1,12 +1,11 @@
 package model
 
-import java.io.Serializable
 import java.lang.Exception
 
 /**
  * Тип анимации
  */
-enum class AnimationType : Serializable{
+enum class AnimationType {
     NULL,
     BODY,
     LEGS;
