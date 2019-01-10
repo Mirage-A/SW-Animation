@@ -64,7 +64,7 @@ class CodeGenerator {
                     "\n" +
                     "    /**\n" +
                     "     * Словарь из текстур экипировки данного гуманоида\n" +
-                    "     * Должен содержать ключи head[0-7], body, handtop, handbottom, legtop, legbottom, cloak, weapon1, weapon2\n" +
+                    "     * Должен содержать ключи head[RIGHT, DOWN, etc], body, handtop, handbottom, legtop, legbottom, cloak, weapon1, weapon2\n" +
                     "     */\n" +
                     "    var textures: MutableMap<String, AnimatedTexture>\n" +
                     "\n" +
@@ -80,8 +80,8 @@ class CodeGenerator {
                     "\n" +
                     "    constructor() {\n" +
                     "        textures = HashMap()\n" +
-                    "        for (i in 0..7) {\n" +
-                    "            textures[\"head\$i\"] = StaticTexture(TextureLoader.load(\"equipment/head/0000\$i.png\"))\n" +
+                    "        for (md in MoveDirection.values()) {\n" +
+                    "            textures[\"head\" + md.toString()] = StaticTexture(TextureLoader.load(\"equipment/head/0000\" + md.toString() + \".png\")) \n" +
                     "        }\n" +
                     "        textures[\"body\"] = StaticTexture(TextureLoader.load(\"equipment/body/0000.png\"))\n" +
                     "        textures[\"handtop\"] = StaticTexture(TextureLoader.load(\"equipment/handtop/0000.png\"))\n" +
@@ -278,7 +278,6 @@ class CodeGenerator {
                 return ""
             }
             layerName = when (true) {
-                layerName.startsWith("head") -> layerName.substring(0, 5)
                 (layerName == "leftlegtop") or (layerName == "rightlegtop") -> "legtop"
                 (layerName == "leftlegbottom") or (layerName == "rightlegbottom") -> "legbottom"
                 (layerName == "onehandedright") or (layerName == "twohanded") or (layerName == "bow") or
@@ -324,7 +323,6 @@ class CodeGenerator {
                 return ""
             }
             layerName = when (true) {
-                layerName.startsWith("head") -> layerName.substring(0, 5)
                 (layerName == "lefthandtop") or (layerName == "righthandtop") -> "handtop"
                 (layerName == "lefthandbottom") or (layerName == "righthandbottom") -> "handbottom"
                 (layerName == "leftlegtop") or (layerName == "rightlegtop") -> "legtop"

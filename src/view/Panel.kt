@@ -198,10 +198,10 @@ class Panel : JPanel() {
         }
         if (drawPlayer) {
             if (animType == AnimationType.LEGS) {
-                gr.drawImage(player, scrW / 2 - player.getWidth(null) / 2 + zoom / 200, scrH / 2 - player.getHeight(null) / 2, null)
+                gr.drawImage(player, scrW / 2 - player.getWidth(null) / 2, scrH / 2 - player.getHeight(null) / 2 - 44 * zoom / 200, null)
             }
             else if (animType == AnimationType.BODY) {
-                gr.drawImage(player, scrW / 2 - player.getWidth(null) / 2 + zoom / 200, scrH / 2 - player.getHeight(null) / 2 + 67 * zoom / 200, null)
+                gr.drawImage(player, scrW / 2 - player.getWidth(null) / 2, scrH / 2 - player.getHeight(null) / 2 + 72 * zoom / 200, null)
             }
         }
     }
