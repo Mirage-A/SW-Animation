@@ -1029,7 +1029,7 @@ class MainWindow : JFrame() {
                 mirroredFrames.add(Frame(frame))
             }
             for (mFrame in mirroredFrames) {
-                mFrame.mirror()
+                mFrame.mirror(animation.curMoveDirection)
             }
 
         }

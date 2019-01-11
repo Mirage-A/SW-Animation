@@ -24,15 +24,18 @@ class Frame() {
     /**
      * Отражает кадр (кнопка Mirror animation)
      */
-    fun mirror() {
+    fun mirror(md: MoveDirection) {
         for (mLayer in layers) {
-            mLayer.mirror()
+            mLayer.mirror(md)
         }
-        swapLayers("rightleg", "leftleg")
-        swapLayers("rightlegtop", "leftlegtop")
-        swapLayers("rightlegbottom", "leftlegbottom")
-        swapLayers("righthandtop", "lefthandtop")
-        swapLayers("righthandbottom", "lefthandbottom")
+        if (md == MoveDirection.DOWN || md == MoveDirection.LEFT ||
+                md == MoveDirection.UP || md == MoveDirection.RIGHT) {
+            swapLayers("rightleg", "leftleg")
+            swapLayers("rightlegtop", "leftlegtop")
+            swapLayers("rightlegbottom", "leftlegbottom")
+            swapLayers("righthandtop", "lefthandtop")
+            swapLayers("righthandbottom", "lefthandbottom")
+        }
     }
 
     /**

@@ -50,13 +50,22 @@ class Layer (var imageName: String, var x : Float = 0f, var y : Float = 0f, var 
      * Отражает этот слой относительно вертикальной оси
      * Также меняет right и left слои местами
      */
-    fun mirror() {
+    fun mirror(md: MoveDirection) {
         x *= -1
         angle *= -1
         if (imageName.startsWith("head")) {
             imageName = imageName.substring(0..3) +
                     MoveDirection.fromString(imageName.substring(4, imageName.length - 4)).mirrored().toString() +
                     imageName.substring(imageName.length - 4)
+        }
+        if (md == MoveDirection.DOWN_RIGHT || md == MoveDirection.DOWN_LEFT ||
+                md == MoveDirection.UP_LEFT || md == MoveDirection.UP_RIGHT) {
+            if (imageName.startsWith("left")) {
+                imageName = "right" + imageName.substring(4)
+            }
+            else if (imageName.startsWith("right")) {
+                imageName = "left" + imageName.substring(5)
+            }
         }
         loadImage()
     }
