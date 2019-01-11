@@ -78,6 +78,15 @@ class CodeGenerator {
                     "     */\n" +
                     "    var legsStartTime = 0L\n" +
                     "\n" +
+                    "    /**\n" +
+                    "     * Буфер направления движения, необходим для плавности поворота персонажа\n" +
+                    "     */\n" +
+                    "    var bufferedMoveDirection = MoveDirection.RIGHT\n" +
+                    "\n" +
+                    "    /**\n" +
+                    "     * Время последнего изменения направления движения\n" +
+                    "     */\n" +
+                    "    var lastMoveDirectionUpdateTime = 0L\n\n" +
                     "    constructor() {\n" +
                     "        textures = HashMap()\n" +
                     "        for (md in MoveDirection.values()) {\n" +
