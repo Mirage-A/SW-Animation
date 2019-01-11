@@ -134,7 +134,6 @@ class CodeGenerator {
              * Метод draw
              */
             out.write("    override fun draw(batch: SpriteBatch, x: Float, y: Float, timePassedSinceStart: Long) {\n")
-            out.write("batch.draw(TextureLoader.load(\"tiles/0001.png\"), x - 16, y - 8, 32f, 16f)\n")
             out.write("    val bodyTimePassedSinceStart = timePassedSinceStart - bodyStartTime\n" +
                     "    val legsTimePassedSinceStart = timePassedSinceStart - legsStartTime\n")
             out.write("        val bodyPoint = getBodyPoint(legsTimePassedSinceStart)\n" +
