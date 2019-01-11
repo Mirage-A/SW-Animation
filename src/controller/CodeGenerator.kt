@@ -60,7 +60,7 @@ class CodeGenerator {
                     "    /**\n" +
                     "     * Тип оружия гуманоида (одноручное, двуручное, два одноручных, одноручное и щит, лук и т.д.)\n" +
                     "     */\n" +
-                    "    var weaponType: WeaponType = WeaponType.ONE_HANDED\n" +
+                    "    var weaponType: WeaponType = WeaponType.UNARMED\n" +
                     "\n" +
                     "    /**\n" +
                     "     * Словарь из текстур экипировки данного гуманоида\n" +
