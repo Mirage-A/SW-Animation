@@ -7,6 +7,7 @@ import org.dom4j.Element
 import java.io.FileWriter
 import org.dom4j.io.OutputFormat
 import org.dom4j.io.XMLWriter
+import org.omg.PortableInterceptor.SYSTEM_EXCEPTION
 import javax.swing.JOptionPane
 
 
@@ -102,7 +103,7 @@ class Animation() {
                 }
             }
 
-            frames = data[MoveDirection.RIGHT]!![WeaponType.ONE_HANDED]!!
+            frames = data[MoveDirection.RIGHT]!![WeaponType.UNARMED]!!
         }
         catch(ex: Exception) {
             JOptionPane.showMessageDialog(null, "Unexpected error occurred:\n" + ex.message, "Error :(", JOptionPane.ERROR_MESSAGE)

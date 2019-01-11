@@ -391,7 +391,7 @@ class CodeGenerator {
                     }
                     code.append("                when (moveDirection) {\n")
                     for (moveDirection in MoveDirection.values()) {
-                        val frames = legsAnim.data[moveDirection]!![WeaponType.ONE_HANDED]!!
+                        val frames = legsAnim.data[moveDirection]!![WeaponType.UNARMED]!!
                         code.append("                    MoveDirection." + moveDirection.toString() + " -> {\n")
                         val interval = legsAnim.duration.toFloat() / (frames.size - 1f)
                         if (frames.isNotEmpty()) {
