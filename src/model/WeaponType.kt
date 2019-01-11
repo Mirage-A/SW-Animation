@@ -6,6 +6,7 @@ import java.lang.Exception
  * Тип оружия
  */
 enum class WeaponType {
+    UNARMED,
     ONE_HANDED,
     ONE_HANDED_AND_SHIELD,
     DUAL,
@@ -18,6 +19,7 @@ enum class WeaponType {
      */
     override fun toString() : String {
         return when (this) {
+            UNARMED -> "UNARMED"
             ONE_HANDED -> "ONE_HANDED"
             ONE_HANDED_AND_SHIELD -> "ONE_HANDED_AND_SHIELD"
             DUAL -> "DUAL"
@@ -33,6 +35,7 @@ enum class WeaponType {
          */
         fun fromString(str: String) : WeaponType {
             return when (str) {
+                "UNARMED" -> UNARMED
                 "ONE_HANDED" -> ONE_HANDED
                 "ONE_HANDED_AND_SHIELD" -> ONE_HANDED_AND_SHIELD
                 "DUAL" -> DUAL

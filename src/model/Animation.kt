@@ -34,7 +34,7 @@ class Animation() {
     /**
      * Текущий тип оружия
      */
-    var curWeaponType = WeaponType.ONE_HANDED
+    var curWeaponType = WeaponType.UNARMED
     /**
      * Название анимации
      */
