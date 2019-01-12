@@ -699,6 +699,25 @@ class MainWindow : JFrame() {
                 }
             }
         }
+        //Кнопочка поднятия кадра наверх
+        framesWindow.upFrameButton.addActionListener {
+            if (animation.curFrame > 0) {
+                val tmp = animation.frames[animation.curFrame]
+                animation.frames[animation.curFrame] = animation.frames[animation.curFrame - 1]
+                animation.frames[animation.curFrame - 1] = tmp
+                setCurFrame(animation.curFrame - 1)
+            }
+        }
+
+        //Кнопочка опускания кадра вниз
+        framesWindow.downFrameButton.addActionListener {
+            if (animation.curFrame != -1 && animation.curFrame < animation.frames.size - 1) {
+                val tmp = animation.frames[animation.curFrame]
+                animation.frames[animation.curFrame] = animation.frames[animation.curFrame + 1]
+                animation.frames[animation.curFrame + 1] = tmp
+                setCurFrame(animation.curFrame + 1)
+            }
+        }
 
         //Слайдеры мини-окна со слайдерами изменения размера
         //Слайдер изменения размера слоя
