@@ -8,7 +8,7 @@ import java.awt.Image
 import java.awt.Toolkit
 import java.awt.event.*
 import java.io.*
-import java.util.ArrayList
+import java.util.*
 import javax.imageio.ImageIO
 import javax.swing.*
 import javax.swing.filechooser.FileFilter
@@ -126,9 +126,24 @@ class MainWindow : JFrame() {
     private var animation : Animation = Animation()
 
     /**
+     * Файл с текущей анимацией
+     */
+    private var animationFile : File? = null
+
+    /**
+     * Текущая директория с анимацией
+     */
+    private var animationDirectory : File = File("./animations")
+
+    private var settingsFile: File = File("./settings.txt")
+
+    /**
      * Инициализация всего интерфейса
      */
     init {
+        if (settingsFile.exists()) {
+            animationDirectory = File(Scanner(settingsFile).nextLine())
+        }
         extendedState = JFrame.MAXIMIZED_BOTH
         isUndecorated = true
         title = "Animation editor"
@@ -826,18 +841,18 @@ class MainWindow : JFrame() {
      * Сериализует текущую анимацию и сохраняет ее в файл
      */
     private fun serialize() {
-        val path = "animations/" + animation.type.toString() + "/" + animation.name + ".swa"
-        val file = File(path)
-        if (!file.parentFile.parentFile.exists()) {
-            file.parentFile.parentFile.mkdir()
+        if (animationFile != null) {
+            if (!animationFile!!.parentFile.parentFile.exists()) {
+                animationFile!!.parentFile.parentFile.mkdir()
+            }
+            if (!animationFile!!.parentFile.exists()) {
+                animationFile!!.parentFile.mkdir()
+            }
+            if (!animationFile!!.exists()) {
+                animationFile!!.createNewFile()
+            }
+            animation.serialize(animationFile!!)
         }
-        if (!file.parentFile.exists()) {
-            file.parentFile.mkdir()
-        }
-        if (!file.exists()) {
-            file.createNewFile()
-        }
-        animation.serialize(file)
     }
 
     /**
@@ -857,7 +872,7 @@ class MainWindow : JFrame() {
                 JOptionPane.showMessageDialog(null, "Incorrect input")
             } else {
                 newAnimation.name = inputName.trim()
-                val path = "./animations/" + animation.type + "/" + newAnimation.name + ".swa"
+                val path = animationDirectory.path + "/" + animation.type + "/" + newAnimation.name + ".swa"
                 if (File(path).exists()) {
                     JOptionPane.showMessageDialog(null, "Animation with this name already exists")
                 }
@@ -876,9 +891,12 @@ class MainWindow : JFrame() {
                         }
                     }
                     val tmp = animation
+                    val tmpFile = animationFile
                     animation = newAnimation
+                    animationFile = File(path)
                     serialize()
                     animation = tmp
+                    animationFile = tmpFile
                     JOptionPane.showMessageDialog(this, "Animation created!", "New animation", JOptionPane.PLAIN_MESSAGE)
                 }
             }
@@ -890,10 +908,10 @@ class MainWindow : JFrame() {
      * Возвращает true, если анимация успешно загружена, и false иначе
      */
     private fun loadAnimation() : Boolean {
-        val fc = JFileChooser(when (true) {
-            File("./animations").exists() -> "./animations"
-            else -> "./"
-        })
+        if (!animationDirectory.exists()) {
+            animationDirectory.mkdirs()
+        }
+        val fc = JFileChooser(animationDirectory)
         fc.addChoosableFileFilter(object : FileFilter() {
 
             override fun getDescription(): String {
@@ -910,9 +928,9 @@ class MainWindow : JFrame() {
             try {
                 val file = fc.selectedFile
                 if (file.name.endsWith(".swa")) {
-                    if (animation.type != AnimationType.NULL) {
-                        serialize()
-                    }
+                    serialize()
+                    animationFile = file
+                    animationDirectory = animationFile!!.parentFile
                     animation = Animation(file)
                     animation.frames = animation.data[animation.curMoveDirection]!![animation.curWeaponType]!!
                     framesWindow.frameButtons.clear()

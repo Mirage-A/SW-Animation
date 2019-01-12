@@ -143,6 +143,8 @@ class Animation() {
                                 addAttribute("scaleX", "" + layer.scaleX)
                                 addAttribute("scaleY", "" + layer.scaleY)
                                 addAttribute("angle", "" + layer.angle)
+                                addAttribute("basicWidth", "" + layer.basicWidth)
+                                addAttribute("basicHeight", "" + layer.basicHeight)
                             }
                         }
                     }
