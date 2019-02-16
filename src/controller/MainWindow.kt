@@ -511,7 +511,11 @@ class MainWindow : JFrame() {
             if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
                 val image = fc.selectedFile
                 if (image.name.endsWith(".png")) {
-                    val layer = Layer(image.name)
+                    val absImagePath = image.absolutePath
+                    val startAbsPath = File("drawable").absolutePath
+                    val relativePath = absImagePath.substring(startAbsPath.length, absImagePath.length)
+                    println("$absImagePath $startAbsPath $relativePath")
+                    val layer = Layer(relativePath)
                     for (frame in animation.frames) {
                         frame.layers.add(Layer(layer))
                     }
@@ -879,10 +883,11 @@ class MainWindow : JFrame() {
      */
     private fun createNewAnimation() {
         var newAnimation : Animation? = null
-        val typeChoice = JOptionPane.showOptionDialog(contentPane, "Choose animation's type", "New animation", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE, null, arrayOf("Body animation", "Legs animation"), 0)
+        val typeChoice = JOptionPane.showOptionDialog(contentPane, "Choose animation's type", "New animation", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null, arrayOf("Body animation", "Legs animation", "Object animation"), 0)
         when (typeChoice) {
             JOptionPane.YES_OPTION -> newAnimation = Animation(AnimationType.BODY)
             JOptionPane.NO_OPTION -> newAnimation = Animation(AnimationType.LEGS)
+            JOptionPane.CANCEL_OPTION -> newAnimation = Animation(AnimationType.OBJECT)
         }
         if (newAnimation != null) {
             val inputName: String? = JOptionPane.showInputDialog(this, "Enter the new animation's name (for example, FIREBALL)", "New animation", JOptionPane.PLAIN_MESSAGE)
@@ -891,11 +896,12 @@ class MainWindow : JFrame() {
                 JOptionPane.showMessageDialog(null, "Incorrect input")
             } else {
                 newAnimation.name = inputName.trim()
-                val path = animationDirectory.path + "/" + animation.type + "/" + newAnimation.name + ".swa"
+                val path = animationDirectory.path + "/" + animation.type.toString() + "/" + newAnimation.name + ".swa"
                 if (File(path).exists()) {
                     JOptionPane.showMessageDialog(null, "Animation with this name already exists")
                 }
                 else {
+                    val commonArray = ArrayList<Frame>()
                     for (moveDirection in MoveDirection.values()) {
                         newAnimation.data[moveDirection] = HashMap()
                         if (newAnimation.type == AnimationType.LEGS) {
@@ -906,6 +912,10 @@ class MainWindow : JFrame() {
                         } else if (newAnimation.type == AnimationType.BODY) {
                             for (weaponType in WeaponType.values()) {
                                 newAnimation.data[moveDirection]!![weaponType] = ArrayList()
+                            }
+                        } else {
+                            for (weaponType in WeaponType.values()) {
+                                newAnimation.data[moveDirection]!![weaponType] = commonArray
                             }
                         }
                     }
