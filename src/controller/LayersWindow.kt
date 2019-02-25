@@ -16,7 +16,7 @@ import javax.swing.ScrollPaneConstants
 /**
  * Дополнительное окно, позволяющее работать со слоями
  */
-class LayersWindow : JFrame() {
+object LayersWindow : JFrame() {
     /**
      * Размер маленьких кнопочек
      */
@@ -24,27 +24,62 @@ class LayersWindow : JFrame() {
     /**
      * Панель окна
      */
-    internal var scrollPanel: JPanel
+    internal var scrollPanel = JPanel().apply {
+        layout = BoxLayout(this, BoxLayout.Y_AXIS)
+    }
     /**
      * Прокручиваемая панелька, вложенная в scrollPanel и содержащая кнопки с выбором слоя
      */
-    internal var scrollPane: JScrollPane
+    internal var scrollPane = JScrollPane(scrollPanel).apply {
+        horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
+        verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
+        isVisible = true
+    }
     /**
      * Кнопочка создания нового слоя
      */
-    internal var newLayerButton: JButton
+    internal var newLayerButton = JButton(ImageIcon("./icons/create.png")).apply {
+        setSize(buttonSize, buttonSize)
+        isVisible = true
+        toolTipText = "Create a new layer"
+        isEnabled = false
+    }
     /**
      * Кнопочка удаления выбранного слоя
      */
-    internal var deleteLayerButton: JButton
+    internal var deleteLayerButton = JButton(ImageIcon("./icons/delete.png")).apply {
+        setSize(buttonSize, buttonSize)
+        isVisible = true
+        toolTipText = "Delete selected layer"
+        isEnabled = false
+    }
     /**
      * Кнопочка поднятия выбранного слоя наверх
      */
-    internal var upLayerButton: JButton
+    internal var upLayerButton = JButton(ImageIcon("./icons/up.png")).apply {
+        setSize(buttonSize, buttonSize)
+        isVisible = true
+        toolTipText = "Move selected layer up"
+        isEnabled = false
+    }
     /**
      * Кнопочка опускания выбранного слоя вниз
      */
-    internal var downLayerButton: JButton
+    internal var downLayerButton = JButton(ImageIcon("./icons/down.png")).apply {
+        setSize(buttonSize, buttonSize)
+        isVisible = true
+        toolTipText = "Move selected layer down"
+        isEnabled = false
+    }
+
+    private val panel = JPanel().apply {
+        layout = null
+        add(scrollPane)
+        add(newLayerButton)
+        add(deleteLayerButton)
+        add(upLayerButton)
+        add(downLayerButton)
+    }
     /**
      * Активны ли данные кнопки (без учета того, активно ли все окно)
      */
@@ -72,45 +107,8 @@ class LayersWindow : JFrame() {
         isAlwaysOnTop = true
         defaultCloseOperation = JFrame.DO_NOTHING_ON_CLOSE
         layerButtons = ArrayList()
-        val panel = JPanel()
-        panel.layout = null
         contentPane.add(panel)
 
-        scrollPanel = JPanel()
-        scrollPanel.layout = BoxLayout(scrollPanel, BoxLayout.Y_AXIS)
-        scrollPane = JScrollPane(scrollPanel)
-        scrollPane.horizontalScrollBarPolicy = ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER
-        scrollPane.verticalScrollBarPolicy = ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS
-        scrollPane.isVisible = true
-        panel.add(scrollPane)
-
-        newLayerButton = JButton(ImageIcon("./icons/create.png"))
-        newLayerButton.setSize(buttonSize, buttonSize)
-        newLayerButton.isVisible = true
-        newLayerButton.toolTipText = "Create a new layer"
-        newLayerButton.isEnabled = false
-        panel.add(newLayerButton)
-
-        deleteLayerButton = JButton(ImageIcon("./icons/delete.png"))
-        deleteLayerButton.setSize(buttonSize, buttonSize)
-        deleteLayerButton.isVisible = true
-        deleteLayerButton.toolTipText = "Delete selected layer"
-        deleteLayerButton.isEnabled = false
-        panel.add(deleteLayerButton)
-
-        upLayerButton = JButton(ImageIcon("./icons/up.png"))
-        upLayerButton.setSize(buttonSize, buttonSize)
-        upLayerButton.isVisible = true
-        upLayerButton.toolTipText = "Move selected layer up"
-        upLayerButton.isEnabled = false
-        panel.add(upLayerButton)
-
-        downLayerButton = JButton(ImageIcon("./icons/down.png"))
-        downLayerButton.setSize(buttonSize, buttonSize)
-        downLayerButton.isVisible = true
-        downLayerButton.toolTipText = "Move selected layer down"
-        downLayerButton.isEnabled = false
-        panel.add(downLayerButton)
 
         addComponentListener(object : ComponentAdapter() {
             override fun componentResized(evt: ComponentEvent?) {

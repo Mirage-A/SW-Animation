@@ -1,7 +1,7 @@
 package controller
 
 import model.*
-import view.Panel
+import view.MainPanel
 import java.awt.Color
 import java.awt.Cursor
 import java.awt.Image
@@ -21,29 +21,7 @@ import kotlin.collections.set
  * Основной класс контроллера
  * Представляет собой основное окно редактора с кнопочками и их логикой
  */
-class MainWindow : JFrame() {
-    /**
-     * View, на котором перерисовывается анимация
-     */
-    private val panel: Panel
-    /**
-     * Дополнительные окна - кадры, слои, размеры слоя соответственно
-     */
-    private val framesWindow: FramesWindow
-    private val layersWindow: LayersWindow
-    private val slidersWindow: SlidersWindow
-    /**
-     * Параметры мыши
-     */
-    /**
-     * Зажата ли мышь (двигается ли какой-то слой в данный момент)
-     */
-    private var isMouseMoving = false
-    /**
-     * Координаты мыши (обновляются, если она зажата)
-     */
-    private var mouseX: Int = 0
-    private var mouseY: Int = 0
+object MainWindow : JFrame() {
     /**
      * Элементы интерфейса в левом верхнем углу
      */
@@ -112,49 +90,20 @@ class MainWindow : JFrame() {
      */
     private val fpsBtn : JButton
     /**
-     * Кнопочка, запускающая CodeGenerator, генерирующий файл с кодом,
-     * который потом нужно вставить в проект Shattered World - Client
-     */
-    private val generateCodeBtn : JButton
-    /**
      * Текст, отображающий на экране тип и название текущей анимации
      */
     private val animationNameText : JTextField
-    /**
-     * Сама анимация (модель)
-     */
-    private var animation : Animation = Animation()
-
-    /**
-     * Файл с текущей анимацией
-     */
-    private var animationFile : File? = null
-
-    /**
-     * Текущая директория с анимацией
-     */
-    private var animationDirectory : File = File("./animations")
-
-    private var settingsFile: File = File("./settings.txt")
 
     /**
      * Инициализация всего интерфейса
      */
     init {
-        if (settingsFile.exists()) {
-            animationDirectory = File(Scanner(settingsFile).nextLine())
-        }
         extendedState = JFrame.MAXIMIZED_BOTH
         isUndecorated = true
         title = "Animation editor"
         size = Toolkit.getDefaultToolkit().screenSize
-        panel = Panel()
-        contentPane.add(panel)
+        contentPane.add(MainPanel)
         defaultCloseOperation = WindowConstants.DO_NOTHING_ON_CLOSE
-
-        layersWindow = LayersWindow()
-        framesWindow = FramesWindow()
-        slidersWindow = SlidersWindow()
 
         // Кнопка выхода из редактора
         exitBtn = JButton("Save and exit")
@@ -163,7 +112,7 @@ class MainWindow : JFrame() {
             checkExit()
         }
         exitBtn.isVisible = true
-        panel.add(exitBtn)
+        MainPanel.add(exitBtn)
 
         //Кнопка изменения скорости перерисовки
         fpsBtn = JButton("FPS: 60")
@@ -174,7 +123,7 @@ class MainWindow : JFrame() {
                 val newFPS = Integer.parseInt(input)
                 if (newFPS > 0) {
                     fpsBtn.text = "FPS: $newFPS"
-                    panel.t.delay = 1000 / newFPS
+                    MainPanel.t.delay = 1000 / newFPS
                 }
                 else {
                     JOptionPane.showMessageDialog(null, "FPS can't be less or equal 0")
@@ -185,35 +134,18 @@ class MainWindow : JFrame() {
             }
         }
         fpsBtn.isVisible = true
-        panel.add(fpsBtn)
-
-        //Кнопка генерации кода
-        generateCodeBtn = JButton("Generate code")
-        generateCodeBtn.setBounds(fpsBtn.x, fpsBtn.y + fpsBtn.height + 4, fpsBtn.width, fpsBtn.height)
-        generateCodeBtn.addActionListener {
-            if (JOptionPane.showConfirmDialog(null, "Do you want to generate source code file for Shattered World game?\nIf such file already exists, it will be overwritten.", "Code generation", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.YES_OPTION) {
-                try {
-                    CodeGenerator.generate()
-                }
-                catch(ex: Exception) {
-                    JOptionPane.showMessageDialog(null, "Unexpected error occurred:\n" + ex.message, "Error :(", JOptionPane.ERROR_MESSAGE)
-                    System.exit(0)
-                }
-            }
-        }
-        generateCodeBtn.isVisible = true
-        panel.add(generateCodeBtn)
+        MainPanel.add(fpsBtn)
 
         // Кнопка загрузки другой анимации
         openAnotherAnimationBtn = JButton("Open animation")
         openAnotherAnimationBtn.run {
-            setBounds(generateCodeBtn.x, generateCodeBtn.y + generateCodeBtn.height + 4, generateCodeBtn.width, generateCodeBtn.height)
+            setBounds(fpsBtn.x, fpsBtn.y + fpsBtn.height + 4, fpsBtn.width, fpsBtn.height)
             addActionListener {
                 loadAnimation()
             }
             isVisible = true
         }
-        panel.add(openAnotherAnimationBtn)
+        MainPanel.add(openAnotherAnimationBtn)
 
         // Кнопка создания новой анимации
         newAnimationBtn = JButton("New animation")
@@ -224,7 +156,7 @@ class MainWindow : JFrame() {
             }
             isVisible = true
         }
-        panel.add(newAnimationBtn)
+        MainPanel.add(newAnimationBtn)
 
         // Кнопка сохранения
         saveAnimationBtn = JButton("Save animation")
@@ -235,7 +167,7 @@ class MainWindow : JFrame() {
             }
             isVisible = true
         }
-        panel.add(saveAnimationBtn)
+        MainPanel.add(saveAnimationBtn)
 
         // Текст с названием и типом анимации
         animationNameText = JTextField("No animation loaded")
@@ -243,11 +175,11 @@ class MainWindow : JFrame() {
             setBounds(saveAnimationBtn.x, saveAnimationBtn.y + saveAnimationBtn.height + 4, saveAnimationBtn.width, saveAnimationBtn.height)
             isOpaque = false
             horizontalAlignment = JTextField.CENTER
-            font = layersWindow.selectedFont
+            font = LayersWindow.selectedFont
             isEditable = false
             isVisible = true
         }
-        panel.add(animationNameText)
+        MainPanel.add(animationNameText)
 
 
 
@@ -255,31 +187,31 @@ class MainWindow : JFrame() {
         showPlayerImageCheckbox = JCheckBox("Show shape")
         showPlayerImageCheckbox.isSelected = true
         showPlayerImageCheckbox.setBounds(8, 10, 160, 24)
-        showPlayerImageCheckbox.addChangeListener { panel.drawPlayer = showPlayerImageCheckbox.isSelected }
+        showPlayerImageCheckbox.addChangeListener { MainPanel.drawPlayer = showPlayerImageCheckbox.isSelected }
         showPlayerImageCheckbox.isVisible = true
-        panel.add(showPlayerImageCheckbox)
+        MainPanel.add(showPlayerImageCheckbox)
 
         //Слайдер, позволяющий приближать и отдалять картинку
-        zoomSlider = JSlider(100, 800, panel.zoom)
+        zoomSlider = JSlider(100, 800, MainPanel.zoom)
         zoomSlider.setBounds(showPlayerImageCheckbox.x, showPlayerImageCheckbox.y + showPlayerImageCheckbox.height + 2, showPlayerImageCheckbox.width, showPlayerImageCheckbox.height)
         zoomSlider.addChangeListener {
-            panel.zoom = zoomSlider.value
+            MainPanel.zoom = zoomSlider.value
             try {
-                panel.player = ImageIO.read(File("./drawable/player.png"))
-                panel.player = panel.player.getScaledInstance(panel.player.getWidth(null) * panel.zoom / 100, panel.player.getHeight(null) * panel.zoom / 100, Image.SCALE_SMOOTH)
+                MainPanel.player = ImageIO.read(File("./drawable/player.png"))
+                MainPanel.player = MainPanel.player.getScaledInstance(MainPanel.player.getWidth(null) * MainPanel.zoom / 100, MainPanel.player.getHeight(null) * MainPanel.zoom / 100, Image.SCALE_SMOOTH)
             } catch (ex: Exception) {
                 JOptionPane.showMessageDialog(null, "Unexpected error occurred:\n" + ex.message, "Error :(", JOptionPane.ERROR_MESSAGE)
                 System.exit(0)
             }
         }
         zoomSlider.isVisible = true
-        panel.add(zoomSlider)
+        MainPanel.add(zoomSlider)
 
         //Кнопка старта/остановки анимации
         toggleAnimationBtn = JButton("Start animation")
         toggleAnimationBtn.setBounds(zoomSlider.x, zoomSlider.y + zoomSlider.height + 2, zoomSlider.width, zoomSlider.height)
         toggleAnimationBtn.addActionListener {
-            if (!panel.isPlayingAnimation) {
+            if (!MainPanel.isPlayingAnimation) {
                 startAnimation()
             } else {
                 stopAnimation()
@@ -287,7 +219,7 @@ class MainWindow : JFrame() {
         }
         toggleAnimationBtn.foreground = Color(0, 208, 0)
         toggleAnimationBtn.isVisible = true
-        panel.add(toggleAnimationBtn)
+        MainPanel.add(toggleAnimationBtn)
 
         //Кнопка создания отраженной анимации
         createMirroredAnimationBtn = JButton("Mirror animation")
@@ -298,7 +230,7 @@ class MainWindow : JFrame() {
             }
         }
         createMirroredAnimationBtn.isVisible = true
-        panel.add(createMirroredAnimationBtn)
+        MainPanel.add(createMirroredAnimationBtn)
 
         //Кнопка изменения продолжительности анимации
         changeDurationBtn = JButton("Animation duration")
@@ -319,7 +251,7 @@ class MainWindow : JFrame() {
             }
         }
         changeDurationBtn.isVisible = true
-        panel.add(changeDurationBtn)
+        MainPanel.add(changeDurationBtn)
 
         //Чекбокс, позволяющий выбрать, нужно ли воспроизводить анимацию по кругу или
         //остановить воспроизведение на последнем кадре
@@ -330,19 +262,19 @@ class MainWindow : JFrame() {
             animation.isRepeatable = isAnimationRepeatableCheckbox.isSelected
         }
         isAnimationRepeatableCheckbox.isVisible = true
-        panel.add(isAnimationRepeatableCheckbox)
+        MainPanel.add(isAnimationRepeatableCheckbox)
 
         //Текст "Move direction:"
         moveDirectionText = JTextField("Move direction:")
         moveDirectionText.run {
             isOpaque = false
             horizontalAlignment = JTextField.CENTER
-            font = layersWindow.selectedFont
+            font = LayersWindow.selectedFont
             isEditable = false
             setBounds(isAnimationRepeatableCheckbox.x, isAnimationRepeatableCheckbox.y + isAnimationRepeatableCheckbox.height + 4, isAnimationRepeatableCheckbox.width, isAnimationRepeatableCheckbox.height)
             isVisible = true
         }
-        panel.add(moveDirectionText)
+        MainPanel.add(moveDirectionText)
 
 
         //Чекбоксы выбора moveDirection-а
@@ -378,7 +310,7 @@ class MainWindow : JFrame() {
                     layersWindow.layerButtons.clear()
                     layersWindow.scrollPanel.repaint()
                     layersWindow.scrollPane.revalidate()
-                    panel.frame = null
+                    MainPanel.frame = null
                     for (i in animation.frames.indices) {
                         val tmp = JButton("frame$i")
                         tmp.addActionListener {
@@ -391,7 +323,7 @@ class MainWindow : JFrame() {
                     }
                     framesWindow.scrollPane.revalidate()
                     setCurFrame(-1)
-                    panel.frame = null
+                    MainPanel.frame = null
                 }
                 else {
                     cb.isSelected = true
@@ -399,7 +331,7 @@ class MainWindow : JFrame() {
             }
             moveDirectionCheckboxes.add(cb)
             cb.isVisible = true
-            panel.add(cb)
+            MainPanel.add(cb)
         }
 
         //Текст "Weapon type:"
@@ -412,7 +344,7 @@ class MainWindow : JFrame() {
             setBounds(moveDirectionCheckboxes[moveDirectionCheckboxes.size-1].x, moveDirectionCheckboxes[moveDirectionCheckboxes.size-1].y + moveDirectionCheckboxes[moveDirectionCheckboxes.size-1].height + 4, moveDirectionCheckboxes[moveDirectionCheckboxes.size-1].width, moveDirectionCheckboxes[moveDirectionCheckboxes.size-1].height)
             isVisible = true
         }
-        panel.add(weaponTypeText)
+        MainPanel.add(weaponTypeText)
 
         //Чекбоксы выбора weaponType-а
         for (wt in WeaponType.values()) {
@@ -447,7 +379,7 @@ class MainWindow : JFrame() {
                     layersWindow.layerButtons.clear()
                     layersWindow.scrollPanel.repaint()
                     layersWindow.scrollPane.revalidate()
-                    panel.frame = null
+                    MainPanel.frame = null
                     for (i in animation.frames.indices) {
                         val tmp = JButton("frame$i")
                         tmp.addActionListener {
@@ -460,7 +392,7 @@ class MainWindow : JFrame() {
                     }
                     framesWindow.scrollPane.revalidate()
                     setCurFrame(-1)
-                    panel.frame = null
+                    MainPanel.frame = null
                 }
                 else {
                     cb.isSelected = true
@@ -468,7 +400,7 @@ class MainWindow : JFrame() {
             }
             weaponTypeCheckboxes.add(cb)
             cb.isVisible = true
-            panel.add(cb)
+            MainPanel.add(cb)
         }
 
         //Добавляем подтверждение выхода при нажатии на кнопку закрытия окна
@@ -493,371 +425,11 @@ class MainWindow : JFrame() {
         slidersWindow.setLocation(layersWindow.x - 20 - slidersWindow.width, screen.height - 60 - slidersWindow.height)
         slidersWindow.isVisible = false
 
-        //Кнопочки мини-окна со слоями
-        //Кнопочка создания нового слоя
-        layersWindow.newLayerButton.addActionListener {
-            val fc = JFileChooser("./drawable")
-            fc.addChoosableFileFilter(object : FileFilter() {
-                override fun getDescription(): String {
-                    return "Images (.PNG)"
-                }
 
-                override fun accept(f: File): Boolean {
-                    return f.name.endsWith(".png")
-                }
-            })
-            fc.dialogTitle = "Choose an image for the new layer"
-
-            if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
-                val image = fc.selectedFile
-                if (image.name.endsWith(".png")) {
-                    val absImagePath = image.absolutePath
-                    val startAbsPath = File("drawable").absolutePath
-                    val relativePath = absImagePath.substring(startAbsPath.length, absImagePath.length)
-                    println("$absImagePath $startAbsPath $relativePath")
-                    val layer = Layer(relativePath)
-                    for (frame in animation.frames) {
-                        frame.layers.add(Layer(layer))
-                    }
-                    val tmp = JButton(layer.getName())
-                    tmp.addActionListener { loadLayer(layersWindow.layerButtons.indexOf(tmp)) }
-                    layersWindow.layerButtons.add(tmp)
-                    layersWindow.scrollPanel.add(tmp)
-                    layersWindow.scrollPanel.revalidate()
-                    loadLayer(layersWindow.layerButtons.size - 1)
-                }
-            }
-        }
-        //Кнопочка удаления слоя
-        layersWindow.deleteLayerButton.addActionListener {
-            if (animation.curFrame != -1) {
-                val frame = animation.frames[animation.curFrame]
-                if (frame.curLayer != -1) {
-                    val layer = frame.layers[frame.curLayer]
-                    if (JOptionPane.showConfirmDialog(layersWindow, "Delete the layer " +layer.getName() + "?", "Delete layer", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.YES_OPTION) {
-                        layersWindow.scrollPanel.remove(layersWindow.layerButtons[frame.curLayer])
-                        layersWindow.layerButtons.removeAt(frame.curLayer)
-                        val layerID = frame.curLayer
-                        frame.curLayer = -1
-                        layersWindow.deleteLayerButton.isEnabled = false
-                        layersWindow.deleteEnabled = false
-                        layersWindow.renameEnabled = false
-                        layersWindow.upLayerButton.isEnabled = false
-                        layersWindow.upEnabled = false
-                        layersWindow.downLayerButton.isEnabled = false
-                        layersWindow.downEnabled = false
-                        layersWindow.scrollPanel.repaint()
-                        layersWindow.scrollPane.revalidate()
-                        for (fr in animation.frames) {
-                            fr.curLayer = -1
-                            fr.layers.removeAt(layerID)
-                        }
-                    }
-                }
-            }
-        }
-        //Кнопочка поднятия слоя наверх
-        layersWindow.upLayerButton.addActionListener {
-            if (animation.curFrame != -1) {
-                val frame = animation.frames[animation.curFrame]
-                if (frame.curLayer != -1) {
-                    if (frame.curLayer > 0) {
-                        val btns = layersWindow.layerButtons
-                        layersWindow.layerButtons = ArrayList()
-
-                        for (i in 0 until frame.curLayer - 1) {
-                            layersWindow.layerButtons.add(btns[i])
-                        }
-                        layersWindow.layerButtons.add(btns[frame.curLayer])
-                        layersWindow.layerButtons.add(btns[frame.curLayer - 1])
-                        for (i in frame.curLayer + 1 until btns.size) {
-                            layersWindow.layerButtons.add(btns[i])
-                        }
-
-
-                        layersWindow.scrollPanel.removeAll()
-                        for (i in layersWindow.layerButtons.indices) {
-                            layersWindow.scrollPanel.add(layersWindow.layerButtons[i])
-                        }
-                        layersWindow.scrollPanel.repaint()
-                        layersWindow.scrollPane.revalidate()
-
-                        val layerID = frame.curLayer
-                        for (fr in animation.frames) {
-                            fr.curLayer--
-                            val tmp = fr.layers[layerID]
-                            fr.layers[layerID] = fr.layers[layerID - 1]
-                            fr.layers[layerID - 1] = tmp
-                        }
-                    }
-                }
-            }
-        }
-
-        //Кнопочка опускания слоя вниз
-        layersWindow.downLayerButton.addActionListener {
-            if (animation.curFrame != -1) {
-                val frame = animation.frames[animation.curFrame]
-                if (frame.curLayer != -1) {
-                    if (frame.curLayer < frame.layers.size - 1) {
-                        val btns = layersWindow.layerButtons
-                        layersWindow.layerButtons = ArrayList()
-
-                        for (i in 0 until frame.curLayer) {
-                            layersWindow.layerButtons.add(btns[i])
-                        }
-                        layersWindow.layerButtons.add(btns[frame.curLayer + 1])
-                        layersWindow.layerButtons.add(btns[frame.curLayer])
-                        for (i in frame.curLayer + 2 until btns.size) {
-                            layersWindow.layerButtons.add(btns[i])
-                        }
-
-                        layersWindow.scrollPanel.removeAll()
-                        for (i in layersWindow.layerButtons.indices) {
-                            layersWindow.scrollPanel.add(layersWindow.layerButtons[i])
-                        }
-                        layersWindow.scrollPanel.repaint()
-                        layersWindow.scrollPane.revalidate()
-
-                        val layerID = frame.curLayer
-                        for (fr in animation.frames) {
-                            fr.curLayer++
-                            val tmp = fr.layers[layerID]
-                            fr.layers[layerID] = fr.layers[layerID + 1]
-                            fr.layers[layerID + 1] = tmp
-                        }
-                    }
-                }
-            }
-        }
-
-        //Кнопочки мини-окна с кадрами
-        //Кнопочка создания нового кадра
-        framesWindow.newFrameButton.addActionListener {
-            val newFrame = Frame()
-            var layersKol = 0
-            if (animation.frames.isNotEmpty()) {
-                layersKol = animation.frames[0].layers.size
-            }
-            for (i in 0 until layersKol) {
-                newFrame.layers.add(Layer(animation.frames[0].layers[i]))
-            }
-            val tmp = JButton("frame"+animation.frames.size)
-            tmp.addActionListener {
-                setCurFrame(Integer.parseInt(tmp.text.substring(5)))
-                framesWindow.deleteFrameButton.isEnabled = true
-                framesWindow.deleteEnabled = true
-            }
-            animation.frames.add(newFrame)
-            framesWindow.frameButtons.add(tmp)
-            framesWindow.scrollPanel.add(tmp)
-            framesWindow.scrollPanel.repaint()
-            framesWindow.scrollPane.revalidate()
-        }
-
-        //Кнопочка копирования текущего кадра
-        framesWindow.copyLastFrameButton.addActionListener {
-            if (animation.curFrame != -1) {
-                val tmp = JButton("frame" + (animation.frames.size))
-                tmp.addActionListener {
-                    setCurFrame(Integer.parseInt(tmp.text.substring(5)))
-                    framesWindow.deleteFrameButton.isEnabled = true
-                    framesWindow.deleteEnabled = true
-                }
-                framesWindow.frameButtons.add(tmp)
-                framesWindow.scrollPanel.add(tmp)
-                framesWindow.scrollPanel.repaint()
-                framesWindow.scrollPane.revalidate()
-                animation.frames.add(Frame(animation.frames[animation.curFrame]))
-            }
-        }
-
-        //Кнопочка удаления кадра
-        framesWindow.deleteFrameButton.addActionListener {
-            if (JOptionPane.showConfirmDialog(framesWindow, "Delete the frame " + animation.curFrame + "?", "Delete frame", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.YES_OPTION) {
-                if (animation.curFrame != -1) {
-                    val lastCurFrame = animation.curFrame
-                    setCurFrame(-1)
-                    animation.frames.removeAt(lastCurFrame)
-                    framesWindow.deleteFrameButton.isEnabled = false
-                    framesWindow.deleteEnabled = false
-                    framesWindow.scrollPanel.remove(framesWindow.frameButtons[framesWindow.frameButtons.size - 1])
-                    framesWindow.frameButtons.removeAt(framesWindow.frameButtons.size - 1)
-                    framesWindow.scrollPanel.repaint()
-                    framesWindow.scrollPane.revalidate()
-                    layersWindow.layerButtons.clear()
-                    layersWindow.scrollPanel.removeAll()
-                    layersWindow.scrollPane.revalidate()
-                    layersWindow.newLayerButton.isEnabled = false
-                    layersWindow.newEnabled = false
-                    layersWindow.deleteLayerButton.isEnabled = false
-                    layersWindow.deleteEnabled = false
-                    layersWindow.renameEnabled = false
-                    layersWindow.upLayerButton.isEnabled = false
-                    layersWindow.upEnabled = false
-                    layersWindow.downLayerButton.isEnabled = false
-                    layersWindow.downEnabled = false
-                }
-                else {
-                    JOptionPane.showMessageDialog(null, "No frames selected")
-                }
-            }
-        }
-        //Кнопочка поднятия кадра наверх
-        framesWindow.upFrameButton.addActionListener {
-            if (animation.curFrame > 0) {
-                val tmp = animation.frames[animation.curFrame]
-                animation.frames[animation.curFrame] = animation.frames[animation.curFrame - 1]
-                animation.frames[animation.curFrame - 1] = tmp
-                setCurFrame(animation.curFrame - 1)
-            }
-        }
-
-        //Кнопочка опускания кадра вниз
-        framesWindow.downFrameButton.addActionListener {
-            if (animation.curFrame != -1 && animation.curFrame < animation.frames.size - 1) {
-                val tmp = animation.frames[animation.curFrame]
-                animation.frames[animation.curFrame] = animation.frames[animation.curFrame + 1]
-                animation.frames[animation.curFrame + 1] = tmp
-                setCurFrame(animation.curFrame + 1)
-            }
-        }
-
-        //Слайдеры мини-окна со слайдерами изменения размера
-        //Слайдер изменения размера слоя
-        slidersWindow.sizeSlider.addChangeListener {
-            if (animation.curFrame != -1) {
-                val frame = animation.frames[animation.curFrame]
-                if (frame.curLayer != -1) {
-                    val layer = frame.layers[frame.curLayer]
-                    layer.scale = slidersWindow.sizeSlider.value / 100f
-                }
-            }
-        }
-
-        //Слайдер изменения ширины слоя
-        slidersWindow.widthSlider.addChangeListener {
-            if (animation.curFrame != -1) {
-                val frame = animation.frames[animation.curFrame]
-                if (frame.curLayer != -1) {
-                    val layer = frame.layers[frame.curLayer]
-                    layer.scaleX = slidersWindow.widthSlider.value / 100f
-                }
-            }
-        }
-
-        //Слайдер изменения высоты слоя
-        slidersWindow.heightSlider.addChangeListener {
-            if (animation.curFrame != -1) {
-                val frame = animation.frames[animation.curFrame]
-                if (frame.curLayer != -1) {
-                    val layer = frame.layers[frame.curLayer]
-                    layer.scaleY = slidersWindow.heightSlider.value / 100f
-                }
-            }
-        }
-
-        //Добавляем возможность перемещать и поворачивать слои мышкой
-        addMouseListener(object : MouseListener {
-            override fun mouseReleased(e: MouseEvent) {
-                isMouseMoving = false
-            }
-
-            override fun mousePressed(e: MouseEvent) {
-                if (animation.curFrame != -1) {
-                    val frame = animation.frames[animation.curFrame]
-                    if (frame.curLayer != -1) {
-                        val layer = frame.layers[frame.curLayer]
-                        val scrW = panel.width
-                        val scrH = panel.height
-                        val scaledWidth = layer.basicWidth * layer.scale * layer.scaleX
-                        val scaledHeight = layer.basicHeight * layer.scale * layer.scaleY
-                        val range = Math.sqrt(sqr((layer.x * panel.zoom / 100 + scrW / 2 - e.x).toDouble()) + sqr(((layer.y + panel.centerY) * panel.zoom / 100 + scrH / 2 - e.y).toDouble())).toInt()
-                        if (range < Math.min(scaledWidth, scaledHeight) * panel.zoom / 200) {
-                            isMouseMoving = true
-                            mouseX = Math.round((e.x - (layer.x * panel.zoom / 100f + scrW / 2f)) * 100f / panel.zoom)
-                            mouseY = Math.round(((layer.y + panel.centerY) * panel.zoom / 100f + scrH / 2f - e.y) * 100f / panel.zoom)
-                        } else {
-                            isMouseMoving = false
-                        }
-                    }
-                }
-            }
-
-            override fun mouseExited(e: MouseEvent) {
-
-            }
-
-            override fun mouseEntered(e: MouseEvent) {
-
-            }
-
-            override fun mouseClicked(e: MouseEvent) {
-
-            }
-        })
-        addMouseMotionListener(object : MouseMotionListener {
-            override fun mouseMoved(e: MouseEvent) {
-                if (animation.curFrame != -1) {
-                    val frame = animation.frames[animation.curFrame]
-                    if (frame.curLayer != -1) {
-                        val layer = frame.layers[frame.curLayer]
-                        val scrW = panel.width
-                        val scrH = panel.height
-                        val scaledWidth = layer.basicWidth * layer.scale * layer.scaleX
-                        val scaledHeight = layer.basicHeight * layer.scale * layer.scaleY
-                        val range = Math.sqrt(sqr((layer.x * panel.zoom / 100 + scrW / 2 - e.x).toDouble()) + sqr(((layer.y + panel.centerY) * panel.zoom / 100 + scrH / 2 - e.y).toDouble())).toInt()
-                        if (range < Math.min(scaledWidth, scaledHeight) * panel.zoom / 200) {
-                            panel.cursor = Cursor(Cursor.MOVE_CURSOR)
-                        } else {
-                            panel.cursor = Cursor(Cursor.N_RESIZE_CURSOR)
-                        }
-                    } else {
-                        panel.cursor = Cursor(Cursor.DEFAULT_CURSOR)
-                    }
-                }
-            }
-
-            override fun mouseDragged(e: MouseEvent) {
-                if (animation.curFrame != -1) {
-                    val frame = animation.frames[animation.curFrame]
-                    if (frame.curLayer != -1) {
-                        val layer = frame.layers[frame.curLayer]
-                        val scrW = panel.width
-                        val scrH = panel.height
-                        if (isMouseMoving) {
-                            layer.x = (e.x - scrW / 2f) * 100f / panel.zoom - mouseX
-                            layer.y = (e.y - scrH / 2f) * 100f / panel.zoom - panel.centerY + mouseY
-                        } else {
-                            val sy = ((layer.y + panel.centerY) * panel.zoom / 100 + scrH / 2 - e.y).toDouble()
-                            val sx = (e.x - layer.x * panel.zoom / 100 - scrW / 2).toDouble()
-                            if (Math.abs(sy) >= Math.abs(sx)) {
-                                when (true) {
-                                    (sx > 0) -> layer.angle = Math.atan(sy / sx).toFloat()
-                                    (sx < 0) -> layer.angle = (Math.PI + Math.atan(sy / sx)).toFloat()
-                                    (sy > 0) -> layer.angle = (Math.PI / 2).toFloat()
-                                    else -> layer.angle = (- Math.PI / 2).toFloat()
-                                }
-                            } else {
-                                if (sy != 0.0) {
-                                    layer.angle = (- Math.atan(sx / sy) - Math.PI / 2).toFloat()
-                                    if (sy > 0) {
-                                        layer.angle += Math.PI.toFloat()
-                                    }
-                                } else if (sx > 0) {
-                                    layer.angle = 0f
-                                } else {
-                                    layer.angle = Math.PI.toFloat()
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        )
+        addMouseListener(MouseListener)
+        addMouseMotionListener(MouseListener)
         showStartMessage()
-        panel.t.start()
+        MainPanel.t.start()
     }
 
     /**
@@ -985,7 +557,7 @@ class MainWindow : JFrame() {
                     setCurFrame(animation.curFrame)
                     isAnimationRepeatableCheckbox.isSelected = animation.isRepeatable
                     animationNameText.text = animation.type.toString() + ": " + animation.name
-                    panel.animType = animation.type
+                    MainPanel.animType = animation.type
                     return true
                 }
                 else {
@@ -1002,7 +574,7 @@ class MainWindow : JFrame() {
     /**
      * Переключает активный слой
      */
-    private fun loadLayer(layerID: Int) {
+    fun loadLayer(layerID: Int) {
         if (animation.frames[animation.curFrame].curLayer != -1) {
             layersWindow.layerButtons[animation.frames[animation.curFrame].curLayer].font = layersWindow.basicFont
         }
@@ -1026,7 +598,7 @@ class MainWindow : JFrame() {
     /**
      * Переключает активный кадр
      */
-    private fun loadFrame(frameID: Int) {
+    fun loadFrame(frameID: Int) {
         slidersWindow.isVisible = false
         layersWindow.deleteLayerButton.isEnabled = false
         layersWindow.deleteEnabled = false
@@ -1048,16 +620,16 @@ class MainWindow : JFrame() {
                 layersWindow.layerButtons.add(tmp)
                 layersWindow.scrollPanel.add(tmp)
             }
-            panel.frame = frame
+            MainPanel.frame = frame
         }
         else {
-            panel.frame = null
+            MainPanel.frame = null
             layersWindow.newLayerButton.isEnabled = false
             layersWindow.newEnabled = false
         }
         layersWindow.scrollPanel.repaint()
         layersWindow.scrollPane.revalidate()
-        panel.repaint()
+        MainPanel.repaint()
     }
 
     /**
@@ -1085,7 +657,7 @@ class MainWindow : JFrame() {
     /**
      * Переключает кадр, обновляет кнопочки и перерисовывает экран
      */
-    private fun setCurFrame(frameID : Int) {
+    fun setCurFrame(frameID : Int) {
         if (animation.curFrame != -1) {
             framesWindow.frameButtons[animation.curFrame].font = layersWindow.basicFont
         }
@@ -1095,14 +667,14 @@ class MainWindow : JFrame() {
             framesWindow.deleteEnabled = false
             framesWindow.upEnabled = false
             framesWindow.downEnabled = false
-            framesWindow.isEnabled = !panel.isPlayingAnimation
+            framesWindow.isEnabled = !MainPanel.isPlayingAnimation
         }
         else {
             framesWindow.copyEnabled = true
             framesWindow.deleteEnabled = true
             framesWindow.upEnabled = true
             framesWindow.downEnabled = true
-            framesWindow.isEnabled = !panel.isPlayingAnimation
+            framesWindow.isEnabled = !MainPanel.isPlayingAnimation
             framesWindow.frameButtons[animation.curFrame].font = layersWindow.selectedFont
         }
         loadFrame(frameID)
@@ -1111,7 +683,7 @@ class MainWindow : JFrame() {
     /**
      * Начинает воспроизведение анимации
      */
-    private fun startAnimation() {
+    fun startAnimation() {
         toggleAnimationBtn.text = "Stop animation"
         isAnimationRepeatableCheckbox.isEnabled = false
         changeDurationBtn.isEnabled = false
@@ -1126,17 +698,17 @@ class MainWindow : JFrame() {
             cb.isEnabled = false
         }
         toggleAnimationBtn.foreground = Color.RED
-        panel.frames = animation.frames
-        panel.isRepeatable = animation.isRepeatable
-        panel.duration = animation.duration + 0L
-        panel.startTime = System.currentTimeMillis()
-        panel.isPlayingAnimation = true
+        MainPanel.frames = animation.frames
+        MainPanel.isRepeatable = animation.isRepeatable
+        MainPanel.duration = animation.duration + 0L
+        MainPanel.startTime = System.currentTimeMillis()
+        MainPanel.isPlayingAnimation = true
     }
 
     /**
      * Останавливает воспроизведение анимации
      */
-    private fun stopAnimation() {
+    fun stopAnimation() {
         toggleAnimationBtn.text = "Start animation"
         toggleAnimationBtn.foreground = Color(0, 208, 0)
         isAnimationRepeatableCheckbox.isEnabled = true
@@ -1151,7 +723,7 @@ class MainWindow : JFrame() {
         for (cb in weaponTypeCheckboxes) {
             cb.isEnabled = true
         }
-        panel.isPlayingAnimation = false
+        MainPanel.isPlayingAnimation = false
     }
 
     /**
@@ -1185,27 +757,5 @@ class MainWindow : JFrame() {
         }
     }
 
-    /**
-     * Вспомогательная функция, вычисляет квадрат числа типа Double
-     */
-    private fun sqr(a: Double): Double {
-        return a * a
-    }
 
-
-    /**
-     * Точка входа в программу
-     */
-    companion object {
-        @JvmStatic
-        fun main(args: Array<String>) {
-            try {
-                MainWindow()
-            }
-            catch(ex: Exception) {
-                JOptionPane.showMessageDialog(null, "Unexpected error occurred:\n" + ex.message, "Error :(", JOptionPane.ERROR_MESSAGE)
-                System.exit(0)
-            }
-        }
-    }
 }
