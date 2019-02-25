@@ -27,4 +27,23 @@ object Model {
             animationDirectory = File(Scanner(settingsFile).nextLine())
         }
     }
+
+
+    /**
+     * Сериализует текущую анимацию и сохраняет ее в файл
+     */
+    fun serialize() {
+        if (animationFile != null) {
+            if (!animationFile!!.parentFile.parentFile.exists()) {
+                animationFile!!.parentFile.parentFile.mkdir()
+            }
+            if (!animationFile!!.parentFile.exists()) {
+                animationFile!!.parentFile.mkdir()
+            }
+            if (!animationFile!!.exists()) {
+                animationFile!!.createNewFile()
+            }
+            animation.serialize(animationFile!!)
+        }
+    }
 }

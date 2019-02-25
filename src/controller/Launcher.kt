@@ -1,11 +1,13 @@
 package controller
 
+import javax.swing.JOptionPane
+
 fun main(args: Array<String>) {
-    /*try {
+    try {
         MainWindow
     }
     catch(ex: Exception) {
         JOptionPane.showMessageDialog(null, "Unexpected error occurred:\n" + ex.message, "Error :(", JOptionPane.ERROR_MESSAGE)
         System.exit(0)
-    }*/
+    }
 }
