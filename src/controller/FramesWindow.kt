@@ -5,7 +5,6 @@ import java.awt.event.ComponentEvent
 import java.util.ArrayList
 
 import javax.swing.BoxLayout
-import javax.swing.ImageIcon
 import javax.swing.JButton
 import javax.swing.JFrame
 import javax.swing.JPanel
@@ -16,10 +15,11 @@ import javax.swing.ScrollPaneConstants
  * Дополнительное окно, позволяющее работать с кадрами анимации
  */
 object FramesWindow : JFrame() {
-    /**
-     * Размер маленьких кнопочек
-     */
-    private val buttonSize = 20
+
+    internal val panel = JPanel().apply {
+        layout = null
+    }
+
     /**
      * Панель окна
      */
@@ -37,48 +37,28 @@ object FramesWindow : JFrame() {
     /**
      * Кнопочка создания нового кадра
      */
-    internal val newFrameButton = JButton(ImageIcon("./icons/create.png")).apply {
-        setSize(buttonSize, buttonSize)
-        isVisible = true
-        toolTipText = "Create a new frame"
-        isEnabled = false
-    }
+    internal val newFrameButton : JButton = UIFactory.createMiniButton(
+            "create", "Create a new frame", panel, newFrameButtonListener)
     /**
      * Кнопочка копирования выбранного кадра
      */
-    internal val copyLastFrameButton = JButton(ImageIcon("./icons/createCopy.png")).apply {
-        setSize(buttonSize, buttonSize)
-        isVisible = true
-        toolTipText = "Create a copy of selected frame"
-        isEnabled = false
-    }
+    internal val copyLastFrameButton : JButton = UIFactory.createMiniButton(
+            "createCopy", "Create a copy of selected frame", panel, copyLastFrameButtonListener)
     /**
      * Кнопочка удаления выбранного кадра
      */
-    internal val deleteFrameButton = JButton(ImageIcon("./icons/delete.png")).apply {
-        setSize(buttonSize, buttonSize)
-        isVisible = true
-        toolTipText = "Delete selected frame"
-        isEnabled = false
-    }
+    internal val deleteFrameButton : JButton = UIFactory.createMiniButton(
+            "delete", "Delete selected frame", panel, deleteFrameButtonListener)
     /**
      * Кнопочка поднятия выбранного кадра наверх
      */
-    internal val upFrameButton = JButton(ImageIcon("./icons/up.png")).apply {
-        setSize(buttonSize, buttonSize)
-        isVisible = true
-        toolTipText = "Move selected frame up"
-        isEnabled = false
-    }
+    internal val upFrameButton : JButton = UIFactory.createMiniButton(
+            "up", "Move selected frame up", panel, upFrameButtonListener)
     /**
      * Кнопочка опускания выбранного кадра вниз
      */
-    internal val downFrameButton = JButton(ImageIcon("./icons/down.png")).apply {
-        setSize(buttonSize, buttonSize)
-        isVisible = true
-        toolTipText = "Move selected frame down"
-        isEnabled = false
-    }
+    internal val downFrameButton : JButton = UIFactory.createMiniButton(
+            "down", "Move selected frame down", panel, downFrameButtonListener)
     /**
      * Активны ли данные кнопки (без учета того, активно ли все окно)
      */
@@ -93,15 +73,6 @@ object FramesWindow : JFrame() {
      */
     internal var frameButtons = ArrayList<JButton>()
 
-    internal val panel = JPanel().apply {
-        layout = null
-        add(scrollPane)
-        add(newFrameButton)
-        add(copyLastFrameButton)
-        add(deleteFrameButton)
-        add(upFrameButton)
-        add(downFrameButton)
-    }
 
     private val yMargin = 39
 
@@ -110,17 +81,17 @@ object FramesWindow : JFrame() {
         title = "Frames"
         isAlwaysOnTop = true
         defaultCloseOperation = JFrame.DO_NOTHING_ON_CLOSE
-
+        panel.add(scrollPane)
         contentPane.add(panel)
 
         addComponentListener(object : ComponentAdapter() {
             override fun componentResized(evt: ComponentEvent?) {
-                scrollPane.setBounds(0, 0, width - 14, height - yMargin + 1 - buttonSize)
-                newFrameButton.setBounds(0, height - yMargin - buttonSize, buttonSize, buttonSize)
-                copyLastFrameButton.setBounds(buttonSize, height - yMargin - buttonSize, buttonSize, buttonSize)
-                deleteFrameButton.setBounds(buttonSize * 2, height - yMargin - buttonSize, buttonSize, buttonSize)
-                upFrameButton.setBounds(buttonSize * 3, height - yMargin - buttonSize, buttonSize, buttonSize)
-                downFrameButton.setBounds(buttonSize * 4, height - yMargin - buttonSize, buttonSize, buttonSize)
+                scrollPane.setBounds(0, 0, width - 14, height - yMargin + 1 - UIFactory.MINI_BUTTON_SIZE)
+                newFrameButton.setLocation(0, height - yMargin - UIFactory.MINI_BUTTON_SIZE)
+                copyLastFrameButton.setLocation(UIFactory.MINI_BUTTON_SIZE, height - yMargin - UIFactory.MINI_BUTTON_SIZE)
+                deleteFrameButton.setLocation(UIFactory.MINI_BUTTON_SIZE * 2, height - yMargin - UIFactory.MINI_BUTTON_SIZE)
+                upFrameButton.setLocation(UIFactory.MINI_BUTTON_SIZE * 3, height - yMargin - UIFactory.MINI_BUTTON_SIZE)
+                downFrameButton.setLocation(UIFactory.MINI_BUTTON_SIZE * 4, height - yMargin - UIFactory.MINI_BUTTON_SIZE)
                 scrollPane.revalidate()
             }
         })

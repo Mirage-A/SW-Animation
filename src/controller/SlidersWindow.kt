@@ -1,5 +1,7 @@
 package controller
 
+import java.awt.event.ComponentAdapter
+import java.awt.event.ComponentEvent
 import java.io.File
 import java.io.IOException
 
@@ -11,84 +13,48 @@ import javax.swing.*
  */
 object SlidersWindow : JFrame() {
 
-    private val sliderWidth = 200
-    private val sliderHeight = 20
-    private val space = 0
+    private val panel = JPanel().apply {
+        layout = null
+    }
+
     /**
      * Слайдер, отвечающий за размер слоя
      */
-    internal var sizeSlider = JSlider(JSlider.HORIZONTAL, 25, 200, 100).apply {
-        setBounds(space, 4 + space, sliderWidth, sliderHeight)
-        isVisible = true
-    }
+    internal var sizeSlider : JSlider = UIFactory.createSlider(panel, sizeSliderListener)
     /**
      * Слайдер, отвечающий за ширину слоя
      */
-    internal var widthSlider = JSlider(JSlider.HORIZONTAL, 25, 200, 100).apply {
-        setBounds(space, 4 + space * 2 + sliderHeight, sliderWidth, sliderHeight)
-        isVisible = true
-    }
+    internal var widthSlider : JSlider = UIFactory.createSlider(panel, widthSliderListener)
     /**
      * Слайдер, отвечающий за высоту слоя
      */
-    internal var heightSlider = JSlider(JSlider.HORIZONTAL, 25, 200, 100).apply {
-        setBounds(space, 4 + space * 3 + sliderHeight * 2, sliderWidth, sliderHeight)
-        isVisible = true
-    }
+    internal var heightSlider : JSlider = UIFactory.createSlider(panel, heightSliderListener)
 
-    private val sizeLabel = JLabel().apply {
-        setBounds(sizeSlider.x + sizeSlider.width, sizeSlider.y, sliderHeight, sliderHeight)
-        isVisible = true
-    }
+    private val sizeLabel : JLabel = UIFactory.createLabel("size", panel)
 
-    private val widthLabel = JLabel().apply {
-        setBounds(widthSlider.x + widthSlider.width, widthSlider.y, sliderHeight, sliderHeight)
-        isVisible = true
-    }
+    private val widthLabel : JLabel = UIFactory.createLabel("width", panel)
 
-    private val heightLabel = JLabel().apply {
-        setBounds(heightSlider.x + heightSlider.width, heightSlider.y, sliderHeight, sliderHeight)
-        isVisible = true
-    }
+    private val heightLabel : JLabel = UIFactory.createLabel("height", panel)
 
-    private val panel = JPanel().apply {
-        layout = null
-        add(sizeSlider)
-        add(widthSlider)
-        add(heightSlider)
-        add(sizeLabel)
-        add(widthLabel)
-        add(heightLabel)
-    }
 
     init {
-        setSize(sliderWidth + space * 2 + 42, 42 + sliderHeight * 3 + space * 4)
+        setSize(242, 102)
         title = "Layer size"
         isAlwaysOnTop = true
         defaultCloseOperation = JFrame.DO_NOTHING_ON_CLOSE
         contentPane.add(panel)
+
+        addComponentListener(object : ComponentAdapter() {
+            override fun componentResized(evt: ComponentEvent?) {
+                sizeSlider.setLocation(0, 4)
+                widthSlider.setLocation(0, 4 + sizeSlider.height)
+                heightSlider.setLocation(0, 4 + sizeSlider.height + widthSlider.height)
+                sizeLabel.setLocation(sizeSlider.x + sizeSlider.width, sizeSlider.y)
+                widthLabel.setLocation(widthSlider.x + widthSlider.width, widthSlider.y)
+                heightLabel.setLocation(heightSlider.x + heightSlider.width, heightSlider.y)
+            }
+        })
         isVisible = false
-        try {
-            sizeLabel.icon = ImageIcon(ImageIO.read(File("./icons/size.png")))
-        }
-        catch (ex: IOException) {
-            ex.printStackTrace()
-            JOptionPane.showMessageDialog(null, "File not found: icons/size.png")
-        }
-        try {
-            widthLabel.icon = ImageIcon(ImageIO.read(File("./icons/width.png")))
-        }
-        catch (ex: IOException) {
-            ex.printStackTrace()
-            JOptionPane.showMessageDialog(null, "File not found: icons/width.png")
-        }
-        try {
-            heightLabel.icon = ImageIcon(ImageIO.read(File("./icons/height.png")))
-        }
-        catch (ex: IOException) {
-            ex.printStackTrace()
-            JOptionPane.showMessageDialog(null, "File not found: icons/height.png")
-        }
 
     }
 

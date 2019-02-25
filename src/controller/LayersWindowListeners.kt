@@ -28,8 +28,7 @@ val newLayerButtonListener = ActionListener {
         if (image.name.endsWith(".png")) {
             val absImagePath = image.absolutePath
             val startAbsPath = File("drawable").absolutePath
-            val relativePath = absImagePath.substring(startAbsPath.length, absImagePath.length)
-            println("$absImagePath $startAbsPath $relativePath")
+            val relativePath = absImagePath.substring(startAbsPath.length + 1, absImagePath.length)
             val layer = Layer(relativePath)
             for (frame in animation.frames) {
                 frame.layers.add(Layer(layer))

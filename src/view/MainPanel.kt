@@ -56,7 +56,7 @@ object MainPanel : JPanel() {
     /**
      * Включена ли анимация
      */
-    internal var isPlayingAnimation = false
+    var isPlayingAnimation = false
     /**
      * Время старта анимации
      */

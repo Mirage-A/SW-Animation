@@ -6,7 +6,6 @@ import java.awt.event.ComponentEvent
 import java.util.ArrayList
 
 import javax.swing.BoxLayout
-import javax.swing.ImageIcon
 import javax.swing.JButton
 import javax.swing.JFrame
 import javax.swing.JPanel
@@ -17,10 +16,11 @@ import javax.swing.ScrollPaneConstants
  * Дополнительное окно, позволяющее работать со слоями
  */
 object LayersWindow : JFrame() {
-    /**
-     * Размер маленьких кнопочек
-     */
-    private val buttonSize = 20
+
+    private val panel = JPanel().apply {
+        layout = null
+    }
+
     /**
      * Панель окна
      */
@@ -38,48 +38,24 @@ object LayersWindow : JFrame() {
     /**
      * Кнопочка создания нового слоя
      */
-    internal var newLayerButton = JButton(ImageIcon("./icons/create.png")).apply {
-        setSize(buttonSize, buttonSize)
-        isVisible = true
-        toolTipText = "Create a new layer"
-        isEnabled = false
-    }
+    internal var newLayerButton : JButton = UIFactory.createMiniButton(
+            "create", "Create a new layer", panel, newLayerButtonListener)
     /**
      * Кнопочка удаления выбранного слоя
      */
-    internal var deleteLayerButton = JButton(ImageIcon("./icons/delete.png")).apply {
-        setSize(buttonSize, buttonSize)
-        isVisible = true
-        toolTipText = "Delete selected layer"
-        isEnabled = false
-    }
+    internal var deleteLayerButton : JButton = UIFactory.createMiniButton(
+            "delete", "Delete selected layer", panel, deleteLayerButtonListener)
     /**
      * Кнопочка поднятия выбранного слоя наверх
      */
-    internal var upLayerButton = JButton(ImageIcon("./icons/up.png")).apply {
-        setSize(buttonSize, buttonSize)
-        isVisible = true
-        toolTipText = "Move selected layer up"
-        isEnabled = false
-    }
+    internal var upLayerButton : JButton = UIFactory.createMiniButton(
+            "up", "Move selected layer up", panel, upLayerButtonListener)
     /**
      * Кнопочка опускания выбранного слоя вниз
      */
-    internal var downLayerButton = JButton(ImageIcon("./icons/down.png")).apply {
-        setSize(buttonSize, buttonSize)
-        isVisible = true
-        toolTipText = "Move selected layer down"
-        isEnabled = false
-    }
+    internal var downLayerButton : JButton = UIFactory.createMiniButton(
+            "down", "Move selected layer down", panel, downLayerButtonListener)
 
-    private val panel = JPanel().apply {
-        layout = null
-        add(scrollPane)
-        add(newLayerButton)
-        add(deleteLayerButton)
-        add(upLayerButton)
-        add(downLayerButton)
-    }
     /**
      * Активны ли данные кнопки (без учета того, активно ли все окно)
      */
@@ -107,16 +83,17 @@ object LayersWindow : JFrame() {
         isAlwaysOnTop = true
         defaultCloseOperation = JFrame.DO_NOTHING_ON_CLOSE
         layerButtons = ArrayList()
+        panel.add(scrollPane)
         contentPane.add(panel)
 
 
         addComponentListener(object : ComponentAdapter() {
             override fun componentResized(evt: ComponentEvent?) {
-                scrollPane.setBounds(0, 0, width - 14, height - 38 - buttonSize)
-                newLayerButton.setBounds(0, height - 39 - buttonSize, buttonSize, buttonSize)
-                deleteLayerButton.setBounds(buttonSize, height - 39 - buttonSize, buttonSize, buttonSize)
-                upLayerButton.setBounds(buttonSize * 2, height - 39 - buttonSize, buttonSize, buttonSize)
-                downLayerButton.setBounds(buttonSize * 3, height - 39 - buttonSize, buttonSize, buttonSize)
+                scrollPane.setBounds(0, 0, width - 14, height - 38 - UIFactory.MINI_BUTTON_SIZE)
+                newLayerButton.setLocation(0, height - 39 - UIFactory.MINI_BUTTON_SIZE)
+                deleteLayerButton.setLocation(UIFactory.MINI_BUTTON_SIZE, height - 39 - UIFactory.MINI_BUTTON_SIZE)
+                upLayerButton.setLocation(UIFactory.MINI_BUTTON_SIZE * 2, height - 39 - UIFactory.MINI_BUTTON_SIZE)
+                downLayerButton.setLocation(UIFactory.MINI_BUTTON_SIZE * 3, height - 39 - UIFactory.MINI_BUTTON_SIZE)
                 scrollPane.revalidate()
             }
         })

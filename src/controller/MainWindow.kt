@@ -4,18 +4,14 @@ import model.*
 import model.Model.animation
 import view.MainPanel
 import java.awt.Color
-import java.awt.Cursor
-import java.awt.Image
 import java.awt.Toolkit
 import java.awt.event.*
 import java.io.*
 import java.util.*
-import javax.imageio.ImageIO
 import javax.swing.*
 import javax.swing.filechooser.FileFilter
 import kotlin.collections.HashMap
 import kotlin.collections.indices
-import kotlin.collections.isNotEmpty
 import kotlin.collections.set
 
 /**
@@ -26,14 +22,11 @@ object MainWindow : JFrame() {
     /**
      * Элементы интерфейса в левом верхнем углу
      */
+
     /**
      * Чекбоксы с выбором направления движения
      */
     val moveDirectionCheckboxes = ArrayList<JCheckBox>()
-    /**
-     * Слайдер, позволяющий приближать/отдалять картинку в редакторе
-     */
-    val zoomSlider :JSlider
     /**
      * Чекбоксы с выбором типа оружия
      */
@@ -45,20 +38,47 @@ object MainWindow : JFrame() {
     /**
      * Чекбокс, определяющий, показывать ли эскиз гуманоида на фоне для помощи в подборе размера изображений
      */
-    val showPlayerImageCheckbox : JCheckBox
+    val showPlayerImageCheckbox : JCheckBox = JCheckBox("Show shape").apply {
+        isSelected = true
+        setBounds(8, 10, 160, 24)
+        addChangeListener {
+            MainPanel.drawPlayer = isSelected
+        }
+        isVisible = true
+        MainPanel.add(this)
+    }
     /**
-     * Кнопочка, позволяющая выбрать длительность (период) анимации
+     * Слайдер, позволяющий приближать/отдалять картинку в редакторе
      */
-    val changeDurationBtn : JButton
+    val zoomSlider : JSlider = JSlider(100, 800, MainPanel.zoom).apply {
+        setBounds(showPlayerImageCheckbox.x, showPlayerImageCheckbox.y + showPlayerImageCheckbox.height + 2,
+                showPlayerImageCheckbox.width, showPlayerImageCheckbox.height)
+        isVisible = true
+        MainPanel.add(this)
+    }
     /**
      * Кнопочка, позволяющая запустить или остановить анимацию
      */
-    val toggleAnimationBtn : JButton
+    val toggleAnimationBtn : JButton = UIFactory.createButton(
+            zoomSlider.x, zoomSlider.y + zoomSlider.height + 2, "Start animation", toggleAnimationButtonListener
+    ).apply {
+        foreground = Color(0, 208, 0)
+    }
     /**
      * Кнопочка, позволяющая создать отраженную относительно вертикальной оси анимацию
      * для соответствующего направления движения
      */
-    val createMirroredAnimationBtn: JButton
+    val createMirroredAnimationBtn: JButton = UIFactory.createButton(
+            toggleAnimationBtn.x, toggleAnimationBtn.y + toggleAnimationBtn.height + 4,
+            "Mirror animation", createMirroredAnimationButtonListener
+    )
+    /**
+     * Кнопочка, позволяющая выбрать длительность (период) анимации
+     */
+    val changeDurationBtn : JButton = UIFactory.createButton(
+            createMirroredAnimationBtn.x, createMirroredAnimationBtn.y + createMirroredAnimationBtn.height + 4,
+            "Animation duration", changeDurationButtonListener
+    )
     /**
      * Текст "Move direction: " над чекбоксами с выбором направления движения
      */
@@ -73,28 +93,44 @@ object MainWindow : JFrame() {
     /**
      * Кнопочка, отвечающая за выход из редактора
      */
-    val exitBtn : JButton
-    /**
-     * Кнопочка, позволяющая выбрать и загрузить другую анимацию
-     */
-    val openAnotherAnimationBtn : JButton
-    /**
-     * Кнопочка, позволяющая создать новую анимацию
-     */
-    val newAnimationBtn : JButton
-    /**
-     * Кнопочка, позволяющая сохранить (сериализовать) текущую анимацию
-     */
-    val saveAnimationBtn : JButton
+    val exitBtn : JButton = UIFactory.createButton(
+            Toolkit.getDefaultToolkit().screenSize.width - 160 - 10, 10, "Save and exit", exitButtonListener)
     /**
      * Кнопочка, позволяюшая выбрать FPS перерисовки анимации в редакторе
      */
-    val fpsBtn : JButton
+    val fpsBtn : JButton = UIFactory.createButton(
+            exitBtn.x, exitBtn.y + exitBtn.height + 4, "FPS: 60", fpsButtonListener
+    )
+    /**
+     * Кнопочка, позволяющая выбрать и загрузить другую анимацию
+     */
+    val openAnotherAnimationBtn : JButton = UIFactory.createButton(
+            fpsBtn.x, fpsBtn.y + fpsBtn.height + 4, "Open animation", openAnotherAnimationButtonListener
+    )
+    /**
+     * Кнопочка, позволяющая создать новую анимацию
+     */
+    val newAnimationBtn : JButton = UIFactory.createButton(
+            exitBtn.x, openAnotherAnimationBtn.y + openAnotherAnimationBtn.height + 4, "New animation", createNewAnimationButtonListener
+    )
+    /**
+     * Кнопочка, позволяющая сохранить (сериализовать) текущую анимацию
+     */
+    val saveAnimationBtn : JButton = UIFactory.createButton(
+            newAnimationBtn.x, newAnimationBtn.y + newAnimationBtn.height + 4, "Save animation", saveAnimationButtonListener
+    )
     /**
      * Текст, отображающий на экране тип и название текущей анимации
      */
-    val animationNameText : JTextField
-
+    val animationNameText : JTextField = JTextField("No animation loaded").apply {
+        setBounds(saveAnimationBtn.x, saveAnimationBtn.y + saveAnimationBtn.height + 4, saveAnimationBtn.width, saveAnimationBtn.height)
+        isOpaque = false
+        horizontalAlignment = JTextField.CENTER
+        font = LayersWindow.selectedFont
+        isEditable = false
+        isVisible = true
+        MainPanel.add(this)
+    }
     /**
      * Инициализация всего интерфейса
      */
@@ -105,89 +141,6 @@ object MainWindow : JFrame() {
         size = Toolkit.getDefaultToolkit().screenSize
         contentPane.add(MainPanel)
         defaultCloseOperation = WindowConstants.DO_NOTHING_ON_CLOSE
-
-        // Кнопка выхода из редактора
-        exitBtn = JButton("Save and exit")
-        exitBtn.setBounds(width - 160 - 10, 10, 160, 24)
-        exitBtn.isVisible = true
-        MainPanel.add(exitBtn)
-
-        //Кнопка изменения скорости перерисовки
-        fpsBtn = JButton("FPS: 60")
-        fpsBtn.setBounds(exitBtn.x, exitBtn.y + exitBtn.height + 4, exitBtn.width, exitBtn.height)
-        fpsBtn.isVisible = true
-        MainPanel.add(fpsBtn)
-
-        // Кнопка загрузки другой анимации
-        openAnotherAnimationBtn = JButton("Open animation")
-        openAnotherAnimationBtn.run {
-            setBounds(fpsBtn.x, fpsBtn.y + fpsBtn.height + 4, fpsBtn.width, fpsBtn.height)
-            isVisible = true
-        }
-        MainPanel.add(openAnotherAnimationBtn)
-
-        // Кнопка создания новой анимации
-        newAnimationBtn = JButton("New animation")
-        newAnimationBtn.run {
-            setBounds(exitBtn.x, openAnotherAnimationBtn.y + openAnotherAnimationBtn.height + 4, openAnotherAnimationBtn.width, openAnotherAnimationBtn.height)
-            isVisible = true
-        }
-        MainPanel.add(newAnimationBtn)
-
-        // Кнопка сохранения
-        saveAnimationBtn = JButton("Save animation")
-        saveAnimationBtn.run {
-            setBounds(newAnimationBtn.x, newAnimationBtn.y + newAnimationBtn.height + 4, newAnimationBtn.width, newAnimationBtn.height)
-            isVisible = true
-        }
-        MainPanel.add(saveAnimationBtn)
-
-        // Текст с названием и типом анимации
-        animationNameText = JTextField("No animation loaded")
-        animationNameText.run {
-            setBounds(saveAnimationBtn.x, saveAnimationBtn.y + saveAnimationBtn.height + 4, saveAnimationBtn.width, saveAnimationBtn.height)
-            isOpaque = false
-            horizontalAlignment = JTextField.CENTER
-            font = LayersWindow.selectedFont
-            isEditable = false
-            isVisible = true
-        }
-        MainPanel.add(animationNameText)
-
-
-
-        // Чекбокс, который переключает отображение изображения игрока на фоне
-        showPlayerImageCheckbox = JCheckBox("Show shape")
-        showPlayerImageCheckbox.isSelected = true
-        showPlayerImageCheckbox.setBounds(8, 10, 160, 24)
-        showPlayerImageCheckbox.addChangeListener { MainPanel.drawPlayer = showPlayerImageCheckbox.isSelected }
-        showPlayerImageCheckbox.isVisible = true
-        MainPanel.add(showPlayerImageCheckbox)
-
-        //Слайдер, позволяющий приближать и отдалять картинку
-        zoomSlider = JSlider(100, 800, MainPanel.zoom)
-        zoomSlider.setBounds(showPlayerImageCheckbox.x, showPlayerImageCheckbox.y + showPlayerImageCheckbox.height + 2, showPlayerImageCheckbox.width, showPlayerImageCheckbox.height)
-        zoomSlider.isVisible = true
-        MainPanel.add(zoomSlider)
-
-        //Кнопка старта/остановки анимации
-        toggleAnimationBtn = JButton("Start animation")
-        toggleAnimationBtn.setBounds(zoomSlider.x, zoomSlider.y + zoomSlider.height + 2, zoomSlider.width, zoomSlider.height)
-        toggleAnimationBtn.foreground = Color(0, 208, 0)
-        toggleAnimationBtn.isVisible = true
-        MainPanel.add(toggleAnimationBtn)
-
-        //Кнопка создания отраженной анимации
-        createMirroredAnimationBtn = JButton("Mirror animation")
-        createMirroredAnimationBtn.setBounds(toggleAnimationBtn.x, toggleAnimationBtn.y + toggleAnimationBtn.height + 4, toggleAnimationBtn.width, toggleAnimationBtn.height)
-        createMirroredAnimationBtn.isVisible = true
-        MainPanel.add(createMirroredAnimationBtn)
-
-        //Кнопка изменения продолжительности анимации
-        changeDurationBtn = JButton("Animation duration")
-        changeDurationBtn.setBounds(createMirroredAnimationBtn.x, createMirroredAnimationBtn.y + createMirroredAnimationBtn.height + 4, createMirroredAnimationBtn.width, createMirroredAnimationBtn.height)
-        changeDurationBtn.isVisible = true
-        MainPanel.add(changeDurationBtn)
 
         //Чекбокс, позволяющий выбрать, нужно ли воспроизводить анимацию по кругу или
         //остановить воспроизведение на последнем кадре
