@@ -73,10 +73,8 @@ object FramesWindow : JFrame() {
      */
     internal var frameButtons = ArrayList<JButton>()
 
-
-    private val yMargin = 39
-
     init {
+        isUndecorated = true
         setSize(200, 250)
         title = "Frames"
         isAlwaysOnTop = true
@@ -86,12 +84,12 @@ object FramesWindow : JFrame() {
 
         addComponentListener(object : ComponentAdapter() {
             override fun componentResized(evt: ComponentEvent?) {
-                scrollPane.setBounds(0, 0, width - 14, height - yMargin + 1 - UIFactory.MINI_BUTTON_SIZE)
-                newFrameButton.setLocation(0, height - yMargin - UIFactory.MINI_BUTTON_SIZE)
-                copyLastFrameButton.setLocation(UIFactory.MINI_BUTTON_SIZE, height - yMargin - UIFactory.MINI_BUTTON_SIZE)
-                deleteFrameButton.setLocation(UIFactory.MINI_BUTTON_SIZE * 2, height - yMargin - UIFactory.MINI_BUTTON_SIZE)
-                upFrameButton.setLocation(UIFactory.MINI_BUTTON_SIZE * 3, height - yMargin - UIFactory.MINI_BUTTON_SIZE)
-                downFrameButton.setLocation(UIFactory.MINI_BUTTON_SIZE * 4, height - yMargin - UIFactory.MINI_BUTTON_SIZE)
+                scrollPane.setBounds(0, 0, width, height + 1 - UIFactory.MINI_BUTTON_SIZE)
+                newFrameButton.setLocation(0, height - UIFactory.MINI_BUTTON_SIZE)
+                copyLastFrameButton.setLocation(UIFactory.MINI_BUTTON_SIZE, height - UIFactory.MINI_BUTTON_SIZE)
+                deleteFrameButton.setLocation(UIFactory.MINI_BUTTON_SIZE * 2, height - UIFactory.MINI_BUTTON_SIZE)
+                upFrameButton.setLocation(UIFactory.MINI_BUTTON_SIZE * 3, height - UIFactory.MINI_BUTTON_SIZE)
+                downFrameButton.setLocation(UIFactory.MINI_BUTTON_SIZE * 4, height - UIFactory.MINI_BUTTON_SIZE)
                 scrollPane.revalidate()
             }
         })

@@ -78,6 +78,7 @@ object LayersWindow : JFrame() {
     internal val selectedFont = Font(basicFont.fontName, Font.BOLD, basicFont.size + 4)
 
     init {
+        isUndecorated = true
         setSize(200, 250)
         title = "Layers"
         isAlwaysOnTop = true
@@ -89,11 +90,11 @@ object LayersWindow : JFrame() {
 
         addComponentListener(object : ComponentAdapter() {
             override fun componentResized(evt: ComponentEvent?) {
-                scrollPane.setBounds(0, 0, width - 14, height - 38 - UIFactory.MINI_BUTTON_SIZE)
-                newLayerButton.setLocation(0, height - 39 - UIFactory.MINI_BUTTON_SIZE)
-                deleteLayerButton.setLocation(UIFactory.MINI_BUTTON_SIZE, height - 39 - UIFactory.MINI_BUTTON_SIZE)
-                upLayerButton.setLocation(UIFactory.MINI_BUTTON_SIZE * 2, height - 39 - UIFactory.MINI_BUTTON_SIZE)
-                downLayerButton.setLocation(UIFactory.MINI_BUTTON_SIZE * 3, height - 39 - UIFactory.MINI_BUTTON_SIZE)
+                scrollPane.setBounds(0, 0, width, height - UIFactory.MINI_BUTTON_SIZE)
+                newLayerButton.setLocation(0, height - UIFactory.MINI_BUTTON_SIZE)
+                deleteLayerButton.setLocation(UIFactory.MINI_BUTTON_SIZE, height - UIFactory.MINI_BUTTON_SIZE)
+                upLayerButton.setLocation(UIFactory.MINI_BUTTON_SIZE * 2, height - UIFactory.MINI_BUTTON_SIZE)
+                downLayerButton.setLocation(UIFactory.MINI_BUTTON_SIZE * 3, height - UIFactory.MINI_BUTTON_SIZE)
                 scrollPane.revalidate()
             }
         })

@@ -67,7 +67,7 @@ val toggleAnimationButtonListener = ActionListener {
 
 val createMirroredAnimationButtonListener = ActionListener {
     if (JOptionPane.showConfirmDialog(null, "Do you want to create a mirrored animation?", "Mirroring animation", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.OK_OPTION) {
-        MainWindow.mirrorAnimation()
+        Model.mirrorAnimation()
     }
 }
 
@@ -87,19 +87,19 @@ val changeDurationButtonListener = ActionListener {
     }
 }
 
-val isAnimationRepeatableCheckboxListener = ChangeListener {
+val isAnimationRepeatableCheckboxListener = ActionListener {
     Model.animation.isRepeatable = MainWindow.isAnimationRepeatableCheckbox.isSelected
 }
 
-fun getMoveDirectionCheckboxListener(cb: JCheckBox) = ChangeListener {
-    if (cb.isSelected) {
+fun getMoveDirectionCheckboxListener(md: MoveDirection) = ActionListener {
+    if (MainWindow.moveDirectionCheckboxes[md]?.isSelected == true) {
         MainWindow.stopAnimation()
-        for (checkbox in MainWindow.moveDirectionCheckboxes) {
-            if (checkbox != cb) {
+        for ((moveDirection, checkbox) in MainWindow.moveDirectionCheckboxes) {
+            if (md != moveDirection) {
                 checkbox.isSelected = false
             }
         }
-        Model.animation.curMoveDirection = MoveDirection.fromString(cb.text)
+        Model.animation.curMoveDirection = md
         Model.animation.frames = Model.animation.data[Model.animation.curMoveDirection]!![Model.animation.curWeaponType]!!
         Model.animation.curFrame = -1
         MainPanel.frame = null
@@ -140,19 +140,17 @@ fun getMoveDirectionCheckboxListener(cb: JCheckBox) = ChangeListener {
         MainPanel.frame = null
     }
     else {
-        cb.isSelected = true
+        MainWindow.moveDirectionCheckboxes[md]?.isSelected = true
     }
 }
 
-fun getWeaponTypeCheckboxListener(cb: JCheckBox) = ChangeListener {
-    if (cb.isSelected) {
+fun getWeaponTypeCheckboxListener(wt: WeaponType) = ActionListener {
+    if (MainWindow.weaponTypeCheckboxes[wt]?.isSelected == true) {
         MainWindow.stopAnimation()
-        for (checkbox in MainWindow.weaponTypeCheckboxes) {
-            if (checkbox != cb) {
-                checkbox.isSelected = false
-            }
+        for (checkbox in MainWindow.weaponTypeCheckboxes.filter { it.key != wt }.values) {
+            checkbox.isSelected = false
         }
-        Model.animation.curWeaponType = WeaponType.fromString(cb.text)
+        Model.animation.curWeaponType = wt
         Model.animation.frames = Model.animation.data[Model.animation.curMoveDirection]!![Model.animation.curWeaponType]!!
         Model.animation.curFrame = -1
         MainPanel.frame = null
@@ -193,6 +191,6 @@ fun getWeaponTypeCheckboxListener(cb: JCheckBox) = ChangeListener {
         MainPanel.frame = null
     }
     else {
-        cb.isSelected = true
+        MainWindow.weaponTypeCheckboxes[wt]?.isSelected = true
     }
 }

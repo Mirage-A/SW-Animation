@@ -18,9 +18,15 @@ object UIFactory {
         setBounds(x, y, BUTTON_WIDTH, BUTTON_HEIGHT)
         isVisible = true
         this.text = text
-        //isEnabled = false
         addActionListener(listener)
         MainPanel.add(this)
+    }
+
+    fun createCheckbox(x: Int, y: Int, text: String, listener: ActionListener) = JCheckBox(text).apply {
+        setBounds(x, y, BUTTON_WIDTH, BUTTON_HEIGHT)
+        isVisible = true
+        MainPanel.add(this)
+        addActionListener(listener)
     }
 
     fun createMiniButton(iconName: String, toolTip: String = "", panel: JPanel, listener: ActionListener) = JButton().apply {

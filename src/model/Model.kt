@@ -2,6 +2,7 @@ package model
 
 import java.io.File
 import java.util.*
+import javax.swing.JOptionPane
 
 object Model {
 
@@ -44,6 +45,29 @@ object Model {
                 animationFile!!.createNewFile()
             }
             animation.serialize(animationFile!!)
+        }
+    }
+
+
+    /**
+     * Создает отраженную копию всех кадров для соотвествующего moveDirection-а
+     */
+    fun mirrorAnimation() {
+        val mirroredMD = animation.curMoveDirection.mirrored()
+        if (mirroredMD == animation.curMoveDirection) {
+            JOptionPane.showMessageDialog(null, "This move direction can't be mirrored")
+        }
+        else {
+            val mirroredFrames = animation.data[mirroredMD]!![animation.curWeaponType]!!
+            mirroredFrames.clear()
+            val curFrames = animation.data[animation.curMoveDirection]!![animation.curWeaponType]!!
+            for (frame in curFrames) {
+                mirroredFrames.add(Frame(frame))
+            }
+            for (mFrame in mirroredFrames) {
+                mFrame.mirror(animation.curMoveDirection)
+            }
+
         }
     }
 }

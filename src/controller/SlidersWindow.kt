@@ -38,6 +38,7 @@ object SlidersWindow : JFrame() {
 
 
     init {
+        isUndecorated = true
         setSize(242, 102)
         title = "Layer size"
         isAlwaysOnTop = true

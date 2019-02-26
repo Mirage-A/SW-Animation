@@ -26,15 +26,11 @@ object MainWindow : JFrame() {
     /**
      * Чекбоксы с выбором направления движения
      */
-    val moveDirectionCheckboxes = ArrayList<JCheckBox>()
+    val moveDirectionCheckboxes = TreeMap<MoveDirection, JCheckBox>()
     /**
      * Чекбоксы с выбором типа оружия
      */
-    val weaponTypeCheckboxes = ArrayList<JCheckBox>()
-    /**
-     * Чекбокс, определяющий, повторяется ли анимация после завершения
-     */
-    val isAnimationRepeatableCheckbox: JCheckBox
+    val weaponTypeCheckboxes = TreeMap<WeaponType, JCheckBox>()
     /**
      * Чекбокс, определяющий, показывать ли эскиз гуманоида на фоне для помощи в подборе размера изображений
      */
@@ -54,6 +50,7 @@ object MainWindow : JFrame() {
         setBounds(showPlayerImageCheckbox.x, showPlayerImageCheckbox.y + showPlayerImageCheckbox.height + 2,
                 showPlayerImageCheckbox.width, showPlayerImageCheckbox.height)
         isVisible = true
+        addChangeListener(zoomSliderListener)
         MainPanel.add(this)
     }
     /**
@@ -79,6 +76,12 @@ object MainWindow : JFrame() {
             createMirroredAnimationBtn.x, createMirroredAnimationBtn.y + createMirroredAnimationBtn.height + 4,
             "Animation duration", changeDurationButtonListener
     )
+    /**
+     * Чекбокс, определяющий, повторяется ли анимация после завершения
+     */
+    val isAnimationRepeatableCheckbox: JCheckBox = UIFactory.createCheckbox(
+            changeDurationBtn.x, changeDurationBtn.y + changeDurationBtn.height + 4,
+            "Repeatable", isAnimationRepeatableCheckboxListener)
     /**
      * Текст "Move direction: " над чекбоксами с выбором направления движения
      */
@@ -144,11 +147,6 @@ object MainWindow : JFrame() {
 
         //Чекбокс, позволяющий выбрать, нужно ли воспроизводить анимацию по кругу или
         //остановить воспроизведение на последнем кадре
-        isAnimationRepeatableCheckbox = JCheckBox("Repeatable")
-        isAnimationRepeatableCheckbox.isSelected = false
-        isAnimationRepeatableCheckbox.setBounds(changeDurationBtn.x, changeDurationBtn.y + changeDurationBtn.height + 4, changeDurationBtn.width, changeDurationBtn.height)
-        isAnimationRepeatableCheckbox.isVisible = true
-        MainPanel.add(isAnimationRepeatableCheckbox)
 
         //Текст "Move direction:"
         moveDirectionText = JTextField("Move direction:")
@@ -165,11 +163,8 @@ object MainWindow : JFrame() {
 
         //Чекбоксы выбора moveDirection-а
         for (md in MoveDirection.values()) {
-            val cb = JCheckBox(md.toString())
-            cb.setBounds(toggleAnimationBtn.x, moveDirectionText.y + (toggleAnimationBtn.height + 4) * (moveDirectionCheckboxes.size + 1) + 4, toggleAnimationBtn.width, toggleAnimationBtn.height)
-            moveDirectionCheckboxes.add(cb)
-            cb.isVisible = true
-            MainPanel.add(cb)
+            moveDirectionCheckboxes[md] = UIFactory.createCheckbox(toggleAnimationBtn.x, moveDirectionText.y + (toggleAnimationBtn.height + 4) * (moveDirectionCheckboxes.size + 1) + 4,
+                    md.toString(), getMoveDirectionCheckboxListener(md))
         }
 
         //Текст "Weapon type:"
@@ -179,18 +174,16 @@ object MainWindow : JFrame() {
             horizontalAlignment = JTextField.CENTER
             font = LayersWindow.selectedFont
             isEditable = false
-            setBounds(moveDirectionCheckboxes[moveDirectionCheckboxes.size-1].x, moveDirectionCheckboxes[moveDirectionCheckboxes.size-1].y + moveDirectionCheckboxes[moveDirectionCheckboxes.size-1].height + 4, moveDirectionCheckboxes[moveDirectionCheckboxes.size-1].width, moveDirectionCheckboxes[moveDirectionCheckboxes.size-1].height)
+            setBounds(moveDirectionCheckboxes[MoveDirection.DOWN_RIGHT]!!.x, moveDirectionCheckboxes[MoveDirection.DOWN_RIGHT]!!.y + moveDirectionCheckboxes[MoveDirection.DOWN_RIGHT]!!.height + 4, moveDirectionCheckboxes[MoveDirection.DOWN_RIGHT]!!.width, moveDirectionCheckboxes[MoveDirection.DOWN_RIGHT]!!.height)
             isVisible = true
         }
         MainPanel.add(weaponTypeText)
 
         //Чекбоксы выбора weaponType-а
         for (wt in WeaponType.values()) {
-            val cb = JCheckBox(wt.toString())
-            cb.setBounds(toggleAnimationBtn.x, weaponTypeText.y + (toggleAnimationBtn.height + 4) * (weaponTypeCheckboxes.size + 1) + 4, toggleAnimationBtn.width, toggleAnimationBtn.height)
-            weaponTypeCheckboxes.add(cb)
-            cb.isVisible = true
-            MainPanel.add(cb)
+            weaponTypeCheckboxes[wt] = UIFactory.createCheckbox(
+                    toggleAnimationBtn.x, weaponTypeText.y + (toggleAnimationBtn.height + 4) * (weaponTypeCheckboxes.size + 1) + 4,
+                    wt.toString(), getWeaponTypeCheckboxListener(wt))
         }
 
         //Добавляем подтверждение выхода при нажатии на кнопку закрытия окна
@@ -220,7 +213,6 @@ object MainWindow : JFrame() {
             isVisible = false
         }
 
-
         addMouseListener(MouseListener)
         addMouseMotionListener(MouseListener)
         showStartMessage()
@@ -246,7 +238,7 @@ object MainWindow : JFrame() {
                 JOptionPane.showMessageDialog(null, "Incorrect input")
             } else {
                 newAnimation.name = inputName.trim()
-                val path = Model.animationDirectory.path + "/" + animation.type.toString() + "/" + newAnimation.name + ".swa"
+                val path = Model.animationDirectory.path + "/" + newAnimation.type.toString() + "/" + newAnimation.name + ".swa"
                 if (File(path).exists()) {
                     JOptionPane.showMessageDialog(null, "Animation with this name already exists")
                 }
@@ -254,18 +246,22 @@ object MainWindow : JFrame() {
                     val commonArray = ArrayList<Frame>()
                     for (moveDirection in MoveDirection.values()) {
                         newAnimation.data[moveDirection] = HashMap()
-                        if (newAnimation.type == AnimationType.LEGS) {
-                            val arr = ArrayList<Frame>()
-                            for (weaponType in WeaponType.values()) {
-                                newAnimation.data[moveDirection]!![weaponType] = arr
+                        when (newAnimation.type) {
+                            AnimationType.LEGS -> {
+                                val arr = ArrayList<Frame>()
+                                for (weaponType in WeaponType.values()) {
+                                    newAnimation.data[moveDirection]!![weaponType] = arr
+                                }
                             }
-                        } else if (newAnimation.type == AnimationType.BODY) {
-                            for (weaponType in WeaponType.values()) {
-                                newAnimation.data[moveDirection]!![weaponType] = ArrayList()
+                            AnimationType.BODY -> {
+                                for (weaponType in WeaponType.values()) {
+                                    newAnimation.data[moveDirection]!![weaponType] = ArrayList()
+                                }
                             }
-                        } else {
-                            for (weaponType in WeaponType.values()) {
-                                newAnimation.data[moveDirection]!![weaponType] = commonArray
+                            else -> {
+                                for (weaponType in WeaponType.values()) {
+                                    newAnimation.data[moveDirection]!![weaponType] = commonArray
+                                }
                             }
                         }
                     }
@@ -328,10 +324,10 @@ object MainWindow : JFrame() {
                         scrollPane.revalidate()
                         scrollPanel.repaint()
                     }
-                    for (cb in moveDirectionCheckboxes) {
+                    for (cb in moveDirectionCheckboxes.values) {
                         cb.isSelected = (cb.text == animation.curMoveDirection.toString())
                     }
-                    for (cb in weaponTypeCheckboxes) {
+                    for (cb in weaponTypeCheckboxes.values) {
                         cb.isSelected = (cb.text == animation.curWeaponType.toString())
                     }
                     setCurFrame(animation.curFrame)
@@ -419,27 +415,6 @@ object MainWindow : JFrame() {
         MainPanel.repaint()
     }
 
-    /**
-     * Создает отраженную копию всех кадров для соотвествующего moveDirection-а
-     */
-    fun mirrorAnimation() {
-        val mirroredMD = animation.curMoveDirection.mirrored()
-        if (mirroredMD == animation.curMoveDirection) {
-            JOptionPane.showMessageDialog(null, "This move direction can't be mirrored")
-        }
-        else {
-            val mirroredFrames = animation.data[mirroredMD]!![animation.curWeaponType]!!
-            mirroredFrames.clear()
-            val curFrames = animation.data[animation.curMoveDirection]!![animation.curWeaponType]!!
-            for (frame in curFrames) {
-                mirroredFrames.add(Frame(frame))
-            }
-            for (mFrame in mirroredFrames) {
-                mFrame.mirror(animation.curMoveDirection)
-            }
-
-        }
-    }
 
     /**
      * Переключает кадр, обновляет кнопочки и перерисовывает экран
@@ -482,10 +457,10 @@ object MainWindow : JFrame() {
         FramesWindow.isEnabled = false
         LayersWindow.isEnabled = false
         SlidersWindow.isEnabled = false
-        for (cb in moveDirectionCheckboxes) {
+        for (cb in moveDirectionCheckboxes.values) {
             cb.isEnabled = false
         }
-        for (cb in weaponTypeCheckboxes) {
+        for (cb in weaponTypeCheckboxes.values) {
             cb.isEnabled = false
         }
         toggleAnimationBtn.foreground = Color.RED
@@ -508,10 +483,10 @@ object MainWindow : JFrame() {
         FramesWindow.isEnabled = true
         LayersWindow.isEnabled = true
         SlidersWindow.isEnabled = true
-        for (cb in moveDirectionCheckboxes) {
+        for (cb in moveDirectionCheckboxes.values) {
             cb.isEnabled = true
         }
-        for (cb in weaponTypeCheckboxes) {
+        for (cb in weaponTypeCheckboxes.values) {
             cb.isEnabled = true
         }
         MainPanel.isPlayingAnimation = false
