@@ -1,6 +1,4 @@
 # Shattered World Animation editor (WIP)
 It's an editor that I code & use to make creating and editing animations for my Shattered World game easier.
 
-One can probably use it too (download and unarchive this repository, then run .jar file and create your first animation), but there's no sense, except helping me with my routines :)
-
-![](art.png)
+This editor currently supports only .swa animations, so using it makes no sense for the reader, but someday it will be able to export animations as .png or .gif files!
