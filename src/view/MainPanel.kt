@@ -73,7 +73,7 @@ object MainPanel : JPanel() {
     /**
      * Тип анимации
      */
-    var animType = AnimationType.NULL
+    var animType = AnimationType.OBJECT
 
     init {
         layout = null
@@ -204,10 +204,10 @@ object MainPanel : JPanel() {
         }
         if (drawPlayer) {
             if (animType == AnimationType.LEGS) {
-                gr.drawImage(player, scrW / 2 - player.getWidth(null) / 2, scrH / 2 - player.getHeight(null) / 2 - 44 * zoom / 200, null)
+                gr.drawImage(player, scrW / 2 - player.getWidth(null) / 2, scrH / 2 - player.getHeight(null) / 2, null)
             }
             else if (animType == AnimationType.BODY) {
-                gr.drawImage(player, scrW / 2 - player.getWidth(null) / 2, scrH / 2 - player.getHeight(null) / 2 + 72 * zoom / 200, null)
+                gr.drawImage(player, scrW / 2 - player.getWidth(null) / 2, scrH / 2 - player.getHeight(null) / 2, null)
             }
         }
     }

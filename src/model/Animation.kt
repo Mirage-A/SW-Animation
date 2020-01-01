@@ -19,7 +19,7 @@ class Animation() {
     /**
      * Тип анимации
      */
-    @Transient var type : AnimationType = AnimationType.NULL
+    @Transient var type : AnimationType = AnimationType.OBJECT
     /**
      * Список кадров анимации
      */

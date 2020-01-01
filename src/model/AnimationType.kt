@@ -6,7 +6,6 @@ import java.lang.Exception
  * Тип анимации
  */
 enum class AnimationType {
-    NULL,
     BODY,
     LEGS,
     OBJECT;
@@ -16,7 +15,6 @@ enum class AnimationType {
      */
     override fun toString() : String {
         return when (this) {
-            NULL -> "NULL"
             BODY -> "BODY"
             LEGS -> "LEGS"
             OBJECT -> "OBJECT"
@@ -29,7 +27,6 @@ enum class AnimationType {
          */
         fun fromString(str: String) : AnimationType {
             return when (str) {
-                "NULL" -> NULL
                 "BODY" -> BODY
                 "LEGS" -> LEGS
                 "OBJECT" -> OBJECT

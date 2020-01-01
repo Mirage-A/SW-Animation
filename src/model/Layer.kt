@@ -32,7 +32,7 @@ class Layer (
         loadImage()
     }
     constructor(origin : Layer) : this(origin.imageName, origin.x, origin.y, origin.scale, origin.scaleX, origin.scaleY,
-            origin.angle)
+            origin.angle, origin.flipX)
 
     /**
      * Загрузка изображения слоя из файла по значению imageName
@@ -53,24 +53,14 @@ class Layer (
      * Также меняет right и left слои местами
      */
     fun mirror(md: MoveDirection) {
-        //TODO implement
-        /*
         x *= -1
         angle *= -1
-        if (imageName.startsWith("head")) {
-            imageName = imageName.substring(0..3) +
-                    MoveDirection.fromString(imageName.substring(4, imageName.length - 4)).mirrored().toString() +
-                    imageName.substring(imageName.length - 4)
+        if (imageName.startsWith("~head-")) {
+            imageName = "~head-" + MoveDirection.fromString(imageName.substring(5)).mirrored().toString()
         }
-        if (md == MoveDirection.DOWN_RIGHT || md == MoveDirection.DOWN_LEFT ||
-                md == MoveDirection.UP_LEFT || md == MoveDirection.UP_RIGHT) {
-            if (imageName.startsWith("left")) {
-                imageName = "right" + imageName.substring(4)
-            }
-            else if (imageName.startsWith("right")) {
-                imageName = "left" + imageName.substring(5)
-            }
+        else {
+            flipX = !flipX
         }
-        loadImage()*/
+        loadImage()
     }
 }

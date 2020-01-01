@@ -21,11 +21,15 @@ object Model {
      */
     var animationDirectory : File = File("./animations")
 
+    var rootAnimationDirectory: File = File("./animations")
+
     var settingsFile: File = File("./settings.txt")
 
     init {
         if (settingsFile.exists()) {
-            animationDirectory = File(Scanner(settingsFile).nextLine())
+            val path = Scanner(settingsFile).nextLine()
+            animationDirectory = File(path)
+            rootAnimationDirectory = File(path)
         }
     }
 
@@ -53,6 +57,10 @@ object Model {
      * Создает отраженную копию всех кадров для соотвествующего moveDirection-а
      */
     fun mirrorAnimation() {
+        if (animation.type != AnimationType.BODY && animation.type != AnimationType.LEGS) {
+            JOptionPane.showMessageDialog(null, "Only humanoid animations can be mirrored")
+            return
+        }
         val mirroredMD = animation.curMoveDirection.mirrored()
         if (mirroredMD == animation.curMoveDirection) {
             JOptionPane.showMessageDialog(null, "This move direction can't be mirrored")

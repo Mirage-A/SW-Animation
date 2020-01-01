@@ -232,13 +232,18 @@ object MainWindow : JFrame() {
             JOptionPane.CANCEL_OPTION -> newAnimation = Animation(AnimationType.OBJECT)
         }
         if (newAnimation != null) {
-            val inputName: String? = JOptionPane.showInputDialog(this, "Enter the new animation's name (for example, FIREBALL)", "New animation", JOptionPane.PLAIN_MESSAGE)
+            val inputName: String? = JOptionPane.showInputDialog(this, "Enter the new animation's name (for example, fireball)", "New animation", JOptionPane.PLAIN_MESSAGE)
 
             if (inputName.isNullOrBlank()) {
                 JOptionPane.showMessageDialog(null, "Incorrect input")
             } else {
                 newAnimation.name = inputName.trim()
-                val path = Model.animationDirectory.path + "/" + newAnimation.type.toString() + "/" + newAnimation.name + ".xml"
+                val folder = when (newAnimation.type) {
+                    AnimationType.BODY -> "humanoid/body"
+                    AnimationType.LEGS -> "humanoid/legs"
+                    AnimationType.OBJECT -> "object"
+                }
+                val path = Model.rootAnimationDirectory.path + "/" + folder + "/" + newAnimation.name + ".xml"
                 if (File(path).exists()) {
                     JOptionPane.showMessageDialog(null, "Animation with this name already exists")
                 }
@@ -283,10 +288,10 @@ object MainWindow : JFrame() {
      * Возвращает true, если анимация успешно загружена, и false иначе
      */
     fun loadAnimation() : Boolean {
-        if (!Model.animationDirectory.exists()) {
-            Model.animationDirectory.mkdirs()
+        if (!Model.rootAnimationDirectory.exists()) {
+            Model.rootAnimationDirectory.mkdirs()
         }
-        val fc = JFileChooser(Model.animationDirectory)
+        val fc = JFileChooser(Model.rootAnimationDirectory)
         fc.addChoosableFileFilter(object : FileFilter() {
 
             override fun getDescription(): String {

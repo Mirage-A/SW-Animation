@@ -25,19 +25,10 @@ class Frame() {
      * Отражает кадр (кнопка Mirror animation)
      */
     fun mirror(md: MoveDirection) {
-        //TODO implement
-        /*
         for (mLayer in layers) {
             mLayer.mirror(md)
         }
-        if (md == MoveDirection.DOWN || md == MoveDirection.LEFT ||
-                md == MoveDirection.UP || md == MoveDirection.RIGHT) {
-            swapLayers("rightleg", "leftleg")
-            swapLayers("rightlegtop", "leftlegtop")
-            swapLayers("rightlegbottom", "leftlegbottom")
-            swapLayers("righthandtop", "lefthandtop")
-            swapLayers("righthandbottom", "lefthandbottom")
-        }*/
+        layers.reverse()
     }
 
     /**
