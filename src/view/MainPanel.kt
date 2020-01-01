@@ -12,6 +12,9 @@ import java.util.ArrayList
 import javax.imageio.ImageIO
 import javax.swing.JPanel
 import javax.swing.Timer
+import kotlin.math.cos
+import kotlin.math.sin
+import kotlin.math.sqrt
 
 /**
  * Основной класс вида
@@ -203,13 +206,54 @@ object MainPanel : JPanel() {
         }
         if (!isPlayingAnimation && frame!!.curLayer != -1) {
             val layer = frame!!.layers[frame!!.curLayer]
-            val scaledWidth = layer.basicWidth * layer.scale * layer.scaleX
-            val scaledHeight = layer.basicHeight * layer.scale * layer.scaleY
+            val scaledWidth = layer.basicWidth * layer.scale * layer.scaleX + 4f
+            val scaledHeight = layer.basicHeight * layer.scale * layer.scaleY + 4f
             gr.color = Color.BLUE
             gr as Graphics2D
-            val at = AffineTransform.getTranslateInstance(((layer.x - scaledWidth / 2) * zoom / 100 + scrW / 2).toDouble(), ((layer.y - scaledHeight / 2 + centerY) * zoom / 100 + scrH / 2).toDouble())
-            at.rotate(-layer.angle.toDouble(), (scaledWidth / 2 * zoom / 100).toDouble(), (scaledHeight / 2 * zoom / 100).toDouble())
-            gr.drawImage(ram.getScaledInstance(Math.round(scaledWidth * zoom / 100), Math.round(scaledHeight * zoom / 100), Image.SCALE_SMOOTH), at, null)
+            val halfDiag = sqrt(scaledWidth * scaledWidth + scaledHeight * scaledHeight) / 2f
+            var point1 = Point(0f, 0f)
+            var point2 = Point(0f, 0f)
+            val angle = layer.angle
+            var part = angle / Math.PI.toFloat() % 2f
+            if (part < 0) part += 2f
+            when {
+                part == 0f || part == 1f -> {
+                    point1 = Point(-scaledWidth / 2f, scaledHeight / 2f)
+                    point2 = Point(scaledWidth / 2f, scaledHeight / 2f)
+                }
+                part == 0.5f || part == 1.5f -> {
+                    point1 = Point(-scaledHeight / 2f, scaledWidth / 2f)
+                    point2 = Point(scaledHeight / 2f, scaledWidth / 2f)
+                }
+                part in 0f..0.5f || part in 1f..1.5f -> {
+                    val rightCenterPoint = Point(scaledWidth / 2f * cos(angle), scaledWidth / 2f * sin(angle))
+                    val angle2 = Math.PI.toFloat() / 2f - angle
+                    point1 = Point(rightCenterPoint.x - scaledHeight / 2f * cos(angle2), rightCenterPoint.y + scaledHeight / 2f * sin(angle2))
+                    point2 = Point(rightCenterPoint.x + scaledHeight / 2f * cos(angle2), rightCenterPoint.y - scaledHeight / 2f * sin(angle2))
+                }
+                part in 0.5f..1f || part in 1.5f..2f -> {
+                    val rightCenterPoint = Point(scaledWidth / 2f * cos(angle), scaledWidth / 2f * sin(angle))
+                    val angle2 = Math.PI.toFloat() / 2f - angle
+                    point1 = Point(rightCenterPoint.x - scaledHeight / 2f * cos(angle2), rightCenterPoint.y + scaledHeight / 2f * sin(angle2))
+                    point2 = Point(rightCenterPoint.x + scaledHeight / 2f * cos(angle2), rightCenterPoint.y - scaledHeight / 2f * sin(angle2))
+                }
+                else -> {}
+            }
+            gr.drawPolygon(
+                    intArrayOf(
+                            scrW / 2 + (layer.x + point1.x).toInt() * zoom / 100,
+                            scrW / 2 + (layer.x + point2.x).toInt() * zoom / 100,
+                            scrW / 2 + (layer.x - point1.x).toInt() * zoom / 100,
+                            scrW / 2 + (layer.x - point2.x).toInt() * zoom / 100
+                    ),
+                    intArrayOf(
+                            scrH / 2 - (-layer.y + point1.y).toInt() * zoom / 100,
+                            scrH / 2 - (-layer.y + point2.y).toInt() * zoom / 100,
+                            scrH / 2 - (-layer.y - point1.y).toInt() * zoom / 100,
+                            scrH / 2 - (-layer.y - point2.y).toInt() * zoom / 100
+                    ),
+                    4
+            )
         }
         when {
             animType == AnimationType.LEGS && drawPlayer ->
