@@ -28,7 +28,7 @@ class Frame() {
         for (mLayer in layers) {
             mLayer.mirror(md)
         }
-        layers.reverse()
+        if (md == MoveDirection.UP || md == MoveDirection.DOWN) layers.reverse()
     }
 
     /**
