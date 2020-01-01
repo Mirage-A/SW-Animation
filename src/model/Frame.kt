@@ -12,7 +12,7 @@ class Frame() {
     /**
      * Текущий выбранный слой
      */
-    var curLayer : Int = -1
+    @Transient var curLayer : Int = -1
 
     constructor(origin : Frame) : this(){
         curLayer = origin.curLayer
@@ -25,6 +25,8 @@ class Frame() {
      * Отражает кадр (кнопка Mirror animation)
      */
     fun mirror(md: MoveDirection) {
+        //TODO implement
+        /*
         for (mLayer in layers) {
             mLayer.mirror(md)
         }
@@ -35,21 +37,22 @@ class Frame() {
             swapLayers("rightlegbottom", "leftlegbottom")
             swapLayers("righthandtop", "lefthandtop")
             swapLayers("righthandbottom", "lefthandbottom")
-        }
+        }*/
     }
 
     /**
-     * Меняет местами слои с данными именами
+     * Меняет местами слои с данными именами.
+     * Можно передать одинаковые имена, тогда поменяются местами 2 первых слоя с таким именем.
      */
     private fun swapLayers(name1 : String, name2 : String) {
         var index1 = -1
         var index2 = -1
         for (index in layers.indices) {
-            val layerName = layers[index].getName()
+            val layerName = layers[index].imageName
             if (layerName == name1) {
                 index1 = index
             }
-            if (layerName == name2) {
+            else if (layerName == name2) {
                 index2 = index
             }
         }

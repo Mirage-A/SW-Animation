@@ -17,6 +17,14 @@ object SlidersWindow : JFrame() {
         layout = null
     }
 
+    var flipCheckBox: JCheckBox = JCheckBox("Flip layer").apply {
+        setSize(160, 24)
+        isVisible = true
+        addActionListener(flipCheckBoxListener)
+        panel.add(this)
+    }
+
+
     /**
      * Слайдер, отвечающий за размер слоя
      */
@@ -39,7 +47,7 @@ object SlidersWindow : JFrame() {
 
     init {
         isUndecorated = true
-        setSize(242, 102)
+        setSize(242, 132)
         title = "Layer size"
         isAlwaysOnTop = true
         defaultCloseOperation = JFrame.DO_NOTHING_ON_CLOSE
@@ -47,9 +55,10 @@ object SlidersWindow : JFrame() {
 
         addComponentListener(object : ComponentAdapter() {
             override fun componentResized(evt: ComponentEvent?) {
-                sizeSlider.setLocation(0, 4)
-                widthSlider.setLocation(0, 4 + sizeSlider.height)
-                heightSlider.setLocation(0, 4 + sizeSlider.height + widthSlider.height)
+                flipCheckBox.setLocation(0, 4)
+                sizeSlider.setLocation(0, 4 + flipCheckBox.height)
+                widthSlider.setLocation(0, 4 + sizeSlider.height + flipCheckBox.height)
+                heightSlider.setLocation(0, 4 + sizeSlider.height + widthSlider.height + flipCheckBox.height)
                 sizeLabel.setLocation(sizeSlider.x + sizeSlider.width, sizeSlider.y)
                 widthLabel.setLocation(widthSlider.x + widthSlider.width, widthSlider.y)
                 heightLabel.setLocation(heightSlider.x + heightSlider.width, heightSlider.y)
@@ -64,6 +73,7 @@ object SlidersWindow : JFrame() {
      * Не изменяет активность самого окна, но изменяет активность всех элементов внутри окна
      */
     override fun setEnabled(b: Boolean) {
+        flipCheckBox.isEnabled = b
         sizeSlider.isEnabled = b
         widthSlider.isEnabled = b
         heightSlider.isEnabled = b

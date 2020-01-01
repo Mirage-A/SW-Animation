@@ -238,7 +238,7 @@ object MainWindow : JFrame() {
                 JOptionPane.showMessageDialog(null, "Incorrect input")
             } else {
                 newAnimation.name = inputName.trim()
-                val path = Model.animationDirectory.path + "/" + newAnimation.type.toString() + "/" + newAnimation.name + ".swa"
+                val path = Model.animationDirectory.path + "/" + newAnimation.type.toString() + "/" + newAnimation.name + ".xml"
                 if (File(path).exists()) {
                     JOptionPane.showMessageDialog(null, "Animation with this name already exists")
                 }
@@ -290,11 +290,11 @@ object MainWindow : JFrame() {
         fc.addChoosableFileFilter(object : FileFilter() {
 
             override fun getDescription(): String {
-                return "Shattered World animations (.SWA)"
+                return "Shattered World animations (.xml)"
             }
 
             override fun accept(f: File): Boolean {
-                return f.name.endsWith(".swa")
+                return f.name.endsWith(".xml")
             }
         })
         fc.dialogTitle = "Open animation"
@@ -302,7 +302,7 @@ object MainWindow : JFrame() {
         if (fc.showOpenDialog(null) == JFileChooser.APPROVE_OPTION) {
             try {
                 val file = fc.selectedFile
-                if (file.name.endsWith(".swa")) {
+                if (file.name.endsWith(".xml")) {
                     Model.serialize()
                     Model.animationFile = file
                     Model.animationDirectory = Model.animationFile!!.parentFile
@@ -368,6 +368,7 @@ object MainWindow : JFrame() {
 
         val layer = animation.frames[animation.curFrame].layers[layerID]
         SlidersWindow.run {
+            flipCheckBox.isSelected = layer.flipX
             sizeSlider.value = Math.round(layer.scale * 100)
             widthSlider.value = Math.round(layer.scaleX * 100)
             heightSlider.value = Math.round(layer.scaleY * 100)
@@ -396,7 +397,7 @@ object MainWindow : JFrame() {
                 val frame = animation.frames[frameID]
                 frame.curLayer = -1
                 for (layer in frame.layers) {
-                    val tmp = JButton(layer.getName())
+                    val tmp = JButton(layer.imageName)
                     tmp.addActionListener {
                         loadLayer(layerButtons.indexOf(tmp))
                     }

@@ -9,6 +9,7 @@ import org.dom4j.io.OutputFormat
 import org.dom4j.io.XMLWriter
 import org.omg.PortableInterceptor.SYSTEM_EXCEPTION
 import javax.swing.JOptionPane
+import kotlin.system.exitProcess
 
 
 /**
@@ -18,7 +19,7 @@ class Animation() {
     /**
      * Тип анимации
      */
-    var type : AnimationType = AnimationType.NULL
+    @Transient var type : AnimationType = AnimationType.NULL
     /**
      * Список кадров анимации
      */
@@ -26,19 +27,19 @@ class Animation() {
     /**
      * Номер текущего кадра анимации
      */
-    var curFrame : Int = -1
+    @Transient var curFrame : Int = -1
     /**
      * Текущее направление движения
      */
-    var curMoveDirection = MoveDirection.RIGHT
+    @Transient var curMoveDirection = MoveDirection.RIGHT
     /**
      * Текущий тип оружия
      */
-    var curWeaponType = WeaponType.UNARMED
+    @Transient var curWeaponType = WeaponType.UNARMED
     /**
      * Название анимации
      */
-    var name : String = "NO_NAME"
+    @Transient var name : String = "NO_NAME"
     /**
      * Длительность (период) анимации
      */
@@ -93,7 +94,8 @@ class Animation() {
                                     lyr.attributeValue("scale").toFloat(),
                                     lyr.attributeValue("scaleX").toFloat(),
                                     lyr.attributeValue("scaleY").toFloat(),
-                                    lyr.attributeValue("angle").toFloat()
+                                    lyr.attributeValue("angle").toFloat(),
+                                    lyr.attributeValue("flipX").toBoolean()
                             )
                             frame.layers.add(layer)
                         }
@@ -106,7 +108,7 @@ class Animation() {
         }
         catch(ex: Exception) {
             JOptionPane.showMessageDialog(null, "Unexpected error occurred:\n" + ex.message, "Error :(", JOptionPane.ERROR_MESSAGE)
-            System.exit(0)
+            exitProcess(0)
         }
     }
 
@@ -142,8 +144,7 @@ class Animation() {
                                 addAttribute("scaleX", "" + layer.scaleX)
                                 addAttribute("scaleY", "" + layer.scaleY)
                                 addAttribute("angle", "" + layer.angle)
-                                addAttribute("basicWidth", "" + layer.basicWidth)
-                                addAttribute("basicHeight", "" + layer.basicHeight)
+                                addAttribute("flipX", "" + layer.flipX)
                             }
                         }
                     }
@@ -163,7 +164,7 @@ class Animation() {
         }
         catch(ex : Exception) {
             JOptionPane.showMessageDialog(null, "Unexpected error occurred:\n" + ex.message, "Error :(", JOptionPane.ERROR_MESSAGE)
-            System.exit(0)
+            exitProcess(0)
         }
     }
 }

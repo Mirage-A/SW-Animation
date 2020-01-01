@@ -29,11 +29,11 @@ val newLayerButtonListener = ActionListener {
             val absImagePath = image.absolutePath
             val startAbsPath = File("drawable").absolutePath
             val relativePath = absImagePath.substring(startAbsPath.length + 1, absImagePath.length)
-            val layer = Layer(relativePath)
+            val layer = Layer(relativePath.substring(0, relativePath.length - 4))
             for (frame in animation.frames) {
                 frame.layers.add(Layer(layer))
             }
-            val tmp = JButton(layer.getName())
+            val tmp = JButton(layer.imageName)
             tmp.addActionListener {
                 MainWindow.loadLayer(LayersWindow.layerButtons.indexOf(tmp))
             }
@@ -52,7 +52,7 @@ val deleteLayerButtonListener = ActionListener {
         val frame = animation.frames[animation.curFrame]
         if (frame.curLayer != -1) {
             val layer = frame.layers[frame.curLayer]
-            if (JOptionPane.showConfirmDialog(LayersWindow, "Delete the layer " +layer.getName() + "?", "Delete layer", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.YES_OPTION) {
+            if (JOptionPane.showConfirmDialog(LayersWindow, "Delete the layer " +layer.imageName + "?", "Delete layer", JOptionPane.YES_NO_OPTION, JOptionPane.PLAIN_MESSAGE) == JOptionPane.YES_OPTION) {
                 LayersWindow.run {
                     scrollPanel.remove(layerButtons[frame.curLayer])
                     layerButtons.removeAt(frame.curLayer)

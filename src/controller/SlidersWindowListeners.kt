@@ -1,7 +1,22 @@
 package controller
 
 import model.Model.animation
+import java.awt.event.ActionListener
 import javax.swing.event.ChangeListener
+
+val flipCheckBoxListener = ActionListener {
+    if (animation.curFrame != -1) {
+        val frame = animation.frames[animation.curFrame]
+        if (frame.curLayer != -1) {
+            for (anyFrame in animation.frames) {
+                val layer = anyFrame.layers[frame.curLayer]
+                if (layer.flipX != SlidersWindow.flipCheckBox.isSelected) {
+                    layer.flipX = SlidersWindow.flipCheckBox.isSelected
+                }
+            }
+        }
+    }
+}
 
 val sizeSliderListener = ChangeListener {
     if (animation.curFrame != -1) {

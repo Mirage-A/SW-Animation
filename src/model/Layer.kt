@@ -8,18 +8,25 @@ import javax.imageio.ImageIO
 /**
  * Слой на кадре анимации
  */
-class Layer (var imageName: String, var x : Float = 0f, var y : Float = 0f, var scale : Float = 1f, var scaleX : Float = 1f,
-             var scaleY : Float = 1f, var angle : Float = 0f) {
+class Layer (
+        var imageName: String,
+        var x : Float = 0f,
+        var y : Float = 0f,
+        var scale : Float = 1f,
+        var scaleX : Float = 1f,
+        var scaleY : Float = 1f,
+        var angle : Float = 0f,
+        var flipX: Boolean = false
+) {
     /**
      * Размеры изображения слоя до скалирования
      */
-    var basicWidth: Int = 0
-    var basicHeight: Int = 0
+    @Transient var basicWidth: Int = 0
+    @Transient var basicHeight: Int = 0
     /**
      * Изображение слоя
      */
-    @Transient
-    var basicImage: BufferedImage? = null
+    @Transient var basicImage: BufferedImage? = null
 
     init {
         loadImage()
@@ -32,7 +39,7 @@ class Layer (var imageName: String, var x : Float = 0f, var y : Float = 0f, var 
      */
     fun loadImage() {
         try {
-            basicImage = ImageIO.read(File("./drawable/$imageName"))
+            basicImage = ImageIO.read(File("./drawable/$imageName.png"))
             basicWidth = basicImage!!.width
             basicHeight = basicImage!!.height
         } catch (ex: Exception) {
@@ -40,17 +47,14 @@ class Layer (var imageName: String, var x : Float = 0f, var y : Float = 0f, var 
         }
     }
 
-    /**
-     * Обрезает формат изображения и возвращает название слоя
-     */
-    fun getName() = imageName.substring(0, imageName.length - 4)
-
 
     /**
      * Отражает этот слой относительно вертикальной оси
      * Также меняет right и left слои местами
      */
     fun mirror(md: MoveDirection) {
+        //TODO implement
+        /*
         x *= -1
         angle *= -1
         if (imageName.startsWith("head")) {
@@ -67,6 +71,6 @@ class Layer (var imageName: String, var x : Float = 0f, var y : Float = 0f, var 
                 imageName = "left" + imageName.substring(5)
             }
         }
-        loadImage()
+        loadImage()*/
     }
 }

@@ -119,7 +119,7 @@ object MainPanel : JPanel() {
                     val at = AffineTransform.getTranslateInstance(((layer.x - scaledWidth / 2) * zoom / 100 + scrW / 2).toDouble(), ((layer.y - scaledHeight / 2 + centerY) * zoom / 100 + scrH / 2).toDouble())
                     at.rotate(-layer.angle.toDouble(), (scaledWidth / 2 * zoom / 100).toDouble(), (scaledHeight / 2 * zoom / 100).toDouble())
                     val g2d = gr as Graphics2D
-                    g2d.drawImage(layer.basicImage!!.getScaledInstance(Math.round(scaledWidth * zoom / 100), Math.round(scaledHeight * zoom / 100), Image.SCALE_SMOOTH), at, null)
+                    g2d.drawImage(layer.basicImage!!.mirroredX(layer.flipX).getScaledInstance(Math.round(scaledWidth * zoom / 100), Math.round(scaledHeight * zoom / 100), Image.SCALE_SMOOTH), at, null)
                 }
             }
             else {
@@ -159,10 +159,12 @@ object MainPanel : JPanel() {
                     val w = curValue(scaledWidth1, scaledWidth2, progress)
                     val h = curValue(scaledHeight1, scaledHeight2, progress)
                     val angle = curValue(angle1, angle2, progress)
-                    val at = AffineTransform.getTranslateInstance(((x - w / 2) * zoom / 100 + scrW / 2).toDouble(), ((y - h / 2 + centerY) * zoom / 100 + scrH / 2).toDouble())
+                    val at = AffineTransform()
+                    at.translate(((x - w / 2) * zoom / 100 + scrW / 2).toDouble(), ((y - h / 2 + centerY) * zoom / 100 + scrH / 2).toDouble())
                     at.rotate(-angle.toDouble(), (w / 2 * zoom / 100).toDouble(), (h / 2 * zoom / 100).toDouble())
+                    //TODO Flip
                     val g2d = gr as Graphics2D
-                    g2d.drawImage(layer1.basicImage!!.getScaledInstance(Math.round(w * zoom / 100), Math.round(h * zoom / 100), Image.SCALE_SMOOTH), at, null)
+                    g2d.drawImage(layer1.basicImage!!.mirroredX(layer1.flipX).getScaledInstance(Math.round(w * zoom / 100), Math.round(h * zoom / 100), Image.SCALE_SMOOTH), at, null)
                 }
 
             }
@@ -177,10 +179,14 @@ object MainPanel : JPanel() {
                 }
                 val scaledWidth = layer.basicWidth * layer.scale * layer.scaleX
                 val scaledHeight = layer.basicHeight * layer.scale * layer.scaleY
-                val at = AffineTransform.getTranslateInstance(((layer.x - scaledWidth / 2) * zoom / 100 + scrW / 2).toDouble(), ((layer.y - scaledHeight / 2 + centerY) * zoom / 100 + scrH / 2).toDouble())
+                val at = AffineTransform()
+                //at.scale(-1.0, -1.0)
+                //TODO Flip
+                at.translate(((layer.x - scaledWidth / 2) * zoom / 100 + scrW / 2).toDouble(),
+                        ((layer.y - scaledHeight / 2 + centerY) * zoom / 100 + scrH / 2).toDouble())
                 at.rotate(-layer.angle.toDouble(), (scaledWidth / 2 * zoom / 100).toDouble(), (scaledHeight / 2 * zoom / 100).toDouble())
                 val g2d = gr as Graphics2D
-                g2d.drawImage(layer.basicImage!!.getScaledInstance(Math.round(scaledWidth * zoom / 100), Math.round(scaledHeight * zoom / 100), Image.SCALE_SMOOTH), at, null)
+                g2d.drawImage(layer.basicImage!!.mirroredX(layer.flipX).getScaledInstance(Math.round(scaledWidth * zoom / 100), Math.round(scaledHeight * zoom / 100), Image.SCALE_SMOOTH), at, null)
             }
         }
         gr.color = Color.BLACK
@@ -214,4 +220,16 @@ object MainPanel : JPanel() {
     private fun curValue(startValue: Float, endValue : Float, progress : Float) : Float {
         return startValue + (endValue - startValue) * progress
     }
+
+    private fun BufferedImage.mirroredX(flipX: Boolean): BufferedImage {
+        if (!flipX) return this
+        val img = BufferedImage(this.width, this.height, BufferedImage.TYPE_INT_ARGB)
+        for (i in 0 until this.width) {
+            for (j in 0 until this.height) {
+                img.setRGB(i, j, this.getRGB(this.width - i - 1, j))
+            }
+        }
+        return img
+    }
+
 }
