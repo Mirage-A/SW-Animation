@@ -43,11 +43,23 @@ object MainWindow : JFrame() {
         isVisible = true
         MainPanel.add(this)
     }
+
+    val colorPlayerCheckbox : JCheckBox = JCheckBox("Colored equipment").apply {
+        isSelected = true
+        setBounds(showPlayerImageCheckbox.x, showPlayerImageCheckbox.y + showPlayerImageCheckbox.height + 2,
+                showPlayerImageCheckbox.width, showPlayerImageCheckbox.height)
+        addChangeListener {
+            MainPanel.colorPlayer = isSelected
+        }
+        isVisible = true
+        MainPanel.add(this)
+    }
+
     /**
      * Слайдер, позволяющий приближать/отдалять картинку в редакторе
      */
     val zoomSlider : JSlider = JSlider(100, 800, MainPanel.zoom).apply {
-        setBounds(showPlayerImageCheckbox.x, showPlayerImageCheckbox.y + showPlayerImageCheckbox.height + 2,
+        setBounds(showPlayerImageCheckbox.x, colorPlayerCheckbox.y + colorPlayerCheckbox.height + 2,
                 showPlayerImageCheckbox.width, showPlayerImageCheckbox.height)
         isVisible = true
         addChangeListener(zoomSliderListener)

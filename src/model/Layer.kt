@@ -8,30 +8,36 @@ import javax.imageio.ImageIO
 /**
  * Слой на кадре анимации
  */
-class Layer (
+class Layer(
         var imageName: String,
-        var x : Float = 0f,
-        var y : Float = 0f,
-        var scale : Float = 1f,
-        var scaleX : Float = 1f,
-        var scaleY : Float = 1f,
-        var angle : Float = 0f,
+        var x: Float = 0f,
+        var y: Float = 0f,
+        var scale: Float = 1f,
+        var scaleX: Float = 1f,
+        var scaleY: Float = 1f,
+        var angle: Float = 0f,
         var flipX: Boolean = false
 ) {
     /**
      * Размеры изображения слоя до скалирования
      */
-    @Transient var basicWidth: Int = 0
-    @Transient var basicHeight: Int = 0
+    @Transient
+    var basicWidth: Int = 0
+    @Transient
+    var basicHeight: Int = 0
     /**
      * Изображение слоя
      */
-    @Transient var basicImage: BufferedImage? = null
+    @Transient
+    var basicImage: BufferedImage? = null
+    @Transient
+    var coloredImage: BufferedImage? = null
 
     init {
         loadImage()
     }
-    constructor(origin : Layer) : this(origin.imageName, origin.x, origin.y, origin.scale, origin.scaleX, origin.scaleY,
+
+    constructor(origin: Layer) : this(origin.imageName, origin.x, origin.y, origin.scale, origin.scaleX, origin.scaleY,
             origin.angle, origin.flipX)
 
     /**
@@ -40,6 +46,9 @@ class Layer (
     fun loadImage() {
         try {
             basicImage = ImageIO.read(File("./drawable/$imageName.png"))
+            coloredImage = if (imageName.startsWith("~"))
+                ImageIO.read(File("./drawable/colored/$imageName.png"))
+            else basicImage
             basicWidth = basicImage!!.width
             basicHeight = basicImage!!.height
         } catch (ex: Exception) {
@@ -57,8 +66,7 @@ class Layer (
         angle *= -1
         if (imageName.startsWith("~head-")) {
             imageName = "~head-" + MoveDirection.fromString(imageName.substring(5)).mirrored().toString()
-        }
-        else {
+        } else {
             flipX = !flipX
         }
         loadImage()

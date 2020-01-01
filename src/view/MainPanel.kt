@@ -25,6 +25,8 @@ object MainPanel : JPanel() {
      * Включено ли рисование изображения гуманоида в редакторе
      */
     internal var drawPlayer = true
+
+    var colorPlayer = true
     /**
      * Изображение гуманоида
      */
@@ -119,7 +121,8 @@ object MainPanel : JPanel() {
                     val at = AffineTransform.getTranslateInstance(((layer.x - scaledWidth / 2) * zoom / 100 + scrW / 2).toDouble(), ((layer.y - scaledHeight / 2 + centerY) * zoom / 100 + scrH / 2).toDouble())
                     at.rotate(-layer.angle.toDouble(), (scaledWidth / 2 * zoom / 100).toDouble(), (scaledHeight / 2 * zoom / 100).toDouble())
                     val g2d = gr as Graphics2D
-                    g2d.drawImage(layer.basicImage!!.mirroredX(layer.flipX).getScaledInstance(Math.round(scaledWidth * zoom / 100), Math.round(scaledHeight * zoom / 100), Image.SCALE_SMOOTH), at, null)
+                    val img = if (colorPlayer) layer.coloredImage else layer.basicImage
+                    g2d.drawImage(img!!.mirroredX(layer.flipX).getScaledInstance(Math.round(scaledWidth * zoom / 100), Math.round(scaledHeight * zoom / 100), Image.SCALE_SMOOTH), at, null)
                 }
             }
             else {
@@ -164,7 +167,8 @@ object MainPanel : JPanel() {
                     at.rotate(-angle.toDouble(), (w / 2 * zoom / 100).toDouble(), (h / 2 * zoom / 100).toDouble())
                     //TODO Flip
                     val g2d = gr as Graphics2D
-                    g2d.drawImage(layer1.basicImage!!.mirroredX(layer1.flipX).getScaledInstance(Math.round(w * zoom / 100), Math.round(h * zoom / 100), Image.SCALE_SMOOTH), at, null)
+                    val img = if (colorPlayer) layer1.coloredImage else layer1.basicImage
+                    g2d.drawImage(img!!.mirroredX(layer1.flipX).getScaledInstance(Math.round(w * zoom / 100), Math.round(h * zoom / 100), Image.SCALE_SMOOTH), at, null)
                 }
 
             }
@@ -186,7 +190,8 @@ object MainPanel : JPanel() {
                         ((layer.y - scaledHeight / 2 + centerY) * zoom / 100 + scrH / 2).toDouble())
                 at.rotate(-layer.angle.toDouble(), (scaledWidth / 2 * zoom / 100).toDouble(), (scaledHeight / 2 * zoom / 100).toDouble())
                 val g2d = gr as Graphics2D
-                g2d.drawImage(layer.basicImage!!.mirroredX(layer.flipX).getScaledInstance(Math.round(scaledWidth * zoom / 100), Math.round(scaledHeight * zoom / 100), Image.SCALE_SMOOTH), at, null)
+                val img = if (colorPlayer) layer.coloredImage else layer.basicImage
+                g2d.drawImage(img!!.mirroredX(layer.flipX).getScaledInstance(Math.round(scaledWidth * zoom / 100), Math.round(scaledHeight * zoom / 100), Image.SCALE_SMOOTH), at, null)
             }
         }
         gr.color = Color.BLACK

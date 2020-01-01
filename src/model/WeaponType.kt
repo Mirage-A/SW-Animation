@@ -37,7 +37,7 @@ enum class WeaponType {
             return when (str) {
                 "UNARMED" -> UNARMED
                 "ONE_HANDED" -> ONE_HANDED
-                "SHIELD" -> SHIELD
+                "SHIELD", "ONE_HANDED_AND_SHIELD" -> SHIELD
                 "DUAL" -> DUAL
                 "TWO_HANDED" -> TWO_HANDED
                 "BOW" -> BOW
