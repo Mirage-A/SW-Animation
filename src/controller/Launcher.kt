@@ -2,7 +2,7 @@ package controller
 
 import javax.swing.JOptionPane
 
-fun main(args: Array<String>) {
+fun main() {
     try {
         MainWindow
     }

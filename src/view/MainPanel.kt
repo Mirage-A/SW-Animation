@@ -48,7 +48,7 @@ object MainPanel : JPanel() {
     /**
      * Смещение центра координат по вертикальной оси относительно центра экрана (без учёта zoom-а)
      */
-    internal val centerY = 106 - 64
+    internal val centerY = 0
     /**
      * Таймер перерисовки панели
      */
