@@ -20,6 +20,10 @@ object MouseListener : MouseListener, MouseMotionListener{
 
     override fun mouseMoved(e: MouseEvent?) {
         e ?: return
+        if (MainPanel.isPlayingAnimation) {
+            MainPanel.cursor = Cursor(Cursor.DEFAULT_CURSOR)
+            return
+        }
         if (animation.curFrame != -1) {
             val frame = animation.frames[animation.curFrame]
             if (frame.curLayer != -1) {
@@ -42,6 +46,10 @@ object MouseListener : MouseListener, MouseMotionListener{
 
     override fun mouseDragged(e: MouseEvent?) {
         e ?: return
+        if (MainPanel.isPlayingAnimation) {
+            MainPanel.cursor = Cursor(Cursor.DEFAULT_CURSOR)
+            return
+        }
         if (animation.curFrame != -1) {
             val frame = animation.frames[animation.curFrame]
             if (frame.curLayer != -1) {
@@ -80,6 +88,10 @@ object MouseListener : MouseListener, MouseMotionListener{
 
     override fun mousePressed(e: MouseEvent?) {
         e ?: return
+        if (MainPanel.isPlayingAnimation) {
+            MainPanel.cursor = Cursor(Cursor.DEFAULT_CURSOR)
+            return
+        }
         if (animation.curFrame != -1) {
             val frame = animation.frames[animation.curFrame]
             if (frame.curLayer != -1) {
