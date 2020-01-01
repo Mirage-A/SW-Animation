@@ -95,7 +95,7 @@ class Animation() {
                                     lyr.attributeValue("scaleX").toFloat(),
                                     lyr.attributeValue("scaleY").toFloat(),
                                     lyr.attributeValue("angle").toFloat(),
-                                    lyr.attributeValue("flipX").toBoolean()
+                                    lyr.attributeValue("flipX")?.toBoolean() ?: false
                             )
                             frame.layers.add(layer)
                         }

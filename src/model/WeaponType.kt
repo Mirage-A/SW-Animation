@@ -8,7 +8,7 @@ import java.lang.Exception
 enum class WeaponType {
     UNARMED,
     ONE_HANDED,
-    ONE_HANDED_AND_SHIELD,
+    SHIELD,
     DUAL,
     TWO_HANDED,
     BOW,
@@ -21,7 +21,7 @@ enum class WeaponType {
         return when (this) {
             UNARMED -> "UNARMED"
             ONE_HANDED -> "ONE_HANDED"
-            ONE_HANDED_AND_SHIELD -> "ONE_HANDED_AND_SHIELD"
+            SHIELD -> "SHIELD"
             DUAL -> "DUAL"
             TWO_HANDED -> "TWO_HANDED"
             BOW -> "BOW"
@@ -37,7 +37,7 @@ enum class WeaponType {
             return when (str) {
                 "UNARMED" -> UNARMED
                 "ONE_HANDED" -> ONE_HANDED
-                "ONE_HANDED_AND_SHIELD" -> ONE_HANDED_AND_SHIELD
+                "SHIELD" -> SHIELD
                 "DUAL" -> DUAL
                 "TWO_HANDED" -> TWO_HANDED
                 "BOW" -> BOW

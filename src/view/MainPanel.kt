@@ -204,7 +204,7 @@ object MainPanel : JPanel() {
         }
         if (drawPlayer) {
             if (animType == AnimationType.LEGS) {
-                gr.drawImage(player, scrW / 2 - player.getWidth(null) / 2, scrH / 2 - player.getHeight(null) / 2, null)
+                gr.drawImage(player, scrW / 2 - player.getWidth(null) / 2, scrH / 2 - player.getHeight(null) + 14 * zoom / 100, null)
             }
             else if (animType == AnimationType.BODY) {
                 gr.drawImage(player, scrW / 2 - player.getWidth(null) / 2, scrH / 2 - player.getHeight(null) / 2, null)
