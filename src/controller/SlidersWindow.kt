@@ -46,7 +46,7 @@ object SlidersWindow : JFrame() {
 
 
     init {
-        iconImage = ImageIO.read(File("./icon.png"))
+        iconImage = ImageIO.read(File("./art.png"))
         isUndecorated = true
         setSize(242, 132)
         title = "Layer size"

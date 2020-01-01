@@ -151,7 +151,7 @@ object MainWindow : JFrame() {
      * Инициализация всего интерфейса
      */
     init {
-        iconImage = ImageIO.read(File("./icon.png"))
+        iconImage = ImageIO.read(File("./art.png"))
         extendedState = JFrame.MAXIMIZED_BOTH
         isUndecorated = true
         title = "Animation editor"

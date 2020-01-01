@@ -76,7 +76,7 @@ object FramesWindow : JFrame() {
     internal var frameButtons = ArrayList<JButton>()
 
     init {
-        iconImage = ImageIO.read(File("./icon.png"))
+        iconImage = ImageIO.read(File("./art.png"))
         isUndecorated = true
         setSize(200, 250)
         title = "Frames"

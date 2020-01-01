@@ -80,7 +80,7 @@ object LayersWindow : JFrame() {
     internal val selectedFont = Font(basicFont.fontName, Font.BOLD, basicFont.size + 4)
 
     init {
-        iconImage = ImageIO.read(File("./icon.png"))
+        iconImage = ImageIO.read(File("./art.png"))
         isUndecorated = true
         setSize(200, 250)
         title = "Layers"
