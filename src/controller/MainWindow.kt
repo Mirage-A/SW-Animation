@@ -8,6 +8,7 @@ import java.awt.Toolkit
 import java.awt.event.*
 import java.io.*
 import java.util.*
+import javax.imageio.ImageIO
 import javax.swing.*
 import javax.swing.filechooser.FileFilter
 import kotlin.collections.HashMap
@@ -150,6 +151,7 @@ object MainWindow : JFrame() {
      * Инициализация всего интерфейса
      */
     init {
+        iconImage = ImageIO.read(File("./icon.png"))
         extendedState = JFrame.MAXIMIZED_BOTH
         isUndecorated = true
         title = "Animation editor"

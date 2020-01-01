@@ -2,7 +2,9 @@ package controller
 
 import java.awt.event.ComponentAdapter
 import java.awt.event.ComponentEvent
+import java.io.File
 import java.util.ArrayList
+import javax.imageio.ImageIO
 
 import javax.swing.BoxLayout
 import javax.swing.JButton
@@ -74,6 +76,7 @@ object FramesWindow : JFrame() {
     internal var frameButtons = ArrayList<JButton>()
 
     init {
+        iconImage = ImageIO.read(File("./icon.png"))
         isUndecorated = true
         setSize(200, 250)
         title = "Frames"
