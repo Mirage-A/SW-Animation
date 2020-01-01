@@ -25,6 +25,14 @@ object SlidersWindow : JFrame() {
     }
 
 
+    var visibleCheckBox: JCheckBox = JCheckBox("Visible").apply {
+        setSize(160, 24)
+        isVisible = true
+        addActionListener(visibleCheckBoxListener)
+        panel.add(this)
+    }
+
+
     /**
      * Слайдер, отвечающий за размер слоя
      */
@@ -57,9 +65,10 @@ object SlidersWindow : JFrame() {
         addComponentListener(object : ComponentAdapter() {
             override fun componentResized(evt: ComponentEvent?) {
                 flipCheckBox.setLocation(0, 4)
-                sizeSlider.setLocation(0, 4 + flipCheckBox.height)
-                widthSlider.setLocation(0, 4 + sizeSlider.height + flipCheckBox.height)
-                heightSlider.setLocation(0, 4 + sizeSlider.height + widthSlider.height + flipCheckBox.height)
+                visibleCheckBox.setLocation(0, 4 + flipCheckBox.height)
+                sizeSlider.setLocation(0, 4 + flipCheckBox.height + visibleCheckBox.height)
+                widthSlider.setLocation(0, 4 + sizeSlider.height + flipCheckBox.height + visibleCheckBox.height)
+                heightSlider.setLocation(0, 4 + sizeSlider.height + widthSlider.height + flipCheckBox.height + visibleCheckBox.height)
                 sizeLabel.setLocation(sizeSlider.x + sizeSlider.width, sizeSlider.y)
                 widthLabel.setLocation(widthSlider.x + widthSlider.width, widthSlider.y)
                 heightLabel.setLocation(heightSlider.x + heightSlider.width, heightSlider.y)
@@ -75,6 +84,7 @@ object SlidersWindow : JFrame() {
      */
     override fun setEnabled(b: Boolean) {
         flipCheckBox.isEnabled = b
+        visibleCheckBox.isEnabled = b
         sizeSlider.isEnabled = b
         widthSlider.isEnabled = b
         heightSlider.isEnabled = b

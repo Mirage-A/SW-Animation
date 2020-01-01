@@ -18,6 +18,16 @@ val flipCheckBoxListener = ActionListener {
     }
 }
 
+val visibleCheckBoxListener = ActionListener {
+    if (animation.curFrame != -1) {
+        val frame = animation.frames[animation.curFrame]
+        if (frame.curLayer != -1) {
+            val layer = frame.layers[frame.curLayer]
+            layer.isVisible = SlidersWindow.visibleCheckBox.isSelected
+        }
+    }
+}
+
 val sizeSliderListener = ChangeListener {
     if (animation.curFrame != -1) {
         val frame = animation.frames[animation.curFrame]

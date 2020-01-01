@@ -2,10 +2,7 @@ package view
 
 import model.AnimationType
 import model.Frame
-import java.awt.Color
-import java.awt.Graphics
-import java.awt.Graphics2D
-import java.awt.Image
+import java.awt.*
 import java.awt.event.ActionListener
 import java.awt.geom.AffineTransform
 import java.awt.image.BufferedImage
@@ -27,6 +24,13 @@ object MainPanel : JPanel() {
     internal var drawPlayer = true
 
     var colorPlayer = true
+
+    var showTileGrid = true
+
+    var objectX = 0f
+    var objectY = 0f
+    var objectWidth: Float = 0f
+    var objectHeight: Float = 0f
     /**
      * Изображение гуманоида
      */
@@ -113,6 +117,7 @@ object MainPanel : JPanel() {
                 val layers = curFrame.layers
                 for (i in layers.indices) {
                     val layer = layers[i]
+                    if (!layer.isVisible) continue
                     if (layer.basicImage == null) {
                         layer.loadImage()
                     }
@@ -135,6 +140,7 @@ object MainPanel : JPanel() {
                 for (i in layers1.indices) {
                     val layer1 = layers1[i]
                     val layer2 = layers2[i]
+                    if (!layer1.isVisible || !layer2.isVisible) continue
                     if (layer1.basicImage == null) {
                         layer1.loadImage()
                     }
@@ -178,6 +184,7 @@ object MainPanel : JPanel() {
             val layers = frame!!.layers
             for (i in layers.indices) {
                 val layer = layers[i]
+                if (!layer.isVisible) continue
                 if (layer.basicImage == null) {
                     layer.loadImage()
                 }
@@ -194,9 +201,6 @@ object MainPanel : JPanel() {
                 g2d.drawImage(img!!.mirroredX(layer.flipX).getScaledInstance(Math.round(scaledWidth * zoom / 100), Math.round(scaledHeight * zoom / 100), Image.SCALE_SMOOTH), at, null)
             }
         }
-        gr.color = Color.BLACK
-        gr.drawLine(scrW / 2, 0, scrW / 2, scrH)
-        gr.drawLine(0, scrH / 2 + centerY * zoom / 100, scrW, scrH / 2 + centerY * zoom / 100)
         if (!isPlayingAnimation && frame!!.curLayer != -1) {
             val layer = frame!!.layers[frame!!.curLayer]
             val scaledWidth = layer.basicWidth * layer.scale * layer.scaleX
@@ -207,14 +211,66 @@ object MainPanel : JPanel() {
             at.rotate(-layer.angle.toDouble(), (scaledWidth / 2 * zoom / 100).toDouble(), (scaledHeight / 2 * zoom / 100).toDouble())
             gr.drawImage(ram.getScaledInstance(Math.round(scaledWidth * zoom / 100), Math.round(scaledHeight * zoom / 100), Image.SCALE_SMOOTH), at, null)
         }
-        if (drawPlayer) {
-            if (animType == AnimationType.LEGS) {
+        when {
+            animType == AnimationType.LEGS && drawPlayer ->
                 gr.drawImage(player, scrW / 2 - player.getWidth(null) / 2, scrH / 2 - player.getHeight(null) + 14 * zoom / 100, null)
-            }
-            else if (animType == AnimationType.BODY) {
+            animType == AnimationType.BODY && drawPlayer ->
                 gr.drawImage(player, scrW / 2 - player.getWidth(null) / 2, scrH / 2 - player.getHeight(null) / 2, null)
+            animType == AnimationType.OBJECT && showTileGrid -> {
+                val sceneCenter = Point(objectX, objectY)
+                val virtualCenter = getVirtualScreenPointFromScene(sceneCenter)
+                val xShift = virtualCenter.x % TILE_WIDTH
+                val yShift = - virtualCenter.y % TILE_HEIGHT
+                gr.color = Color.BLACK
+                val sceneWidth = ((this.height * zoom / 100) / TILE_HEIGHT + 2).toInt()
+                val sceneHeight = ((this.width * zoom / 100) / TILE_WIDTH + 2).toInt()
+                for (sceneX in -sceneWidth..sceneWidth) {
+                    val left = getVirtualScreenPointFromScene(Point(sceneX.toFloat(), -sceneHeight.toFloat()))
+                    val right = getVirtualScreenPointFromScene(Point(sceneX.toFloat(), sceneHeight.toFloat()))
+                    gr.drawLine(
+                            scrW / 2 + (left.x + xShift).toInt() * zoom / 100,
+                            scrH / 2 - (left.y + yShift).toInt() * zoom / 100,
+                            scrW / 2 + (right.x + xShift).toInt() * zoom / 100,
+                            scrH / 2 - (right.y + yShift).toInt() * zoom / 100
+                            )
+                }
+                for (sceneY in -sceneHeight..sceneHeight) {
+                    val up = getVirtualScreenPointFromScene(Point(sceneWidth.toFloat(), sceneY.toFloat()))
+                    val down = getVirtualScreenPointFromScene(Point(-sceneWidth.toFloat(), sceneY.toFloat()))
+                    gr.drawLine(
+                            scrW / 2 + (up.x + xShift).toInt() * zoom / 100,
+                            scrH / 2 - (up.y + yShift).toInt() * zoom / 100,
+                            scrW / 2 + (down.x + xShift).toInt() * zoom / 100,
+                            scrH / 2 - (down.y + yShift).toInt() * zoom / 100
+                    )
+                }
+                val w = MainPanel.objectWidth / 2f
+                val h = MainPanel.objectHeight / 2f
+                val left = getVirtualScreenPointFromScene(Point(-w, -h))
+                val right = getVirtualScreenPointFromScene(Point(w, h))
+                val up = getVirtualScreenPointFromScene(Point(-w, h))
+                val down = getVirtualScreenPointFromScene(Point(w, -h))
+                gr.color = Color.RED
+                gr.fillPolygon(
+                        intArrayOf(
+                                scrW / 2 + (left.x).toInt() * zoom / 100,
+                                scrW / 2 + (up.x).toInt() * zoom / 100,
+                                scrW / 2 + (right.x).toInt() * zoom / 100,
+                                scrW / 2 + (down.x).toInt() * zoom / 100
+                        ),
+                        intArrayOf(
+                                scrH / 2 - (left.y).toInt() * zoom / 100,
+                                scrH / 2 - (up.y).toInt() * zoom / 100,
+                                scrH / 2 - (right.y).toInt() * zoom / 100,
+                                scrH / 2 - (down.y).toInt() * zoom / 100
+                                ),
+                        4
+                )
             }
         }
+        gr.color = Color.BLACK
+        gr.drawLine(scrW / 2, 0, scrW / 2, scrH)
+        gr.drawLine(0, scrH / 2 + centerY * zoom / 100, scrW, scrH / 2 + centerY * zoom / 100)
     }
 
     /**
@@ -237,4 +293,21 @@ object MainPanel : JPanel() {
         return img
     }
 
+}
+
+data class Point(val x: Float, val y: Float)
+
+const val TILE_WIDTH = 128f
+const val TILE_HEIGHT = 64f
+
+fun getVirtualScreenPointFromScene(scenePoint: Point): Point {
+    val x = TILE_WIDTH / 2 * scenePoint.x + TILE_WIDTH / 2 * scenePoint.y
+    val y = -TILE_HEIGHT / 2 * scenePoint.x + TILE_HEIGHT / 2 * scenePoint.y
+    return Point(x, y)
+}
+
+fun getScenePointFromVirtualScreen(virtualScreenPoint: Point): Point {
+    val x = virtualScreenPoint.x / TILE_WIDTH - virtualScreenPoint.y / TILE_HEIGHT
+    val y = virtualScreenPoint.x / TILE_WIDTH + virtualScreenPoint.y / TILE_HEIGHT
+    return Point(x, y)
 }

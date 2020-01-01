@@ -35,13 +35,23 @@ object MainWindow : JFrame() {
     /**
      * Чекбокс, определяющий, показывать ли эскиз гуманоида на фоне для помощи в подборе размера изображений
      */
-    val showPlayerImageCheckbox : JCheckBox = JCheckBox("Show shape").apply {
+    val showPlayerImageCheckbox : JCheckBox = JCheckBox("Show player shape").apply {
         isSelected = true
         setBounds(8, 10, 160, 24)
         addChangeListener {
             MainPanel.drawPlayer = isSelected
         }
-        isVisible = true
+        isVisible = false
+        MainPanel.add(this)
+    }
+
+    val showTileGridCheckbox : JCheckBox = JCheckBox("Show tile grid").apply {
+        isSelected = true
+        setBounds(8, 10, 160, 24)
+        addChangeListener {
+            MainPanel.showTileGrid = isSelected
+        }
+        isVisible = false
         MainPanel.add(this)
     }
 
@@ -52,7 +62,15 @@ object MainWindow : JFrame() {
         addChangeListener {
             MainPanel.colorPlayer = isSelected
         }
-        isVisible = true
+        isVisible = false
+        MainPanel.add(this)
+    }
+
+    val objectBoundsButton: JButton = JButton("Set object bounds").apply {
+        setBounds(showPlayerImageCheckbox.x, showPlayerImageCheckbox.y + showPlayerImageCheckbox.height + 2,
+                showPlayerImageCheckbox.width, showPlayerImageCheckbox.height)
+        isVisible = false
+        addActionListener(objectSizeButtonListener)
         MainPanel.add(this)
     }
 
@@ -353,6 +371,11 @@ object MainWindow : JFrame() {
                     isAnimationRepeatableCheckbox.isSelected = animation.isRepeatable
                     animationNameText.text = animation.type.toString() + ": " + animation.name
                     MainPanel.animType = animation.type
+                    val isObject = animation.type == AnimationType.OBJECT
+                    showPlayerImageCheckbox.isVisible = !isObject
+                    colorPlayerCheckbox.isVisible = !isObject
+                    showTileGridCheckbox.isVisible = isObject
+                    objectBoundsButton.isVisible = isObject
                     return true
                 }
                 else {
@@ -388,6 +411,7 @@ object MainWindow : JFrame() {
         val layer = animation.frames[animation.curFrame].layers[layerID]
         SlidersWindow.run {
             flipCheckBox.isSelected = layer.flipX
+            visibleCheckBox.isSelected = layer.isVisible
             sizeSlider.value = Math.round(layer.scale * 100)
             widthSlider.value = Math.round(layer.scaleX * 100)
             heightSlider.value = Math.round(layer.scaleY * 100)

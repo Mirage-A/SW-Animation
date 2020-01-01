@@ -16,7 +16,8 @@ class Layer(
         var scaleX: Float = 1f,
         var scaleY: Float = 1f,
         var angle: Float = 0f,
-        var flipX: Boolean = false
+        var flipX: Boolean = false,
+        var isVisible: Boolean = true
 ) {
     /**
      * Размеры изображения слоя до скалирования
@@ -65,7 +66,7 @@ class Layer(
         x *= -1
         angle *= -1
         if (imageName.startsWith("~head-")) {
-            imageName = "~head-" + MoveDirection.fromString(imageName.substring(5)).mirrored().toString()
+            imageName = "~head-" + MoveDirection.fromString(imageName.substring(6)).mirrored().toString()
         } else {
             flipX = !flipX
         }

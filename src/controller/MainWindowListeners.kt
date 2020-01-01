@@ -46,6 +46,34 @@ val saveAnimationButtonListener = ActionListener {
     Model.serialize()
 }
 
+fun Float.toShortString(): String = ((this * 10f).toInt().toFloat() / 10f).toString()
+
+val objectSizeButtonListener = ActionListener {
+    var input = JOptionPane.showInputDialog(
+            null,
+            "Input probable object position and size on game scene to modify tile grid",
+            "x=${MainPanel.objectX.toShortString()};y=${MainPanel.objectY.toShortString()};width=${MainPanel.objectWidth.toShortString()};height=${MainPanel.objectHeight.toShortString()};")
+    try {
+        input = input
+                .replace("x=", "")
+                .replace("y=", "")
+                .replace("width=", "")
+                .replace("height=", "")
+        val values = input.split(";")
+        val x = values[0].toFloat()
+        val y = values[1].toFloat()
+        val width = values[2].toFloat()
+        val height = values[3].toFloat()
+        MainPanel.objectX = x
+        MainPanel.objectY = y
+        MainPanel.objectWidth = width
+        MainPanel.objectHeight = height
+    }
+    catch(ex : Exception) {
+        JOptionPane.showMessageDialog(null, "Incorrect input")
+    }
+}
+
 val zoomSliderListener = ChangeListener {
     MainPanel.zoom = MainWindow.zoomSlider.value
     try {

@@ -8,6 +8,7 @@ import java.io.FileWriter
 import org.dom4j.io.OutputFormat
 import org.dom4j.io.XMLWriter
 import org.omg.PortableInterceptor.SYSTEM_EXCEPTION
+import view.MainPanel
 import javax.swing.JOptionPane
 import kotlin.system.exitProcess
 
@@ -75,6 +76,10 @@ class Animation() {
             name = animation.attributeValue("name")
             duration = Integer.parseInt(animation.attributeValue("duration"))
             isRepeatable = animation.attributeValue("isRepeatable") == "true"
+            MainPanel.objectX = animation.attributeValue("objectX")?.toFloatOrNull() ?: 0f
+            MainPanel.objectY = animation.attributeValue("objectY")?.toFloatOrNull() ?: 0f
+            MainPanel.objectWidth = animation.attributeValue("objectWidth")?.toFloatOrNull() ?: 0f
+            MainPanel.objectHeight = animation.attributeValue("objectHeight")?.toFloatOrNull() ?: 0f
             for (md in animation.elements()) {
                 md as Element
                 val moveDirection = MoveDirection.fromString(md.name)
@@ -95,7 +100,8 @@ class Animation() {
                                     lyr.attributeValue("scaleX").toFloat(),
                                     lyr.attributeValue("scaleY").toFloat(),
                                     lyr.attributeValue("angle").toFloat(),
-                                    lyr.attributeValue("flipX")?.toBoolean() ?: false
+                                    lyr.attributeValue("flipX")?.toBoolean() ?: false,
+                                    lyr.attributeValue("isVisible")?.toBoolean() ?: true
                             )
                             frame.layers.add(layer)
                         }
@@ -124,6 +130,12 @@ class Animation() {
                 addAttribute("name", this@Animation.name)
                 addAttribute("duration", "" + duration)
                 addAttribute("isRepeatable", "" + isRepeatable)
+                if (type == AnimationType.OBJECT) {
+                    addAttribute("objectX", "" + MainPanel.objectX)
+                    addAttribute("objectY", "" + MainPanel.objectY)
+                    addAttribute("objectWidth", "" + MainPanel.objectWidth)
+                    addAttribute("objectHeight", "" + MainPanel.objectHeight)
+                }
             }
             for (md in MoveDirection.values()) {
                 val moveDirection = animation.addElement(md.toString())
@@ -145,6 +157,7 @@ class Animation() {
                                 addAttribute("scaleY", "" + layer.scaleY)
                                 addAttribute("angle", "" + layer.angle)
                                 addAttribute("flipX", "" + layer.flipX)
+                                addAttribute("isVisible", "" + layer.isVisible)
                             }
                         }
                     }
