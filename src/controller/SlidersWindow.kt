@@ -36,15 +36,37 @@ object SlidersWindow : JFrame() {
     /**
      * Слайдер, отвечающий за размер слоя
      */
-    internal var sizeSlider : JSlider = UIFactory.createSlider(panel, sizeSliderListener)
+    internal val sizeSlider : JSlider = UIFactory.createSlider(panel, sizeSliderListener)
+
+    val sizeButton: JButton = JButton("100").apply {
+        setSize(60, 20)
+        isVisible = true
+        addActionListener(sizeButtonListener)
+        panel.add(this)
+    }
+
+    val xButton: JButton = JButton("100").apply {
+        setSize(60, 20)
+        isVisible = true
+        addActionListener(xButtonListener)
+        panel.add(this)
+    }
+
+    val yButton: JButton = JButton("100").apply {
+        setSize(60, 20)
+        isVisible = true
+        addActionListener(yButtonListener)
+        panel.add(this)
+    }
+
     /**
      * Слайдер, отвечающий за ширину слоя
      */
-    internal var widthSlider : JSlider = UIFactory.createSlider(panel, widthSliderListener)
+    internal val widthSlider : JSlider = UIFactory.createSlider(panel, widthSliderListener)
     /**
      * Слайдер, отвечающий за высоту слоя
      */
-    internal var heightSlider : JSlider = UIFactory.createSlider(panel, heightSliderListener)
+    internal val heightSlider : JSlider = UIFactory.createSlider(panel, heightSliderListener)
 
     private val sizeLabel : JLabel = UIFactory.createLabel("size", panel)
 
@@ -56,7 +78,7 @@ object SlidersWindow : JFrame() {
     init {
         iconImage = ImageIO.read(File("./art.png"))
         isUndecorated = true
-        setSize(242, 132)
+        setSize(272, 132)
         title = "Layer size"
         isAlwaysOnTop = true
         defaultCloseOperation = JFrame.DO_NOTHING_ON_CLOSE
@@ -67,8 +89,11 @@ object SlidersWindow : JFrame() {
                 flipCheckBox.setLocation(0, 4)
                 visibleCheckBox.setLocation(0, 4 + flipCheckBox.height)
                 sizeSlider.setLocation(0, 4 + flipCheckBox.height + visibleCheckBox.height)
+                sizeButton.setLocation(sizeSlider.x + sizeSlider.width + 4, sizeSlider.y)
                 widthSlider.setLocation(0, 4 + sizeSlider.height + flipCheckBox.height + visibleCheckBox.height)
+                xButton.setLocation(widthSlider.x + widthSlider.width + 4, widthSlider.y)
                 heightSlider.setLocation(0, 4 + sizeSlider.height + widthSlider.height + flipCheckBox.height + visibleCheckBox.height)
+                yButton.setLocation(heightSlider.x + heightSlider.width + 4, heightSlider.y)
                 sizeLabel.setLocation(sizeSlider.x + sizeSlider.width, sizeSlider.y)
                 widthLabel.setLocation(widthSlider.x + widthSlider.width, widthSlider.y)
                 heightLabel.setLocation(heightSlider.x + heightSlider.width, heightSlider.y)

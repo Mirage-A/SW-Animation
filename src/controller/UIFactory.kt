@@ -8,6 +8,12 @@ import javax.imageio.ImageIO
 import javax.swing.*
 import javax.swing.event.ChangeListener
 
+const val SLIDER_WIDTH = 200
+const val SLIDER_HEIGHT = 20
+const val SLIDER_MIN_VALUE = 1
+const val SLIDER_MAX_VALUE = 500
+const val SLIDER_DEFAULT_VALUE = 100
+
 object UIFactory {
 
     const val MINI_BUTTON_SIZE = 20
@@ -44,11 +50,6 @@ object UIFactory {
         }
     }
 
-    private const val SLIDER_WIDTH = 200
-    private const val SLIDER_HEIGHT = 20
-    private const val SLIDER_MIN_VALUE = 10
-    private const val SLIDER_MAX_VALUE = 200
-    private const val SLIDER_DEFAULT_VALUE = 100
 
     fun createSlider(panel: JPanel, listener: ChangeListener) = JSlider(JSlider.HORIZONTAL, SLIDER_MIN_VALUE, SLIDER_MAX_VALUE, SLIDER_DEFAULT_VALUE).apply {
         setSize(SLIDER_WIDTH, SLIDER_HEIGHT)
