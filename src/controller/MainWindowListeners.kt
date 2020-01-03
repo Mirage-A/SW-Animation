@@ -166,6 +166,10 @@ fun getMoveDirectionCheckboxListener(md: MoveDirection) = ActionListener {
         }
         MainWindow.setCurFrame(-1)
         MainPanel.frame = null
+        if (Model.animation.frames.isNotEmpty()) {
+            MainWindow.setCurFrame(0)
+            MainPanel.frame = Model.animation.frames[0]
+        }
     }
     else {
         MainWindow.moveDirectionCheckboxes[md]?.isSelected = true
@@ -217,6 +221,10 @@ fun getWeaponTypeCheckboxListener(wt: WeaponType) = ActionListener {
         }
         MainWindow.setCurFrame(-1)
         MainPanel.frame = null
+        if (Model.animation.frames.isNotEmpty()) {
+            MainWindow.setCurFrame(0)
+            MainPanel.frame = Model.animation.frames[0]
+        }
     }
     else {
         MainWindow.weaponTypeCheckboxes[wt]?.isSelected = true
