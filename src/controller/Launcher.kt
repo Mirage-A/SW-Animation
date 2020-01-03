@@ -3,7 +3,7 @@ package controller
 import javax.swing.JOptionPane
 import kotlin.system.exitProcess
 
-fun main() {
+fun main(args: Array<String>) {
     try {
         MainWindow
     }
