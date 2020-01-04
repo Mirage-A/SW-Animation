@@ -70,6 +70,12 @@ class Layer(
         } else {
             flipX = !flipX
         }
+        if (imageName == "~mainhand") {
+            imageName = "~offhand"
+        }
+        else if (imageName == "~offhand") {
+            imageName = "~mainhand"
+        }
         loadImage()
     }
 }
