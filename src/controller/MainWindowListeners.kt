@@ -239,6 +239,7 @@ val generateWeaponsListener = ActionListener {
                             WeaponType.BOW -> "~bow"
                             else -> "~onehanded"
                         }
+                        layer.loadImage()
                     }
                 }
             }
