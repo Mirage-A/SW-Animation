@@ -66,14 +66,34 @@ object Model {
             JOptionPane.showMessageDialog(null, "This move direction can't be mirrored")
         }
         else {
-            val mirroredFrames = animation.data[mirroredMD]!![animation.curWeaponType]!!
-            mirroredFrames.clear()
-            val curFrames = animation.data[animation.curMoveDirection]!![animation.curWeaponType]!!
-            for (frame in curFrames) {
-                mirroredFrames.add(Frame(frame))
+            val option = JOptionPane.showOptionDialog(
+                    null,
+                    "Animation for $mirroredMD move direction will be OVERRIDDEN to mirrored animation for ${animation.curMoveDirection} move direction?",
+                    "Generating mirrored animation",
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    arrayOf("Generate for all weapon types", "Generate for ${animation.curWeaponType}", "Cancel"),
+                    null
+            )
+            fun generateForWeaponType(weaponType: WeaponType) {
+                val mirroredFrames = animation.data[mirroredMD]!![weaponType]!!
+                mirroredFrames.clear()
+                val curFrames = animation.data[animation.curMoveDirection]!![weaponType]!!
+                for (frame in curFrames) {
+                    mirroredFrames.add(Frame(frame))
+                }
+                for (mFrame in mirroredFrames) {
+                    mFrame.mirror(animation.curMoveDirection)
+                }
             }
-            for (mFrame in mirroredFrames) {
-                mFrame.mirror(animation.curMoveDirection)
+            if (option == JOptionPane.YES_OPTION) {
+                for (wt in WeaponType.values()) {
+                    generateForWeaponType(wt)
+                }
+            }
+            else if (option == JOptionPane.NO_OPTION) {
+                generateForWeaponType(animation.curWeaponType)
             }
 
         }

@@ -87,12 +87,12 @@ object FramesWindow : JFrame() {
 
         addComponentListener(object : ComponentAdapter() {
             override fun componentResized(evt: ComponentEvent?) {
-                scrollPane.setBounds(0, 0, width, height + 1 - UIFactory.MINI_BUTTON_SIZE)
-                newFrameButton.setLocation(0, height - UIFactory.MINI_BUTTON_SIZE)
-                copyLastFrameButton.setLocation(UIFactory.MINI_BUTTON_SIZE, height - UIFactory.MINI_BUTTON_SIZE)
-                deleteFrameButton.setLocation(UIFactory.MINI_BUTTON_SIZE * 2, height - UIFactory.MINI_BUTTON_SIZE)
-                upFrameButton.setLocation(UIFactory.MINI_BUTTON_SIZE * 3, height - UIFactory.MINI_BUTTON_SIZE)
-                downFrameButton.setLocation(UIFactory.MINI_BUTTON_SIZE * 4, height - UIFactory.MINI_BUTTON_SIZE)
+                scrollPane.setBounds(0, 0, width, height + 1 - MINI_BUTTON_SIZE)
+                newFrameButton.setLocation(0, height - MINI_BUTTON_SIZE)
+                copyLastFrameButton.setLocation(MINI_BUTTON_SIZE, height - MINI_BUTTON_SIZE)
+                deleteFrameButton.setLocation(MINI_BUTTON_SIZE * 2, height - MINI_BUTTON_SIZE)
+                upFrameButton.setLocation(MINI_BUTTON_SIZE * 3, height - MINI_BUTTON_SIZE)
+                downFrameButton.setLocation(MINI_BUTTON_SIZE * 4, height - MINI_BUTTON_SIZE)
                 scrollPane.revalidate()
             }
         })

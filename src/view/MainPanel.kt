@@ -24,11 +24,11 @@ object MainPanel : JPanel() {
     /**
      * Включено ли рисование изображения гуманоида в редакторе
      */
-    internal var drawPlayer = true
+    internal var drawPlayer = false
 
     var colorPlayer = true
 
-    var showTileGrid = true
+    var showTileGrid = false
 
     var objectX = 0f
     var objectY = 0f

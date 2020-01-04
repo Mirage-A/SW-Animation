@@ -14,11 +14,12 @@ const val SLIDER_MIN_VALUE = 1
 const val SLIDER_MAX_VALUE = 500
 const val SLIDER_DEFAULT_VALUE = 100
 
+const val MINI_BUTTON_SIZE = 20
+const val BUTTON_WIDTH = 160
+const val BUTTON_HEIGHT = 24
+
 object UIFactory {
 
-    const val MINI_BUTTON_SIZE = 20
-    const val BUTTON_WIDTH = 160
-    const val BUTTON_HEIGHT = 24
 
     fun createButton(x: Int, y: Int, text: String, listener: ActionListener) = JButton().apply {
         setBounds(x, y, BUTTON_WIDTH, BUTTON_HEIGHT)

@@ -36,7 +36,7 @@ object MainWindow : JFrame() {
      * Чекбокс, определяющий, показывать ли эскиз гуманоида на фоне для помощи в подборе размера изображений
      */
     val showPlayerImageCheckbox : JCheckBox = JCheckBox("Show player shape").apply {
-        isSelected = true
+        isSelected = false
         setBounds(8, 10, 160, 24)
         addChangeListener {
             MainPanel.drawPlayer = isSelected
@@ -46,7 +46,7 @@ object MainWindow : JFrame() {
     }
 
     val showTileGridCheckbox : JCheckBox = JCheckBox("Show tile grid").apply {
-        isSelected = true
+        isSelected = false
         setBounds(8, 10, 160, 24)
         addChangeListener {
             MainPanel.showTileGrid = isSelected
@@ -93,18 +93,10 @@ object MainWindow : JFrame() {
         foreground = Color(0, 208, 0)
     }
     /**
-     * Кнопочка, позволяющая создать отраженную относительно вертикальной оси анимацию
-     * для соответствующего направления движения
-     */
-    val createMirroredAnimationBtn: JButton = UIFactory.createButton(
-            toggleAnimationBtn.x, toggleAnimationBtn.y + toggleAnimationBtn.height + 4,
-            "Mirror animation", createMirroredAnimationButtonListener
-    )
-    /**
      * Кнопочка, позволяющая выбрать длительность (период) анимации
      */
     val changeDurationBtn : JButton = UIFactory.createButton(
-            createMirroredAnimationBtn.x, createMirroredAnimationBtn.y + createMirroredAnimationBtn.height + 4,
+            toggleAnimationBtn.x, toggleAnimationBtn.y + toggleAnimationBtn.height + 4,
             "Animation duration", changeDurationButtonListener
     )
     /**
@@ -121,6 +113,24 @@ object MainWindow : JFrame() {
      * Текст "Weapon type: " над чекбоксами с выбором типа оружия
      */
     val weaponTypeText : JTextField
+
+    /**
+     * Кнопочка, позволяющая создать отраженную относительно вертикальной оси анимацию
+     * для соответствующего направления движения
+     */
+    val createMirroredAnimationBtn: JButton = UIFactory.createButton(
+            0, 0,
+            "Generate mirrored", createMirroredAnimationButtonListener
+    )
+
+    val generateOtherWeaponTypes: JButton = JButton().apply {
+        setSize(BUTTON_WIDTH, BUTTON_HEIGHT)
+        isVisible = false
+        text = "Generate other types"
+        addActionListener(generateWeaponsListener)
+        MainPanel.add(this)
+    }
+
     /**
      * Элементы интерфейса в правом верхнем углу
      */
@@ -199,6 +209,8 @@ object MainWindow : JFrame() {
                     md.toString(), getMoveDirectionCheckboxListener(md))
         }
 
+        createMirroredAnimationBtn.setLocation(toggleAnimationBtn.x, moveDirectionText.y + (toggleAnimationBtn.height + 4) * (moveDirectionCheckboxes.size + 1) + 4)
+
         //Текст "Weapon type:"
         weaponTypeText = JTextField("Weapon type:")
         weaponTypeText.run {
@@ -206,7 +218,7 @@ object MainWindow : JFrame() {
             horizontalAlignment = JTextField.CENTER
             font = LayersWindow.selectedFont
             isEditable = false
-            setBounds(moveDirectionCheckboxes[MoveDirection.DOWN_RIGHT]!!.x, moveDirectionCheckboxes[MoveDirection.DOWN_RIGHT]!!.y + moveDirectionCheckboxes[MoveDirection.DOWN_RIGHT]!!.height + 4, moveDirectionCheckboxes[MoveDirection.DOWN_RIGHT]!!.width, moveDirectionCheckboxes[MoveDirection.DOWN_RIGHT]!!.height)
+            setBounds(createMirroredAnimationBtn.x, createMirroredAnimationBtn.y + createMirroredAnimationBtn.height + 4, moveDirectionCheckboxes[MoveDirection.DOWN_RIGHT]!!.width, moveDirectionCheckboxes[MoveDirection.DOWN_RIGHT]!!.height)
             isVisible = true
         }
         MainPanel.add(weaponTypeText)
@@ -217,6 +229,10 @@ object MainWindow : JFrame() {
                     toggleAnimationBtn.x, weaponTypeText.y + (toggleAnimationBtn.height + 4) * (weaponTypeCheckboxes.size + 1) + 4,
                     wt.toString(), getWeaponTypeCheckboxListener(wt))
         }
+
+        generateOtherWeaponTypes.setLocation(
+                toggleAnimationBtn.x, weaponTypeText.y + (toggleAnimationBtn.height + 4) * (weaponTypeCheckboxes.size + 1) + 4
+        )
 
         //Добавляем подтверждение выхода при нажатии на кнопку закрытия окна
         addWindowListener(object : WindowListener {
@@ -376,6 +392,9 @@ object MainWindow : JFrame() {
                     colorPlayerCheckbox.isVisible = !isObject
                     showTileGridCheckbox.isVisible = isObject
                     objectBoundsButton.isVisible = isObject
+                    if (animation.frames.isNotEmpty()) {
+                        setCurFrame(0)
+                    }
                     return true
                 }
                 else {

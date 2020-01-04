@@ -93,11 +93,11 @@ object LayersWindow : JFrame() {
 
         addComponentListener(object : ComponentAdapter() {
             override fun componentResized(evt: ComponentEvent?) {
-                scrollPane.setBounds(0, 0, width, height - UIFactory.MINI_BUTTON_SIZE)
-                newLayerButton.setLocation(0, height - UIFactory.MINI_BUTTON_SIZE)
-                deleteLayerButton.setLocation(UIFactory.MINI_BUTTON_SIZE, height - UIFactory.MINI_BUTTON_SIZE)
-                upLayerButton.setLocation(UIFactory.MINI_BUTTON_SIZE * 2, height - UIFactory.MINI_BUTTON_SIZE)
-                downLayerButton.setLocation(UIFactory.MINI_BUTTON_SIZE * 3, height - UIFactory.MINI_BUTTON_SIZE)
+                scrollPane.setBounds(0, 0, width, height - MINI_BUTTON_SIZE)
+                newLayerButton.setLocation(0, height - MINI_BUTTON_SIZE)
+                deleteLayerButton.setLocation(MINI_BUTTON_SIZE, height - MINI_BUTTON_SIZE)
+                upLayerButton.setLocation(MINI_BUTTON_SIZE * 2, height - MINI_BUTTON_SIZE)
+                downLayerButton.setLocation(MINI_BUTTON_SIZE * 3, height - MINI_BUTTON_SIZE)
                 scrollPane.revalidate()
             }
         })

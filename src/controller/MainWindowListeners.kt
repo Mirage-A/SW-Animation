@@ -1,10 +1,9 @@
 package controller
 
-import model.Model
-import model.MoveDirection
-import model.WeaponType
+import model.*
 import view.MainPanel
 import java.awt.Image
+import java.awt.event.ActionEvent
 import java.awt.event.ActionListener
 import java.io.File
 import javax.imageio.ImageIO
@@ -128,52 +127,57 @@ fun getMoveDirectionCheckboxListener(md: MoveDirection) = ActionListener {
             }
         }
         Model.animation.curMoveDirection = md
-        Model.animation.frames = Model.animation.data[Model.animation.curMoveDirection]!![Model.animation.curWeaponType]!!
-        Model.animation.curFrame = -1
-        MainPanel.frame = null
-        FramesWindow.run {
-            frameButtons.clear()
-            scrollPanel.removeAll()
-            scrollPanel.repaint()
-            scrollPane.revalidate()
-            for (i in Model.animation.frames.indices) {
-                val tmp = JButton("frame$i")
-                tmp.addActionListener {
-                    MainWindow.setCurFrame(Integer.parseInt(tmp.text.substring(5)))
-                    deleteFrameButton.isEnabled = true
-                    deleteEnabled = true
-                }
-                frameButtons.add(tmp)
-                scrollPanel.add(tmp)
-            }
-            scrollPane.revalidate()
-        }
-        SlidersWindow.isVisible = false
-        LayersWindow.run {
-            newLayerButton.isEnabled = true
-            newEnabled = true
-            deleteLayerButton.isEnabled = false
-            deleteEnabled = false
-            renameEnabled = false
-            upLayerButton.isEnabled = false
-            upEnabled = false
-            downLayerButton.isEnabled = false
-            downEnabled = false
-            scrollPanel.removeAll()
-            layerButtons.clear()
-            scrollPanel.repaint()
-            scrollPane.revalidate()
-        }
-        MainWindow.setCurFrame(-1)
-        MainPanel.frame = null
-        if (Model.animation.frames.isNotEmpty()) {
-            MainWindow.setCurFrame(0)
-            MainPanel.frame = Model.animation.frames[0]
-        }
+        reloadEverything()
     }
     else {
         MainWindow.moveDirectionCheckboxes[md]?.isSelected = true
     }
+}
+
+fun reloadEverything() {
+    Model.animation.frames = Model.animation.data[Model.animation.curMoveDirection]!![Model.animation.curWeaponType]!!
+    Model.animation.curFrame = -1
+    MainPanel.frame = null
+    FramesWindow.run {
+        frameButtons.clear()
+        scrollPanel.removeAll()
+        scrollPanel.repaint()
+        scrollPane.revalidate()
+        for (i in Model.animation.frames.indices) {
+            val tmp = JButton("frame$i")
+            tmp.addActionListener {
+                MainWindow.setCurFrame(Integer.parseInt(tmp.text.substring(5)))
+                deleteFrameButton.isEnabled = true
+                deleteEnabled = true
+            }
+            frameButtons.add(tmp)
+            scrollPanel.add(tmp)
+        }
+        scrollPane.revalidate()
+    }
+    SlidersWindow.isVisible = false
+    LayersWindow.run {
+        newLayerButton.isEnabled = true
+        newEnabled = true
+        deleteLayerButton.isEnabled = false
+        deleteEnabled = false
+        renameEnabled = false
+        upLayerButton.isEnabled = false
+        upEnabled = false
+        downLayerButton.isEnabled = false
+        downEnabled = false
+        scrollPanel.removeAll()
+        layerButtons.clear()
+        scrollPanel.repaint()
+        scrollPane.revalidate()
+    }
+    MainWindow.setCurFrame(-1)
+    MainPanel.frame = null
+    if (Model.animation.frames.isNotEmpty()) {
+        MainWindow.setCurFrame(0)
+        MainPanel.frame = Model.animation.frames[0]
+    }
+    MainWindow.generateOtherWeaponTypes.isVisible = Model.animation.curWeaponType == WeaponType.ONE_HANDED
 }
 
 fun getWeaponTypeCheckboxListener(wt: WeaponType) = ActionListener {
@@ -183,50 +187,62 @@ fun getWeaponTypeCheckboxListener(wt: WeaponType) = ActionListener {
             checkbox.isSelected = false
         }
         Model.animation.curWeaponType = wt
-        Model.animation.frames = Model.animation.data[Model.animation.curMoveDirection]!![Model.animation.curWeaponType]!!
-        Model.animation.curFrame = -1
-        MainPanel.frame = null
-        FramesWindow.run {
-            frameButtons.clear()
-            scrollPanel.removeAll()
-            scrollPanel.repaint()
-            scrollPane.revalidate()
-            for (i in Model.animation.frames.indices) {
-                val tmp = JButton("frame$i")
-                tmp.addActionListener {
-                    MainWindow.setCurFrame(Integer.parseInt(tmp.text.substring(5)))
-                    deleteFrameButton.isEnabled = true
-                    deleteEnabled = true
-                }
-                frameButtons.add(tmp)
-                scrollPanel.add(tmp)
-            }
-            scrollPane.revalidate()
-        }
-        SlidersWindow.isVisible = false
-        LayersWindow.run {
-            newLayerButton.isEnabled = true
-            newEnabled = true
-            deleteLayerButton.isEnabled = false
-            deleteEnabled = false
-            renameEnabled = false
-            upLayerButton.isEnabled = false
-            upEnabled = false
-            downLayerButton.isEnabled = false
-            downEnabled = false
-            scrollPanel.removeAll()
-            layerButtons.clear()
-            scrollPanel.repaint()
-            scrollPane.revalidate()
-        }
-        MainWindow.setCurFrame(-1)
-        MainPanel.frame = null
-        if (Model.animation.frames.isNotEmpty()) {
-            MainWindow.setCurFrame(0)
-            MainPanel.frame = Model.animation.frames[0]
-        }
+        reloadEverything()
     }
     else {
         MainWindow.weaponTypeCheckboxes[wt]?.isSelected = true
     }
+}
+
+val generateWeaponsListener = ActionListener {
+    if (Model.animation.curWeaponType != WeaponType.ONE_HANDED) {
+        JOptionPane.showMessageDialog(null, "Only ONE_HANDED animations can be used to generate other weapon types.")
+        return@ActionListener
+    }
+    val alreadyExistTypes = ArrayList<WeaponType>()
+    for (wt in WeaponType.values()) {
+        if (wt != WeaponType.ONE_HANDED &&
+                Model.animation.data[Model.animation.curMoveDirection]!![wt]!!.isNotEmpty()) {
+            alreadyExistTypes += wt
+        }
+    }
+    if (alreadyExistTypes.isNotEmpty()) {
+        val sure = JOptionPane.showConfirmDialog(
+                null,
+                "Found existing animation for following weapon types:\n" +
+                        alreadyExistTypes + "\n" +
+                        "Generating other animations will remove all animations that already exist for these weapon types.\n" +
+                        "Are you sure you want to generate animations?",
+                "Existing animations found",
+                JOptionPane.OK_CANCEL_OPTION
+        )
+        if (sure == JOptionPane.CANCEL_OPTION) return@ActionListener
+    }
+    val oneHandedFrames = Model.animation.data[Model.animation.curMoveDirection]!![WeaponType.ONE_HANDED]!!
+    for (wt in WeaponType.values()) {
+        if (wt == WeaponType.ONE_HANDED) continue
+        val generatedFrames = Model.animation.data[Model.animation.curMoveDirection]!![wt]!!
+        generatedFrames.clear()
+        for (originFrame in oneHandedFrames) {
+            generatedFrames += Frame(originFrame)
+        }
+        for (frame in generatedFrames) {
+            if (wt == WeaponType.UNARMED)
+                frame.layers.removeIf { it.imageName == "~onehanded" }
+            else {
+                for (layer in frame.layers) {
+                    if (layer.imageName == "~onehanded") {
+                        layer.imageName = when (wt) {
+                            WeaponType.DUAL -> "~mainhand"
+                            WeaponType.TWO_HANDED -> "~twohanded"
+                            WeaponType.STAFF -> "~staff"
+                            WeaponType.BOW -> "~bow"
+                            else -> "~onehanded"
+                        }
+                    }
+                }
+            }
+        }
+    }
+    Model.serialize()
 }
